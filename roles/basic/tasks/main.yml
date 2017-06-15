@@ -1,0 +1,6 @@
+- name: "test"
+  shell: ceph -s
+  register: result
+- name: "show output"
+  when: result|succeeded
+  debug: msg="{{ result.stdout_lines }}" 
