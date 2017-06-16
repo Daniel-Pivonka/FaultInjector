@@ -8,8 +8,8 @@ import argparse
 
 def main():
     #open log file
-    f = open('FaultInjector.log', 'a')
-    f.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
+    log = open('FaultInjector.log', 'a')
+    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
 
     #create argument parser
     parser = argparse.ArgumentParser(description='Fault Injector')
@@ -21,31 +21,39 @@ def main():
     #check mode args
     if args['process'] is True:
         print 'process faults enabled'
-        f.write('{:%Y-%m-%d %H:%M:%S} process faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} process faults enabled\n'.format(datetime.datetime.now()))
 
     if args['system'] is True:
         print 'system faults enabled'
-        f.write('{:%Y-%m-%d %H:%M:%S} system faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} system faults enabled\n'.format(datetime.datetime.now()))
 
     if args['hardware'] is True:
         print 'hardware faults enabled'
-        f.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
+
+
+
 
 
     #open config
     y = open('config.yaml', 'r')
-    f.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
+    log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
 
     #read config
     datamap = yaml.safe_load(y)
     y.close()
 
-    #run ansible playbook
-    subprocess.call("ansible-playbook playbook.yml", shell=True)
-    f.write('{:%Y-%m-%d %H:%M:%S} ansible\n'.format(datetime.datetime.now()))
 
-    f.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
-    f.close()
+    print datamap['node0']['ip']
+
+
+
+    #run ansible playbook
+    #subprocess.call("ansible-playbook playbook.yml", shell=True)
+    #log.write('{:%Y-%m-%d %H:%M:%S} ansible\n'.format(datetime.datetime.now()))
+
+    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+    log.close()
     #end
 
     
