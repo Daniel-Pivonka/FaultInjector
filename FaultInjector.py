@@ -11,12 +11,16 @@ def main():
     log = open('FaultInjector.log', 'a')
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
 
+
+
     #create argument parser
     parser = argparse.ArgumentParser(description='Fault Injector')
     parser.add_argument('-p','--process', help='run process faults', required=False, action='store_true')
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
     args = vars(parser.parse_args())
+
+
 
     #check mode args
     if args['process'] is True:
@@ -33,18 +37,25 @@ def main():
 
 
 
-
-
     #open config
-    y = open('config.yaml', 'r')
+    with open('config.yaml', 'r') as f:
+        config = yaml.load(f)
     log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
 
-    #read config
-    datamap = yaml.load(y)
-    y.close()
 
 
-    print datamap.get('node0').get('ip')
+    #test compatiblity
+    if check_config_mode_compatiblity() is True:
+        #pick mode
+    else:
+        #ask for new set of modes
+
+
+
+
+
+
+
 
 
 
@@ -55,6 +66,16 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
     #end
+
+
+def check_config_mode_compatiblity()
+
+def service_fault()
+
+def node_fault()
+
+def hardware_fault()
+
 
     
 if __name__ == "__main__":main()
