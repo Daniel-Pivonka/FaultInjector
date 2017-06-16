@@ -1,13 +1,13 @@
 numnodes: 4
 node0: 
-  ip:192.168.24.13
-  type:controller
+  ip: 192.168.24.13
+  type: controller
 node1:
-  ip:192.168.24.10
-  type:osd-compute
+  ip: 192.168.24.10
+  type: osd-compute
 node2: 
-  ip:192.168.24.6
-  type:osd-compute
+  ip: 192.168.24.6
+  type: osd-compute
 node3: 
-  ip:192.168.24.18 
-  type:osd-compute
+  ip: 192.168.24.18 
+  type: osd-compute
