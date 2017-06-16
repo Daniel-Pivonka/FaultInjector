@@ -44,7 +44,7 @@ def main():
     y.close()
 
 
-    print datamap["node0"]["ip"]
+    print datamap["node0"]
 
 
 
