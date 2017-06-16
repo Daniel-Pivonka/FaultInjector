@@ -40,11 +40,11 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
 
     #read config
-    datamap = yaml.safe_load(y)
+    datamap = yaml.load(y)
     y.close()
 
 
-    print datamap['node0']['ip']
+    print datamap["node0"]["ip"]
 
 
 
