@@ -29,7 +29,7 @@ def main():
     parser.add_argument('-p','--process', help='run process faults', required=False, action='store_true')
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
-    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (Minutes)', required=False, type=int, default = 30)
+    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (Minutes)', required=False, type=int, default=30, metavar='\b')
     args = parser.parse_args()
 
     #list to hold active modes to be randomly chosen
@@ -70,16 +70,11 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minutes\n'.format(datetime.datetime.now(), args.timelimit))    
 
 
-
-
-
     #test compatiblity
     if check_config_mode_compatiblity(active_modes):
 
-
         run_injector(args.timelimit, active_modes, log)
         #timelimit reached ask if user wants more time 
-
 
     else:
         print "you must enable at least one mode"
@@ -87,12 +82,6 @@ def main():
 
 
     
-
-
-
-
-
-
     #run ansible playbook
     #subprocess.call("ansible-playbook playbook.yml", shell=True)
     #log.write('{:%Y-%m-%d %H:%M:%S} ansible\n'.format(datetime.datetime.now()))
@@ -120,7 +109,7 @@ def run_injector(timelimit, active_modes, log):
         log.write('{:%Y-%m-%d %H:%M:%S} {} Mode Chosen\n'.format(datetime.datetime.now(), mode))
 
         if mode == 'process':
-            service_fault(1)
+            service_fault('osd-compute', 'ceph', 5)
         elif mode == 'system':
             node_fault()
         elif mode == 'hardware':
