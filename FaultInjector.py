@@ -108,7 +108,6 @@ def main():
         if more_time == "no":
                 break
 
-
     #end
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
