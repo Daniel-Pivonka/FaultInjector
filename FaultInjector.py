@@ -98,7 +98,7 @@ def main():
             response = raw_input('Do you want to keep running the injector? if yes enter how many minutes else enter "no"\n')
             if is_int(response):
                 timelimit = int(response)
-                # todo: add time to the timer
+                #new timelimit will be used in loop
                 break
             else:
                 response = response.lower()
@@ -106,9 +106,10 @@ def main():
                     break 
                 else:
                     print "Please enter a valid response"
-        
-            if response == "no":
-                break
+
+        #response was no break out of everything 
+        if response == "no":
+            break
 
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
@@ -145,18 +146,19 @@ def service_fault(node_type, service, downtime):
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
-    target_node = random.choice(nodes[node_type])
-    while target_node[1] == False:
-        target_node = random.choice(nodes[node_type])
-        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
-    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
-        config = yaml.load(f)
-        print config
-        config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
-    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
-        yaml.dump(config, f)
+    pass
+    # target_node = random.choice(nodes[node_type])
+    # while target_node[1] == False:
+    #     target_node = random.choice(nodes[node_type])
+    #     time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
+    #     config = yaml.load(f)
+    #     print config
+    #     config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
+    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
+    #     yaml.dump(config, f)
 
-    subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+    # subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
 
 
 def node_fault():
