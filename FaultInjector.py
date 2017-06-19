@@ -82,7 +82,7 @@ def main():
 
 
     else:
-        print "you must enable atleast one mode"
+        print "you must enable at least one mode"
         #ask for new set of modes
 
 
@@ -136,17 +136,15 @@ def service_fault(node_type, service, downtime):
     while target_node[1] == False:
         target_node = random.choice(nodes[node_type])
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
-        """
     with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
         config = yaml.load(f)
-        for heading in config:
-            if heading
-        config["shell"] = "systemctl disable ceph-mon@" + target_node[0]
-        
-
+        print config
+        config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
     with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
         yaml.dump(config, f)
-        """
+
+    subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+
 
 def node_fault():
     pass
