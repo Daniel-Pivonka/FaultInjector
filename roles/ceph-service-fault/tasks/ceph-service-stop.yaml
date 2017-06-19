@@ -1,1 +1,2 @@
-- {name: Stopping ceph service, register: result, shell: systemctl disable ceph-mon@192.168.24.6}
+- {name: Disabling auto restart of ceph-osd service, register: result, shell: systemctl disable ceph-osd@192.168.24.6}
+- {name: Killing ceph-osd services, register: result, shell: sudo pkill -f ceph-osd}
