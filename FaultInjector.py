@@ -80,7 +80,7 @@ def main():
             log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
 
 
-    #compatibiliy checks out
+    # compatibiliy checks out
     timelimit = args.timelimit
 
     while True:
@@ -92,30 +92,31 @@ def main():
 
         run_injector(timelimit, active_modes, log)
 
-        #timelimit reached ask if user wants more time 
+        # time limit reached ask if user wants more time 
         while True:
 
-            more_time = raw_input("Do you want to keep running the injector? if yes enter how many minutes else enter \"no\"\n")
-
-            if more_time == "no":
-                break
-            elif is_int(more_time):
-                timelimit = int(more_time)
+            response = raw_input('Do you want to keep running the injector? if yes enter how many minutes else enter "no"\n')
+            if is_int(response):
+                timelimit = int(response)
+                # todo: add time to the timer
                 break
             else:
-                print "Please enter a valid responce"
-
-        if more_time == "no":
+                response = response.lower()
+                if response == "no":
+                    break 
+                else:
+                    print "Please enter a valid response"
+        
+            if response == "no":
                 break
 
-    #end
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
     
 
 
 def check_config_mode_compatiblity(active_modes):
-    #just check for activated modes for now
+    # just check for activated modes for now
     if len(active_modes) > 0:
         return True
     else:
@@ -123,11 +124,11 @@ def check_config_mode_compatiblity(active_modes):
 
 
 def run_injector(timelimit, active_modes, log):
-    #runtime loop
+    # runtime loop
     timeout = time.time() + 60*timelimit
     while time.time() < timeout:
         
-        #pick mode
+        # pick mode
         mode = random.choice(active_modes)
         log.write('{:%Y-%m-%d %H:%M:%S} {} Mode Chosen\n'.format(datetime.datetime.now(), mode))
 
@@ -141,7 +142,6 @@ def run_injector(timelimit, active_modes, log):
     
 
 def service_fault(node_type, service, downtime):
-    #pass
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
