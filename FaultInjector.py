@@ -69,16 +69,11 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minutes\n'.format(datetime.datetime.now(), args.timelimit))    
 
 
-
-
-
     #test compatiblity
     if check_config_mode_compatiblity(active_modes):
 
-
         run_injector(args.timelimit, active_modes, log)
         #timelimit reached ask if user wants more time 
-
 
     else:
         print "you must enable atleast one mode"
@@ -86,12 +81,6 @@ def main():
 
 
     
-
-
-
-
-
-
     #run ansible playbook
     #subprocess.call("ansible-playbook playbook.yml", shell=True)
     #log.write('{:%Y-%m-%d %H:%M:%S} ansible\n'.format(datetime.datetime.now()))
