@@ -4,6 +4,7 @@ import datetime
 import yaml
 import subprocess
 import argparse
+import random
 
 
 debug = True
@@ -32,18 +33,23 @@ def main():
     args = vars(parser.parse_args())
 
 
+    active_modes = []
+
 
     #check mode args
     if args['process']:
         print 'process faults enabled'
+        active_modes.append('process')
         log.write('{:%Y-%m-%d %H:%M:%S} process faults enabled\n'.format(datetime.datetime.now()))
 
     if args['system']:
         print 'system faults enabled'
+        active_modes.append('system')
         log.write('{:%Y-%m-%d %H:%M:%S} system faults enabled\n'.format(datetime.datetime.now()))
 
     if args['hardware']:
         print 'hardware faults enabled'
+        active_modes.append('hardware')
         log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
 
 
@@ -55,10 +61,23 @@ def main():
 
     parse_config(config)
 
+
+
     #test compatiblity
     if check_config_mode_compatiblity():
+        
         #pick mode
-        pass
+        mode = random.choice(active_modes)
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Mode Chosen\n'.format(datetime.datetime.now(), mode))
+        if mode == 'process':
+            service_fault(1)
+        elif mode == 'system':
+            node_fault()
+        elif mode == 'hardware':
+            hardware_fault()
+
+
+        
     else:
         pass
         #ask for new set of modes
@@ -82,7 +101,9 @@ def main():
 
 
 def check_config_mode_compatiblity():
-    pass
+    #no checks for now
+    return True
+    
 
 def service_fault(downtime):
     """ Kills the ceph service of a random node for downtime seconds.
