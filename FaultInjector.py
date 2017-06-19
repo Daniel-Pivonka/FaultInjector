@@ -4,6 +4,8 @@ import datetime
 import yaml
 import subprocess
 import argparse
+import random
+import time
 
 
 debug = True
@@ -54,6 +56,7 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
 
     parse_config(config)
+    service_fault('osd-compute', 'ceph', 5)
 
     #test compatiblity
     if check_config_mode_compatiblity():
@@ -84,11 +87,25 @@ def main():
 def check_config_mode_compatiblity():
     pass
 
-def service_fault(downtime):
-    """ Kills the ceph service of a random node for downtime seconds.
-        Does not check if the node can be faulted.
+def service_fault(node_type, service, downtime):
+    """ Kills the service specified on a random node of type 'node_type' 
+        for 'downtime' seconds.
     """
-    pass
+    target_node = random.choice(nodes[node_type])
+    while target_node[1] == False:
+        target_node = random.choice(nodes[node_type])
+        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+        """
+    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
+        config = yaml.load(f)
+        for heading in config:
+            if heading
+        config["shell"] = "systemctl disable ceph-mon@" + target_node[0]
+        
+
+    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
+        yaml.dump(config, f)
+        """
 
 def node_fault():
     pass
