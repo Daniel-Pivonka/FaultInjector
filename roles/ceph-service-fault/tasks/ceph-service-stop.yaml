@@ -1,0 +1,1 @@
+- {name: Stopping ceph service, register: result, shell: systemctl disable ceph-mon@192.168.24.6}
