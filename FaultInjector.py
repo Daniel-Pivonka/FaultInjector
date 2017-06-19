@@ -79,29 +79,40 @@ def main():
             active_modes.append('hardware')
             log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
 
+
     #compatibiliy checks out
+    timelimit = args.timelimit
 
-    #runtime info
-    if debug:
-        print 'fault injector will run for {} minutes' .format(args.timelimit)
-    log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minutes\n'.format(datetime.datetime.now(), args.timelimit))    
+    while True:
 
-    run_injector(args.timelimit, active_modes, log)
+        #runtime info
+        if debug:
+            print 'fault injector will run for {} minute(s)' .format(timelimit)
+        log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minute(s)\n'.format(datetime.datetime.now(), timelimit))    
 
-    #timelimit reached ask if user wants more time 
+        run_injector(timelimit, active_modes, log)
+
+        #timelimit reached ask if user wants more time 
+        while True:
+
+            more_time = raw_input("Do you want to keep running the injector? if yes enter how many minutes else enter \"no\"\n")
+
+            if more_time == "no":
+                break
+            elif is_int(more_time):
+                timelimit = int(more_time)
+                break
+            else:
+                print "Please enter a valid responce"
+
+        if more_time == "no":
+                break
 
 
-
-
-
-    
-    #run ansible playbook
-    #subprocess.call("ansible-playbook playbook.yml", shell=True)
-    #log.write('{:%Y-%m-%d %H:%M:%S} ansible\n'.format(datetime.datetime.now()))
-
+    #end
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
-    #end
+    
 
 
 def check_config_mode_compatiblity(active_modes):
@@ -131,21 +142,22 @@ def run_injector(timelimit, active_modes, log):
     
 
 def service_fault(node_type, service, downtime):
+    pass
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
-    target_node = random.choice(nodes[node_type])
-    while target_node[1] == False:
-        target_node = random.choice(nodes[node_type])
-        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
-    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
-        config = yaml.load(f)
-        print config
-        config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
-    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
-        yaml.dump(config, f)
+    # target_node = random.choice(nodes[node_type])
+    # while target_node[1] == False:
+    #     target_node = random.choice(nodes[node_type])
+    #     time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
+    #     config = yaml.load(f)
+    #     print config
+    #     config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
+    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
+    #     yaml.dump(config, f)
 
-    subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+    # subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
 
 
 def node_fault():
@@ -168,6 +180,13 @@ def parse_config(config):
         print "Nodes from config:"
         for node in nodes:
             print node, nodes[node]
+
+def is_int(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
 
     
 if __name__ == "__main__":
