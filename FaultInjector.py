@@ -98,16 +98,16 @@ def main():
             response = raw_input('Do you want to keep running the injector? if yes enter how many minutes else enter "no"\n')
             if is_int(response):
                 timelimit = int(response)
-                #new timelimit will be used in loop
+                # new time limit will be used in loop
                 break
             else:
-                response = response.lower()
+                response = response.lower().strip(" ")
                 if response == "no":
                     break 
                 else:
                     print "Please enter a valid response"
 
-        #response was no break out of everything 
+        # response was no break out of everything 
         if response == "no":
             break
 
@@ -168,7 +168,7 @@ def hardware_fault():
     pass
 
 def parse_config(config):
-    """ Iterates through the config.yaml file, placing
+    """ Iterates through the config.yaml object, placing
         each node and corresponding ip in the appropiate
         place in the node dictionary.
     """
