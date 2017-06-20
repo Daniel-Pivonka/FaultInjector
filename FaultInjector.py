@@ -6,9 +6,14 @@ import subprocess
 import argparse
 import random
 import time
+import signal
+import sys
 
-
+#extra messages printed if true
 debug = True
+
+#global var for log file
+log = open('FaultInjector.log', 'a')
 
 # Node dictionary holds the node type as a key and
 # the node ip and if it's faultable as its value
@@ -20,6 +25,9 @@ nodes = {
 }
 
 def main():
+    #signal handler to restore everything to normal
+    signal.signal(signal.SIGINT, signal_handler)
+
     #open log file
     log = open('FaultInjector.log', 'a')
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
@@ -29,7 +37,7 @@ def main():
     parser.add_argument('-p','--process', help='run process faults', required=False, action='store_true')
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
-    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (Minutes)', required=False, type=int, default=30, metavar='\b')
+    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins) default 30 mins', required=False, type=int, default=30, metavar='\b')
     args = parser.parse_args()
 
     #list to hold active modes to be randomly chosen
@@ -79,8 +87,9 @@ def main():
             active_modes.append('hardware')
             log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
 
+    # compatibiliy is safe we got out of the loop above
 
-    # compatibiliy checks out
+    #set timelimit from cmd arg/default value
     timelimit = args.timelimit
 
     while True:
@@ -90,7 +99,7 @@ def main():
             print 'fault injector will run for {} minute(s)' .format(timelimit)
         log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minute(s)\n'.format(datetime.datetime.now(), timelimit))    
 
-        run_injector(timelimit, active_modes, log)
+        run_injector(timelimit, active_modes)
 
         # time limit reached ask if user wants more time 
         while True:
@@ -103,8 +112,10 @@ def main():
             else:
                 response = response.lower().strip(" ")
                 if response == "no":
+                    # leave prompt loop
                     break 
                 else:
+                    # not a number or some form of "no"
                     print "Please enter a valid response"
 
         # response was no break out of everything 
@@ -117,14 +128,16 @@ def main():
 
 
 def check_config_mode_compatiblity(active_modes):
-    # just check for activated modes for now
+
+    #TODO: actually check compatibility
+
     if len(active_modes) > 0:
         return True
     else:
         return False
 
 
-def run_injector(timelimit, active_modes, log):
+def run_injector(timelimit, active_modes):
     # runtime loop
     timeout = time.time() + 60*timelimit
     while time.time() < timeout:
@@ -189,6 +202,18 @@ def is_int(s):
     except ValueError:
         return False
 
+
+def signal_handler(signal, frame):
+        print('\nYou exited! Your enviorment will be restored to its original state')
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
+
+        #TODO: clean up anything that was broken by our program
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+        log.close()
+
+        sys.exit(0)
     
 if __name__ == "__main__":
     main()
