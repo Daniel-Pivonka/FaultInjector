@@ -176,13 +176,29 @@ def service_fault(node_type, service, downtime):
 
 def node_fault():
 
-    subprocess.call("ansible-playbook system-crash.yml", shell=True)
-    log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
+    with open('system-crash.yml') as f:
+        crash_config = yaml.load(f)
 
+    with open('system-restore.yml') as f:
+        restore_config = yaml.load(f)
+
+
+    print crash_config
+
+    print restore_config
+
+
+
+
+
+    # subprocess.call("ansible-playbook system-crash.yml", shell=debug)
+    # log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
+
+    
     time.sleep(60)
 
-    subprocess.call("ansible-playbook system-restore.yml", shell=True)
-    log.write('{:%Y-%m-%d %H:%M:%S} Node restored\n'.format(datetime.datetime.now()))
+    # subprocess.call("ansible-playbook system-restore.yml", shell=debug)
+    # log.write('{:%Y-%m-%d %H:%M:%S} Node restored\n'.format(datetime.datetime.now()))
 
 def hardware_fault():
     pass
