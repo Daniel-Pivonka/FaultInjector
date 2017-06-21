@@ -29,7 +29,6 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
 
     #open log file
-    log = open('FaultInjector.log', 'a')
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
 
     #create argument parser
