@@ -165,11 +165,11 @@ def service_fault(node_type, service, downtime):
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
     with open('ceph-service-fault.yml') as f:
         config = yaml.load(f)
-        print "config\n", config, "\n"
-        print type(config)
+        #print "config\n", config, "\n"
+        #print type(config)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            print task, "\n"
+            #print task, "\n"
             if task['name'] == 'Disabling auto restart of ceph-osd service':
                 task['shell'] = 'systemctl disable ceph-osd@' + target_node[0]
             elif task['name'] == 'Restoring ceph-osd regular behavior':
