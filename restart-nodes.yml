@@ -2,7 +2,7 @@
   hosts: all
   tasks:
   - name: Restarting server
-    shell: sleep 2 && shutdown -r now
+    shell: sleep 2 && reboot
     async: 1
     poll: 0
     become: yes
