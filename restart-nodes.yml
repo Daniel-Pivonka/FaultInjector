@@ -2,9 +2,6 @@
   hosts: all
   tasks:
   - become: true
-    name: Log into the node
-    shell: ssh -tt heat-admin@{{ansible_default_ipv4.address}}
-  - become: true
     name: Restarting the node to achieve a pre-faulted state
     shell: reboot
     async: 1
