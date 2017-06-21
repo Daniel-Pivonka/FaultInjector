@@ -149,7 +149,7 @@ def run_injector(timelimit, active_modes):
         if mode == 'process':
             service_fault('osd-compute', 'ceph', 5)
         elif mode == 'system':
-            node_fault()
+            node_fault('osd-compute', 1)
         elif mode == 'hardware':
             hardware_fault()     
         
@@ -182,31 +182,44 @@ def service_fault(node_type, service, downtime):
     time.sleep(5)
 
 
-def node_fault():
+def node_fault(node_type, downtime):
 
+    #pick random node
+    target_node = random.choice(nodes[node_type])
+
+    #modify crash playbook
     with open('system-crash.yml') as f:
         crash_config = yaml.load(f)
+        crash_config[0]['hosts'] = target_node[0]
+        for task in config[0]['tasks']:
+            if task['name'] == 'Power off server':
+                task['local_action'] = 'shell . ../stackrc && nova stop ' + target_node[1]
 
+    with open('system-crash.yml', 'w') as f:
+        yaml.dump(crash_config, f, default_flow_style=False)
+
+    #modify restore playbook
     with open('system-restore.yml') as f:
         restore_config = yaml.load(f)
+        restore_config[0]['hosts'] = target_node[0]
+        for task in config[0]['tasks']:
+            if task['name'] == 'Power on server':
+                task['local_action'] = 'shell . ../stackrc && nova start ' + target_node[1]
+
+    with open('system-restore.yml', 'w') as f:
+        yaml.dump(restore_config, f, default_flow_style=False)
 
 
-    print crash_config
+    #crash system
+    subprocess.call("ansible-playbook system-crash.yml", shell=debug)
+    log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
 
-    print restore_config
+    #wait
+    time.sleep(60*downtime)
 
-
-
-
-
-    # subprocess.call("ansible-playbook system-crash.yml", shell=debug)
-    # log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
-
-    
-    time.sleep(60)
-
-    # subprocess.call("ansible-playbook system-restore.yml", shell=debug)
-    # log.write('{:%Y-%m-%d %H:%M:%S} Node restored\n'.format(datetime.datetime.now()))
+    #restore system
+    subprocess.call("ansible-playbook system-restore.yml", shell=debug)
+    log.write('{:%Y-%m-%d %H:%M:%S} Node restored\n'.format(datetime.datetime.now()))
 
 def hardware_fault():
     pass
@@ -219,7 +232,7 @@ def parse_config(config):
     for node_index in range(config['numnodes']):
         current_node = config['node' + str(node_index)]
         node_type = current_node['type']
-        nodes[node_type].append(((current_node['ip']), True))
+        nodes[node_type].append(((current_node['ip']), (current_node['id']), True))
 
     if debug:
         print "Nodes from config:"

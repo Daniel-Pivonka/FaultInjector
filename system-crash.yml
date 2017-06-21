@@ -9,5 +9,5 @@
     ignore_errors: true
   
   - name: Power off server
-    local_action: shell . ../stackrc && openstack baremetal node power off ceph-1
+    local_action: shell . ../stackrc && nova stop
 
