@@ -160,21 +160,26 @@ def service_fault(node_type, service, downtime):
         for 'downtime' seconds.
     """
     target_node = random.choice(nodes[node_type])
-    while target_node[1] == False:
-        target_node = random.choice(nodes[node_type])
-        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+    #while target_node[1] == False:
+     #   target_node = random.choice(nodes[node_type])
+      #  time.sleep(5) # Wait 5 seconds to give nodes time to recover 
     with open('ceph-service-fault.yml') as f:
         config = yaml.load(f)
-        for task in config:
+        print "config\n", config, "\n"
+        print type(config)
+        config[0]['hosts'] = target_node[0]
+        for task in config[0]['tasks']:
+            print task, "\n"
             if task['name'] == 'Disabling auto restart of ceph-osd service':
                 task['shell'] = 'systemctl disable ceph-osd@' + target_node[0]
-            elif task['name' == 'Restoring ceph-osd regular behavior']:
+            elif task['name'] == 'Restoring ceph-osd regular behavior':
                 task['shell'] = 'systemctl enable ceph-osd@' + target_node[0]
-        if debug: print config
+        #if debug: print config
     with open('ceph-service-fault.yml', 'w') as f:
-        yaml.dump(config, f)
+        yaml.dump(config, f, default_flow_style=False)
 
     subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+    time.sleep(5)
 
 
 def node_fault():
@@ -214,7 +219,7 @@ def is_int(s):
 
 
 def signal_handler(signal, frame):
-        print('\nYou exited! Your enviorment will be restored to its original state')
+        print('\nYou exited! Your environment will be restored to its original state')
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
