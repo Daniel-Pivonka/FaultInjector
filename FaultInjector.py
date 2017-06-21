@@ -159,19 +159,22 @@ def service_fault(node_type, service, downtime):
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
-    pass
-    # target_node = random.choice(nodes[node_type])
-    # while target_node[1] == False:
-    #     target_node = random.choice(nodes[node_type])
-    #     time.sleep(5) # Wait 5 seconds to give nodes time to recover 
-    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
-    #     config = yaml.load(f)
-    #     print config
-    #     config[0]["shell"] = "systemctl disable ceph-mon@" + target_node[0]
-    # with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
-    #     yaml.dump(config, f)
+    target_node = random.choice(nodes[node_type])
+    while target_node[1] == False:
+        target_node = random.choice(nodes[node_type])
+        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml') as f:
+        config = yaml.load(f)
+        for task in config:
+            if task['name' == 'Disabling auto restart of ceph-osd service']:
+                task['shell'] = 'systemctl disable ceph-osd@' + target_node[0]
+            elif task['name' == 'Restoring ceph-osd regular behavior']:
+                task['shell'] = 'systemctl enable ceph-osd@' + target_node[0]
+        if debug: print config
+    with open('roles/ceph-service-fault/tasks/ceph-service-stop.yaml', 'w') as f:
+        yaml.dump(config, f)
 
-    # subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+    subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
 
 
 def node_fault():
