@@ -3,7 +3,7 @@
   tasks:
   - become: true
     name: Log into the node
-    shell: ssh heat-admin@{{ansible_default_ipv4.address}}
+    shell: ssh -tt heat-admin@{{ansible_default_ipv4.address}}
   - become: true
     name: Restarting the node to achieve a pre-faulted state
     shell: reboot
