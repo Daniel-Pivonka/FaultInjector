@@ -43,6 +43,7 @@ def main():
 
     #debug info
     if args.debug:
+        global debug
         debug = True
 
 
