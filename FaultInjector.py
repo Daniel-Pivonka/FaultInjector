@@ -46,19 +46,19 @@ def main():
     #check mode args
     if args.process:
         if debug:
-            print 'process faults enabled'
+            print 'Process faults enabled'
         active_modes.append('process')
-        log.write('{:%Y-%m-%d %H:%M:%S} process faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} Process faults enabled\n'.format(datetime.datetime.now()))
     if args.system:
         if debug:
-            print 'system faults enabled'
+            print 'System faults enabled'
         active_modes.append('system')
-        log.write('{:%Y-%m-%d %H:%M:%S} system faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} System faults enabled\n'.format(datetime.datetime.now()))
     if args.hardware:
         if debug:
-            print 'hardware faults enabled'
+            print 'Hardware faults enabled'
         active_modes.append('hardware')
-        log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} Hardware faults enabled\n'.format(datetime.datetime.now()))
 
     #open config and parse
     with open('config.yaml', 'r') as f:
@@ -73,17 +73,17 @@ def main():
 
         if new_flags.find('-p') != -1:
             if debug:
-                print 'process faults enabled'
+                print 'Process faults enabled'
             active_modes.append('process')
             log.write('{:%Y-%m-%d %H:%M:%S} process faults enabled\n'.format(datetime.datetime.now()))
         if new_flags.find('-s') != -1:
             if debug:
-                print 'system faults enabled'
+                print 'System faults enabled'
             active_modes.append('system')
             log.write('{:%Y-%m-%d %H:%M:%S} system faults enabled\n'.format(datetime.datetime.now()))
         if new_flags.find('-hw') != -1:
             if debug:
-                print 'hardware faults enabled'
+                print 'Hardware faults enabled'
             active_modes.append('hardware')
             log.write('{:%Y-%m-%d %H:%M:%S} hardware faults enabled\n'.format(datetime.datetime.now()))
 
@@ -96,15 +96,15 @@ def main():
 
         #runtime info
         if debug:
-            print 'fault injector will run for {} minute(s)' .format(timelimit)
-        log.write('{:%Y-%m-%d %H:%M:%S} fault injector will run for {} minute(s)\n'.format(datetime.datetime.now(), timelimit))    
+            print 'Fault Injector will run for {} minute(s)' .format(timelimit)
+        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector will run for {} minute(s)\n'.format(datetime.datetime.now(), timelimit))    
 
         run_injector(timelimit, active_modes)
 
         # time limit reached ask if user wants more time 
         while True:
 
-            response = raw_input('Do you want to keep running the injector? if yes enter how many minutes else enter "no"\n')
+            response = raw_input('Do you want to keep running the injector? if yes, enter how many minutes else, enter "no"\n')
             if is_int(response):
                 timelimit = int(response)
                 # new time limit will be used in loop
@@ -116,7 +116,7 @@ def main():
                     break 
                 else:
                     # not a number or some form of "no"
-                    print "Please enter a valid response"
+                    print "Please enter a valid response."
 
         # response was no break out of everything 
         if response == "no":
@@ -160,9 +160,9 @@ def service_fault(node_type, service, downtime):
         for 'downtime' seconds.
     """
     target_node = random.choice(nodes[node_type])
-    #while target_node[1] == False:
-     #   target_node = random.choice(nodes[node_type])
-      #  time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+    while target_node[1] == False:
+        target_node = random.choice(nodes[node_type])
+        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
     with open('ceph-service-fault.yml') as f:
         config = yaml.load(f)
         print "config\n", config, "\n"
@@ -219,13 +219,13 @@ def is_int(s):
 
 
 def signal_handler(signal, frame):
-        print('\nYou exited! Your environment will be restored to its original state')
+        print('\nYou exited! Your environment will be restored to its original state.')
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
         #TODO: clean up anything that was broken by our program
 
-        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped at\n'.format(datetime.datetime.now()))
         log.close()
 
         sys.exit(0)
