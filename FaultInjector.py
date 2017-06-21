@@ -259,7 +259,7 @@ def signal_handler(signal, frame):
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
-        #TODO: clean up anything that was broken by our program
+        subprocess.call('ansible-playbook restart-nodes.yml', shell=True)
 
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped at\n'.format(datetime.datetime.now()))
         log.close()

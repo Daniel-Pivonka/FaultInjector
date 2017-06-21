@@ -1,0 +1,11 @@
+- become: true
+  hosts: all
+  tasks:
+  - become: true
+    name: Log into the node
+    shell: ssh heat-admin@var=ansible_all_ipv4_addresses
+  - become: true
+    name: Restarting the node to achieve a pre-faulted state
+    shell: reboot
+    async: 1
+    poll: 0
