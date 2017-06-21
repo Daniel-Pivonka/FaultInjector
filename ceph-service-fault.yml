@@ -6,7 +6,7 @@
     shell: systemctl disable ceph-osd@192.168.24.10
   - become: true
     name: Killing ceph-osd services
-    shell: sudo pkill -f ceph-osd
+    shell: pkill -f ceph-osd
   - name: Waiting set amount of time before restart
     shell: sleep 30
   - become: true
