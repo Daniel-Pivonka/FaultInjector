@@ -1,5 +1,7 @@
-
 - hosts: all
   become: true
-  roles:
-  - ceph-service-fault
+  tasks:
+  - {name: Disabling auto restart of ceph-osd service, become: yes, shell: systemctl disable ceph-osd@192.168.24.6}
+  - {name: Killing ceph-osd services, become: yes, shell: sudo pkill -f ceph-osd}
+  - {name: Waiting set amount of time before restart, sleep: 30}
+  - {name: Restoring ceph-osd regular behavior, become: yes, shell: systemctl enable ceph-osd@192.168.24.6}
