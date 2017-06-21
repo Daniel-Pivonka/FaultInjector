@@ -10,7 +10,7 @@ import signal
 import sys
 
 #extra messages printed if true
-debug = True
+debug = False
 
 #global var for log file
 log = open('FaultInjector.log', 'a')
@@ -38,7 +38,13 @@ def main():
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
     parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins) default 30 mins', required=False, type=int, default=30, metavar='\b')
+    parser.add_argument('-d','--debug', help='print outs injector info', required=False, action='store_true')
     args = parser.parse_args()
+
+    #debug info
+    if args.debug:
+        debug = True
+
 
     #list to hold active modes to be randomly chosen
     active_modes = []
