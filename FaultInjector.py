@@ -191,7 +191,7 @@ def node_fault(node_type, downtime):
     with open('system-crash.yml') as f:
         crash_config = yaml.load(f)
         crash_config[0]['hosts'] = target_node[0]
-        for task in config[0]['tasks']:
+        for task in crash_config[0]['tasks']:
             if task['name'] == 'Power off server':
                 task['local_action'] = 'shell . ../stackrc && nova stop ' + target_node[1]
 
@@ -202,7 +202,7 @@ def node_fault(node_type, downtime):
     with open('system-restore.yml') as f:
         restore_config = yaml.load(f)
         restore_config[0]['hosts'] = target_node[0]
-        for task in config[0]['tasks']:
+        for task in restore_config[0]['tasks']:
             if task['name'] == 'Power on server':
                 task['local_action'] = 'shell . ../stackrc && nova start ' + target_node[1]
 
