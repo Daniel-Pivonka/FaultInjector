@@ -1,0 +1,14 @@
+- become: true
+  hosts: 192.168.24.10
+  tasks:
+  - become: true
+    name: Disabling auto restart of ceph-osd service
+    shell: systemctl disable ceph-osd@192.168.24.10
+  - become: true
+    name: Killing ceph-osd services
+    shell: sudo pkill -f ceph-osd
+  - name: Waiting set amount of time before restart
+    shell: sleep 30
+  - become: true
+    name: Restoring ceph-osd regular behavior
+    shell: systemctl enable ceph-osd@192.168.24.10
