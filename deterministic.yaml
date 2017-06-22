@@ -1,1 +1,12 @@
-lol
+#example faults
+#
+#service ceph-mon
+#service ceph-osd
+#system crash
+
+
+service ceph-mon
+system crash
+service ceph-mon
+system crash
+system crash

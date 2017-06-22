@@ -46,15 +46,14 @@ def main():
     log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
     parse_config(config)
 
-
     #check deterministic mode
     if args.deterministic:
+        log.write('{:%Y-%m-%d %H:%M:%S} Deterministic mode started\n'.format(datetime.datetime.now()))
         deterministic_mode()
     else:
+        log.write('{:%Y-%m-%d %H:%M:%S} Random mode started\n'.format(datetime.datetime.now()))
         random_mode(args)
 
-
-    
 
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
@@ -80,7 +79,6 @@ def random_mode(args):
             print 'Hardware faults enabled'
         active_modes.append('hardware')
         log.write('{:%Y-%m-%d %H:%M:%S} Hardware faults enabled\n'.format(datetime.datetime.now()))
-
 
     #test compatiblity
     while not check_config_mode_compatiblity(active_modes):
@@ -109,7 +107,6 @@ def random_mode(args):
     timelimit = args.timelimit
 
     while True:
-
         #runtime info
         if debug:
             print 'Fault Injector will run for {} minute(s)' .format(timelimit)
@@ -141,6 +138,27 @@ def random_mode(args):
 
 def deterministic_mode():
     print "LOL"
+
+
+    with open("deterministic.yaml") as f:
+        for line in f:
+            if line.startswith('#'):
+                print "commented line"
+            elif line == "\n":
+                print "blank line"
+            else:
+                words = line.split(" ")
+                if words[0] == "service":
+                    pass
+                elif words[0] == "system":
+                    pass
+                elif words[0] == "hardware":
+                    pass
+                else:
+                    print "invalid input"
+
+
+
 
 
 def check_config_mode_compatiblity(active_modes):
