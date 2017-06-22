@@ -155,7 +155,7 @@ def check_config_mode_compatiblity(active_modes):
 
 def run_injector(timelimit, active_modes):
     # runtime loop
-    timeout = time.time() + 60*timelimit
+    timeout = time.time() + 60 * timelimit
     while time.time() < timeout:
         
         # pick mode
@@ -179,23 +179,20 @@ def service_fault(node_type, service, downtime):
     while target_node[1] == False:
         target_node = random.choice(nodes[node_type])
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+
     with open('ceph-service-fault.yml') as f:
         config = yaml.load(f)
-        #print "config\n", config, "\n"
-        #print type(config)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            #print task, "\n"
             if task['name'] == 'Disabling auto restart of ceph-osd service':
                 task['shell'] = 'systemctl disable ceph-osd@' + target_node[0]
             elif task['name'] == 'Restoring ceph-osd regular behavior':
                 task['shell'] = 'systemctl enable ceph-osd@' + target_node[0]
-        #if debug: print config
+
     with open('ceph-service-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
     subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
-    time.sleep(5)
 
 
 def node_fault(node_type, downtime):
