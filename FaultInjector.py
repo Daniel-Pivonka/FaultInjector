@@ -37,9 +37,30 @@ def main():
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
     parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins) default 30 mins', required=False, type=int, default=30, metavar='\b')
+    parser.add_argument('-d','--deterministic', help='injector will follow list of tasks in deterministic.yaml', required=False, action='store_true')
     args = parser.parse_args()
 
+    #open config and parse
+    with open('config.yaml', 'r') as f:
+        config = yaml.load(f)
+    log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
+    parse_config(config)
 
+
+    #check deterministic mode
+    if args.deterministic:
+        deterministic_mode()
+    else:
+        random_mode(args)
+
+
+    
+
+    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+    log.close()
+    
+
+def random_mode(args):
     #list to hold active modes to be randomly chosen
     active_modes = []
 
@@ -60,11 +81,6 @@ def main():
         active_modes.append('hardware')
         log.write('{:%Y-%m-%d %H:%M:%S} Hardware faults enabled\n'.format(datetime.datetime.now()))
 
-    #open config and parse
-    with open('config.yaml', 'r') as f:
-        config = yaml.load(f)
-    log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
-    parse_config(config)
 
     #test compatiblity
     while not check_config_mode_compatiblity(active_modes):
@@ -122,9 +138,9 @@ def main():
         if response == "no":
             break
 
-    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
-    log.close()
-    
+
+def deterministic_mode():
+    print "LOL"
 
 
 def check_config_mode_compatiblity(active_modes):
