@@ -11,11 +11,14 @@ import sys
 import time
 import yaml
 
-#extra messages printed if true
+# extra messages printed if true
 debug = False
 
-#global var for log file
+# global var for log file
 log = open('FaultInjector.log', 'a')
+
+# writes a file that can feed into a deterministic run
+deterministic_log = open(str(datetime.datetime.now()) + '-run.txt', 'w')
 
 # Node dictionary holds the node type as a key and
 # the node ip and if it's faultable as its value
@@ -27,13 +30,13 @@ nodes = {
 }
 
 def main():
-    #signal handler to restore everything to normal
+    # signal handler to restore everything to normal
     signal.signal(signal.SIGINT, signal_handler)
 
-    #open log file
+    # open log file
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
 
-    #create argument parser
+    # create argument parser
     parser = argparse.ArgumentParser(description='Fault Injector')
     parser.add_argument('-p','--process', help='run process faults', required=False, action='store_true')
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
@@ -42,13 +45,13 @@ def main():
     parser.add_argument('-d','--deterministic', help='injector will follow list of tasks in deterministic.yaml', required=False, action='store_true')
     args = parser.parse_args()
 
-    #open config and parse
+    # open config and parse
     with open('config.yaml', 'r') as f:
         config = yaml.load(f)
     log.write('{:%Y-%m-%d %H:%M:%S} Config file opened\n'.format(datetime.datetime.now()))
     parse_config(config)
 
-    #check deterministic mode
+    # check deterministic mode
     if args.deterministic:
         log.write('{:%Y-%m-%d %H:%M:%S} Deterministic mode started\n'.format(datetime.datetime.now()))
         deterministic_mode()
@@ -62,10 +65,10 @@ def main():
     
 
 def random_mode(args):
-    #list to hold active modes to be randomly chosen
+    # list to hold active modes to be randomly chosen
     active_modes = []
 
-    #check mode args
+    # check mode args
     if args.process:
         if debug:
             print 'Process faults enabled'
@@ -240,6 +243,7 @@ def service_fault(node_type, service, downtime):
         yaml.dump(config, f, default_flow_style=False)
 
     if check_health():    
+        deterministic_log.write('service ceph-' + service + '\n')
         subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
     else:
         print "Cluster is not healthy, waiting 30 seconds before trying another node."
@@ -275,6 +279,7 @@ def node_fault(node_type, downtime):
 
 
     #crash system
+    deterministic_log.write('system crash\n')
     subprocess.call("ansible-playbook system-crash.yml", shell=True)
     log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
 
