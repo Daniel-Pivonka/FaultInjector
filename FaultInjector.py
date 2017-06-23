@@ -11,7 +11,7 @@ import time
 import yaml
 
 #extra messages printed if true
-debug = False
+debug = True
 
 #global var for log file
 log = open('FaultInjector.log', 'a')
