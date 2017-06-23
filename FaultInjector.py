@@ -207,6 +207,8 @@ def service_fault(node_type, service, downtime):
                 task['shell'] = 'systemctl disable ceph-' + service + '@' + target_node[0]
             elif task['name'] == 'Restoring ceph-' + service + ' regular behavior':
                 task['shell'] = 'systemctl enable ceph-' + service + '@' + target_node[0]
+            elif task['name'] == 'Waiting set amount of time before restart':
+                task['shell'] = 'sleep ' + str(downtime)
 
     with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
