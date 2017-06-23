@@ -344,7 +344,8 @@ def check_health():
     else:
         if debug:
             print response + "\n"
-            print re.search("HEALTH_OK", response, flags=0), "\n"
+            print re.search("HEALTH_OK", response, flags=0)
+            print "\n"
         return re.search("HEALTH_OK", response, flags=0)
 
     
