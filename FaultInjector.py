@@ -327,9 +327,9 @@ def check_health():
         and checks the status of the ceph cluster returning
         True if it's healthy
     """
-    target_node = random.choice(nodes[controller])
+    target_node = random.choice(nodes['controller'])
     while target_node[1] == False:
-        target_node = random.choice(nodes[controller])
+        target_node = random.choice(nodes['controller'])
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
 
     host = 'heat-admin@' + target_node['ip']
