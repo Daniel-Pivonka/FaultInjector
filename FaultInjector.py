@@ -137,8 +137,6 @@ def random_mode(args):
 
 
 def deterministic_mode():
-    print "LOL"
-
 
     with open("deterministic.yaml") as f:
         for line in f:
@@ -149,16 +147,19 @@ def deterministic_mode():
             else:
                 words = line.split(" ")
                 if words[0] == "service":
-                    pass
+                    if words[1] == "ceph-osd":
+                        service_fault('osd-compute', 'ceph', 5)
+                    else:
+                        print words[1] + " not setup"
                 elif words[0] == "system":
-                    pass
+                    if words[1] == "crash":
+                        node_fault('osd-compute', 1)
+                    else:
+                        print words[1] + " not setup"
                 elif words[0] == "hardware":
-                    pass
+                    print words[1] + " not setup"
                 else:
                     print "invalid input"
-
-
-
 
 
 def check_config_mode_compatiblity(active_modes):

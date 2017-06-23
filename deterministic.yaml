@@ -5,8 +5,8 @@
 #system crash
 
 
-service ceph-mon
+service ceph-osd
 system crash
-service ceph-mon
+service ceph-osd
 system crash
 system crash
