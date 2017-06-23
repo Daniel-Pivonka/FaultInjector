@@ -138,27 +138,46 @@ def random_mode(args):
 
 def deterministic_mode():
 
+    #open file
     with open("deterministic.yaml") as f:
+        
+        #read line by line
         for line in f:
+
+            #filter out commented and blank lines
             if line.startswith('#'):
                 print "commented line"
             elif line == "\n":
                 print "blank line"
             else:
+
+                #break up words
                 words = line.split(" ")
                 if words[0] == "service":
+
+                    #services
                     if words[1].strip("\n") == "ceph-osd":
-                        service_fault('osd-compute', 'ceph', 5)
+                        service_fault('osd-compute', 'osd', 5)
+                    elif words[1].strip("\n") == "ceph-mon":
+                        service_fault('controller', 'mon', 5)
                     else:
                         print words[1].strip("\n") + " not setup"
+
                 elif words[0] == "system":
+
+                    #system
                     if words[1].strip("\n") == "crash":
                         node_fault('osd-compute', 1)
                     else:
                         print words[1].strip("\n") + " not setup"
+
                 elif words[0] == "hardware":
+
+                    #hardware
                     print words[1].strip("\n") + " not setup"
+
                 else:
+
                     print "invalid input"
 
 
