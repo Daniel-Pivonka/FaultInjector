@@ -214,10 +214,15 @@ def service_fault(node_type, service, downtime):
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
+    
     target_node = random.choice(nodes[node_type])
-    while target_node[1] == False:
+    host = 'heat-admin@' + target_node[0]
+    response = os.system("ping -c 1 " + host)
+    while responce == 0:
         target_node = random.choice(nodes[node_type])
-        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+        host = 'heat-admin@' + target_node[0]
+        time.sleep(10) # Wait 10 seconds to give nodes time to recover 
+        response = os.system("ping -c 1 " + host)
 
     with open('ceph-' + service + '-fault.yml') as f:
         config = yaml.load(f)
@@ -293,7 +298,7 @@ def parse_config(config):
     for node_index in range(config['numnodes']):
         current_node = config['node' + str(node_index)]
         node_type = current_node['type']
-        nodes[node_type].append(((current_node['ip']), (current_node['id']), True))
+        nodes[node_type].append(((current_node['ip']), (current_node['id'])))
         hosts.write((current_node['ip'])+"\n")
 
     hosts.close()
@@ -330,18 +335,22 @@ def check_health():
         True if it's healthy
     """
     target_node = random.choice(nodes['controller'])
-    while target_node[1] == False:
-        target_node = random.choice(nodes['controller'])
-        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
-
     host = 'heat-admin@' + target_node[0]
+    response = os.system("ping -c 1 " + host)
+    while responce == 0:
+        target_node = random.choice(nodes['controller'])
+        host = 'heat-admin@' + target_node[0]
+        time.sleep(10) # Wait 10 seconds to give nodes time to recover 
+        response = os.system("ping -c 1 " + host)
+
     command = "sudo ceph -s | grep health"
 
     ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     response = ssh.stdout.readlines()
     if response == []:
         error = ssh.stderr.readlines()
-        print error 
+        print error
+        return False 
     else:
         response = str(response)
         if debug:
