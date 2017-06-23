@@ -344,8 +344,8 @@ def check_health():
     else:
         if debug:
             print response + "\n"
-            print re.search("HEALTH_OK", response), "\n"
-        return re.search("HEALTH_OK", response)
+            print re.search("HEALTH_OK", response, flags=0), "\n"
+        return re.search("HEALTH_OK", response, flags=0)
 
     
 if __name__ == "__main__":
