@@ -181,7 +181,7 @@ def run_injector(timelimit, active_modes):
         log.write('{:%Y-%m-%d %H:%M:%S} {} Mode Chosen\n'.format(datetime.datetime.now(), mode))
 
         if mode == 'process':
-            service_fault('osd-compute', 'ceph', 5)
+            service_fault('osd-compute', 'osd', 5)
         elif mode == 'system':
             node_fault('osd-compute', 1)
         elif mode == 'hardware':
@@ -198,19 +198,19 @@ def service_fault(node_type, service, downtime):
         target_node = random.choice(nodes[node_type])
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
 
-    with open('ceph-service-fault.yml') as f:
+    with open('ceph-' + service + '-fault.yml') as f:
         config = yaml.load(f)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            if task['name'] == 'Disabling auto restart of ceph-osd service':
-                task['shell'] = 'systemctl disable ceph-osd@' + target_node[0]
-            elif task['name'] == 'Restoring ceph-osd regular behavior':
-                task['shell'] = 'systemctl enable ceph-osd@' + target_node[0]
+            if task['name'] == 'Disabling auto restart of ceph-' + service + 'service':
+                task['shell'] = 'systemctl disable ceph-' + service + '@' + target_node[0]
+            elif task['name'] == 'Restoring ceph-' + service + ' regular behavior':
+                task['shell'] = 'systemctl enable ceph-' + service + '@' + target_node[0]
 
-    with open('ceph-service-fault.yml', 'w') as f:
+    with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
-    subprocess.call("ansible-playbook ceph-service-fault.yml", shell=True)
+    subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
 
 
 def node_fault(node_type, downtime):
