@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import os
 import random
 import re
 import subprocess
@@ -214,7 +215,7 @@ def service_fault(node_type, service, downtime):
     """ Kills the service specified on a random node of type 'node_type' 
         for 'downtime' seconds.
     """
-    
+
     target_node = random.choice(nodes[node_type])
     host = 'heat-admin@' + target_node[0]
     response = os.system("ping -c 1 " + host)
