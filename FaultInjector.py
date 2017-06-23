@@ -282,10 +282,17 @@ def parse_config(config):
         each node and corresponding ip in the appropiate
         place in the node dictionary.
     """
+
+    hosts = open('hosts', 'w')
+
     for node_index in range(config['numnodes']):
         current_node = config['node' + str(node_index)]
         node_type = current_node['type']
         nodes[node_type].append(((current_node['ip']), (current_node['id']), True))
+        hosts.write((current_node['ip'])+"\n")
+
+    hosts.close()
+
 
     if debug:
         print "Nodes from config:"
