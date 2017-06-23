@@ -62,6 +62,8 @@ def main():
 
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
+
+    deterministic_log.close()
     
 
 def random_mode(args):
