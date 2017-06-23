@@ -232,7 +232,10 @@ def service_fault(node_type, service, downtime):
     with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
-    subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
+    if check_health():    
+        subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
+    else:
+        print "Health is bad"
 
 
 def node_fault(node_type, downtime):
@@ -339,6 +342,7 @@ def check_health():
         print >>sys.stderr, "ERROR: %s" % error
     else:
         print result
+    return False
 
     
 if __name__ == "__main__":
