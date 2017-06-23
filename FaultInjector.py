@@ -219,7 +219,7 @@ def service_fault(node_type, service, downtime):
     target_node = random.choice(nodes[node_type])
     host = 'heat-admin@' + target_node[0]
     response = os.system("ping -c 1 " + host)
-    while responce == 0:
+    while response == 0:
         target_node = random.choice(nodes[node_type])
         host = 'heat-admin@' + target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
@@ -338,7 +338,7 @@ def check_health():
     target_node = random.choice(nodes['controller'])
     host = 'heat-admin@' + target_node[0]
     response = os.system("ping -c 1 " + host)
-    while responce == 0:
+    while response == 0:
         target_node = random.choice(nodes['controller'])
         host = 'heat-admin@' + target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
