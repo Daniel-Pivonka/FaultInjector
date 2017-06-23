@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
-import datetime
-import yaml
-import subprocess
 import argparse
+import datetime
 import random
-import time
+import re
+import subprocess
 import signal
 import sys
+import time
+import yaml
 
 #extra messages printed if true
 debug = False
@@ -341,8 +342,10 @@ def check_health():
         error = ssh.stderr.readlines()
         print >>sys.stderr, "ERROR: %s" % error
     else:
-        print response
-    return False
+        if debug:
+            print response + "\n"
+            print re.search("HEALTH_OK", response), "\n"
+        return re.search("HEALTH_OK", response)
 
     
 if __name__ == "__main__":
