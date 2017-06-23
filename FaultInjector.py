@@ -337,11 +337,11 @@ def check_health():
 
     ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     response = ssh.stdout.readlines()
-    if result == []:
+    if response == []:
         error = ssh.stderr.readlines()
         print >>sys.stderr, "ERROR: %s" % error
     else:
-        print result
+        print response
     return False
 
     
