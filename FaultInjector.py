@@ -340,8 +340,9 @@ def check_health():
     response = ssh.stdout.readlines()
     if response == []:
         error = ssh.stderr.readlines()
-        print >>sys.stderr, "ERROR: %s" % error
+        print error 
     else:
+        response = str(response)
         if debug:
             print response + "\n"
             print re.search("HEALTH_OK", response, flags=0)
