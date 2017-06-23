@@ -333,7 +333,7 @@ def check_health():
         time.sleep(5) # Wait 5 seconds to give nodes time to recover 
 
     host = 'heat-admin@' + target_node[0]
-    command = "sudo ceph -s"
+    command = "sudo ceph -s | grep health"
 
     ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     response = ssh.stdout.readlines()
