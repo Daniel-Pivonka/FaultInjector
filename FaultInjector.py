@@ -11,7 +11,7 @@ import time
 import yaml
 
 #extra messages printed if true
-debug = True
+debug = False
 
 #global var for log file
 log = open('FaultInjector.log', 'a')
@@ -236,7 +236,8 @@ def service_fault(node_type, service, downtime):
     if check_health():    
         subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
     else:
-        print "Health is bad"
+        print "Cluster is not healthy, waiting 30 seconds before trying another node."
+        time.sleep(30)
 
 
 def node_fault(node_type, downtime):
