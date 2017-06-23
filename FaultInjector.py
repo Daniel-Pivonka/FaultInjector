@@ -18,7 +18,8 @@ debug = False
 log = open('FaultInjector.log', 'a')
 
 # writes a file that can feed into a deterministic run
-deterministic_log = open(str(datetime.datetime.now()) + '-run.txt', 'w')
+working_dir = os.path.dirname(__file__) + "deterministic-runs/"
+deterministic_log = open(working_dir + str(datetime.datetime.now()) + '-run.txt', 'w')
 
 # Node dictionary holds the node type as a key and
 # the node ip and if it's faultable as its value
