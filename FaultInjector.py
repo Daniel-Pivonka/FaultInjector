@@ -147,17 +147,17 @@ def deterministic_mode():
             else:
                 words = line.split(" ")
                 if words[0] == "service":
-                    if words[1] == "ceph-osd":
+                    if words[1].strip("\n") == "ceph-osd":
                         service_fault('osd-compute', 'ceph', 5)
                     else:
-                        print words[1] + " not setup"
+                        print words[1].strip("\n") + " not setup"
                 elif words[0] == "system":
-                    if words[1] == "crash":
+                    if words[1].strip("\n") == "crash":
                         node_fault('osd-compute', 1)
                     else:
-                        print words[1] + " not setup"
+                        print words[1].strip("\n") + " not setup"
                 elif words[0] == "hardware":
-                    print words[1] + " not setup"
+                    print words[1].strip("\n") + " not setup"
                 else:
                     print "invalid input"
 
