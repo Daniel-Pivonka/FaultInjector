@@ -148,7 +148,9 @@ def deterministic_mode():
                 words = line.split(" ")
                 if words[0] == "service":
                     if words[1].strip("\n") == "ceph-osd":
-                        service_fault('osd-compute', 'ceph', 5)
+                        service_fault('osd-compute', 'osd', 5)
+                    elif words[1].strip("\n") == "ceph-mon":
+                        service_fault('controller', 'mon', 5)
                     else:
                         print words[1].strip("\n") + " not setup"
                 elif words[0] == "system":
