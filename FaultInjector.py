@@ -318,6 +318,28 @@ def signal_handler(signal, frame):
         log.close()
 
         sys.exit(0)
+
+def check_health():
+    """ Looks at a random functioning controller node
+        and checks the status of the ceph cluster returning
+        True if it's healthy
+    """
+    target_node = random.choice(nodes[controller])
+    while target_node[1] == False:
+        target_node = random.choice(nodes[controller])
+        time.sleep(5) # Wait 5 seconds to give nodes time to recover 
+
+    host = 'heat-admin@' + target_node['ip']
+    command = "sudo ceph -s"
+
+    ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    response = ssh.stdout.readlines()
+    if result == []:
+        error = ssh.stderr.readlines()
+        print >>sys.stderr, "ERROR: %s" % error
+    else:
+        print result
+
     
 if __name__ == "__main__":
     main()
