@@ -13,7 +13,7 @@ import time
 import yaml
 
 # extra messages printed if true
-debug = True
+debug = False
 
 # global var for log file
 log = open('FaultInjector.log', 'a')
@@ -259,6 +259,7 @@ def service_fault(node_type, service, downtime):
         yaml.dump(config, f, default_flow_style=False)
 
     if check_health():    
+        print "Cluster is healthy, executing fault."
         deterministic_log.write('service ceph-' + service + '\n')
         subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
     else:
