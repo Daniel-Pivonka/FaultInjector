@@ -19,6 +19,9 @@ log = open('FaultInjector.log', 'a')
 
 # writes a file that can feed into a deterministic run
 dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+# create directory if it doesn't exist
+if not os.path.exists(dir_path):
+    os.makedirs(dir_path)
 deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
 
 # Node dictionary holds the node type as a key and
@@ -224,12 +227,16 @@ def service_fault(node_type, service, downtime):
 
     target_node = random.choice(nodes[node_type])
     host = target_node[0]
-    response = os.system("ping -c 1 " + host)
+    response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
     while response != 0:
         target_node = random.choice(nodes[node_type])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = os.system("ping -c 1 " + host)
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
 
     with open('ceph-' + service + '-fault.yml') as f:
         config = yaml.load(f)
@@ -345,12 +352,16 @@ def check_health():
     """
     target_node = random.choice(nodes['controller'])
     host = target_node[0]
-    response = os.system("ping -c 1 " + host)
+    response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
     while response != 0:
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = os.system("ping -c 1 " + host)
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
 
     command = "sudo ceph -s | grep health"
 
