@@ -230,16 +230,13 @@ def service_fault(node_type, service, downtime):
 
     target_node = random.choice(nodes[node_type])
     host = target_node[0]
-    print "Pinging:", host
     response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
-    print "response:", response
     while response != 0:
         target_node = random.choice(nodes[node_type])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        print "Pinging:", host
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
@@ -248,11 +245,7 @@ def service_fault(node_type, service, downtime):
         config = yaml.load(f)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            if task['name'] == 'Disabling auto restart of ceph-' + service + 'service':
-                task['shell'] = 'systemctl disable ceph-' + service + '@' + target_node[0]
-            elif task['name'] == 'Restoring ceph-' + service + ' regular behavior':
-                task['shell'] = 'systemctl enable ceph-' + service + '@' + target_node[0]
-            elif task['name'] == 'Waiting set amount of time before restart':
+            if task['name'] == 'Giving time for cluster to recover':
                 task['shell'] = 'sleep ' + str(downtime)
 
     with open('ceph-' + service + '-fault.yml', 'w') as f:
@@ -359,22 +352,18 @@ def check_health():
     """
     target_node = random.choice(nodes['controller'])
     host = target_node[0]
-    print "Pinging:", host
     response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
-    print "response:", response
     while response != 0:
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        print "Pinging:", host
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
 
     command = "sudo ceph -s | grep health"
-    print "Check health:"
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, username='heat-admin')
