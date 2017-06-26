@@ -370,7 +370,7 @@ def check_health():
                                stderr=open(os.devnull, 'w'))
 
     command = "sudo ceph -s | grep health"
-
+    print "Check health:"
     ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     response = ssh.stdout.readlines()
     if response == []:
