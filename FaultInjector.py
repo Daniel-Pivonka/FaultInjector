@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import os
+import paramiko
 import random
 import re
 import subprocess
@@ -19,6 +20,9 @@ log = open('FaultInjector.log', 'a')
 
 # writes a file that can feed into a deterministic run
 dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+# create directory if it doesn't exist
+if not os.path.exists(dir_path):
+    os.makedirs(dir_path)
 deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
 
 # Node dictionary holds the node type as a key and
@@ -226,28 +230,29 @@ def service_fault(node_type, service, downtime):
 
     target_node = random.choice(nodes[node_type])
     host = target_node[0]
-    response = os.system("ping -c 1 " + host)
+    response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
     while response != 0:
         target_node = random.choice(nodes[node_type])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = os.system("ping -c 1 " + host)
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
 
     with open('ceph-' + service + '-fault.yml') as f:
         config = yaml.load(f)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            if task['name'] == 'Disabling auto restart of ceph-' + service + 'service':
-                task['shell'] = 'systemctl disable ceph-' + service + '@' + target_node[0]
-            elif task['name'] == 'Restoring ceph-' + service + ' regular behavior':
-                task['shell'] = 'systemctl enable ceph-' + service + '@' + target_node[0]
-            elif task['name'] == 'Waiting set amount of time before restart':
+            if task['name'] == 'Giving time for cluster to recover':
                 task['shell'] = 'sleep ' + str(downtime)
 
     with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
     if check_health():    
+        print "Cluster is healthy, executing fault."
         deterministic_log.write('service ceph-' + service + '\n')
         subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
     else:
@@ -348,28 +353,28 @@ def check_health():
     """
     target_node = random.choice(nodes['controller'])
     host = target_node[0]
-    response = os.system("ping -c 1 " + host)
+    response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
     while response != 0:
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = os.system("ping -c 1 " + host)
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
 
     command = "sudo ceph -s | grep health"
-
-    ssh = subprocess.Popen(["ssh", "%s" % host, command], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    response = ssh.stdout.readlines()
-    if response == []:
-        error = ssh.stderr.readlines()
-        print error
-        return False 
-    else:
-        response = str(response)
-        if debug:
-            print response + "\n"
-            print re.search("HEALTH_OK", response, flags=0)
-            print "\n"
-        return re.search("HEALTH_OK", response, flags=0)
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(host, username='heat-admin')
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+    response = str(ssh_stdout.readlines())
+    if debug:
+        print response + "\n"
+        print re.search("HEALTH_OK", response, flags=0)
+        print "\n"
+    return re.search("HEALTH_OK", response, flags=0)
 
     
 if __name__ == "__main__":
