@@ -22,7 +22,7 @@ dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
 deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
 
 # Node dictionary holds the node type as a key and
-# the node ip and if it's faultable as its value
+# the node ip and id as its value
 nodes = {
     
     'controller': [],
@@ -88,9 +88,9 @@ def random_mode(args):
         active_modes.append('hardware')
         log.write('{:%Y-%m-%d %H:%M:%S} Hardware faults enabled\n'.format(datetime.datetime.now()))
 
-    #test compatiblity
+    # test compatiblity
     while not check_config_mode_compatiblity(active_modes):
-        #ask for new set of modes
+        # ask for new set of modes
         new_flags = raw_input("You must enable at least one mode (-p, -s, -hw)\n")
 
         if new_flags.find('-p') != -1:
@@ -111,11 +111,11 @@ def random_mode(args):
 
     # compatibiliy is safe we got out of the loop above
 
-    #set timelimit from cmd arg/default value
+    # set timelimit from cmd arg/default value
     timelimit = args.timelimit
 
     while True:
-        #runtime info
+        # runtime info
         if debug:
             print 'Fault Injector will run for {} minute(s)' .format(timelimit)
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector will run for {} minute(s)\n'.format(datetime.datetime.now(), timelimit))    
@@ -146,13 +146,13 @@ def random_mode(args):
 
 def deterministic_mode():
 
-    #open file
+    # open file
     with open("deterministic.yaml") as f:
         
-        #read line by line
+        # read line by line
         for line in f:
 
-            #filter out commented and blank lines
+            # filter out commented and blank lines
             if line.startswith('#'):
                 pass
                 #print "commented line"
@@ -161,11 +161,11 @@ def deterministic_mode():
                 #print "blank line"
             else:
 
-                #break up words
+                # break up words
                 words = line.split(" ")
                 if words[0] == "service":
 
-                    #services
+                    # services
                     if words[1].strip("\n") == "ceph-osd":
                         service_fault('osd-compute', 'osd', 5)
                     elif words[1].strip("\n") == "ceph-mon":
@@ -175,7 +175,7 @@ def deterministic_mode():
 
                 elif words[0] == "system":
 
-                    #system
+                    # system
                     if words[1].strip("\n") == "crash":
                         node_fault('osd-compute', 1)
                     else:
@@ -183,7 +183,7 @@ def deterministic_mode():
 
                 elif words[0] == "hardware":
 
-                    #hardware
+                    # hardware
                     print words[1].strip("\n") + " not setup"
 
                 else:
@@ -193,7 +193,7 @@ def deterministic_mode():
 
 def check_config_mode_compatiblity(active_modes):
 
-    #TODO: actually check compatibility
+    # TODO: actually check compatibility
 
     if len(active_modes) > 0:
         return True
@@ -225,11 +225,11 @@ def service_fault(node_type, service, downtime):
     """
 
     target_node = random.choice(nodes[node_type])
-    host = 'heat-admin@' + target_node[0]
+    host = target_node[0]
     response = os.system("ping -c 1 " + host)
-    while response == 0:
+    while response != 0:
         target_node = random.choice(nodes[node_type])
-        host = 'heat-admin@' + target_node[0]
+        host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
         response = os.system("ping -c 1 " + host)
 
@@ -257,10 +257,10 @@ def service_fault(node_type, service, downtime):
 
 def node_fault(node_type, downtime):
 
-    #pick random node
+    # pick random node
     target_node = random.choice(nodes[node_type])
 
-    #modify crash playbook
+    # modify crash playbook
     with open('system-crash.yml') as f:
         crash_config = yaml.load(f)
         crash_config[0]['hosts'] = target_node[0]
@@ -271,7 +271,7 @@ def node_fault(node_type, downtime):
     with open('system-crash.yml', 'w') as f:
         yaml.dump(crash_config, f, default_flow_style=False)
 
-    #modify restore playbook
+    # modify restore playbook
     with open('system-restore.yml') as f:
         restore_config = yaml.load(f)
         restore_config[0]['hosts'] = target_node[0]
@@ -283,15 +283,15 @@ def node_fault(node_type, downtime):
         yaml.dump(restore_config, f, default_flow_style=False)
 
 
-    #crash system
+    # crash system
     deterministic_log.write('system crash\n')
     subprocess.call("ansible-playbook system-crash.yml", shell=True)
     log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
 
-    #wait
+    # wait
     time.sleep(60*downtime)
 
-    #restore system
+    # restore system
     subprocess.call("ansible-playbook system-restore.yml", shell=True)
     log.write('{:%Y-%m-%d %H:%M:%S} Node restored\n'.format(datetime.datetime.now()))
 
@@ -346,11 +346,11 @@ def check_health():
         True if it's healthy
     """
     target_node = random.choice(nodes['controller'])
-    host = 'heat-admin@' + target_node[0]
+    host = target_node[0]
     response = os.system("ping -c 1 " + host)
-    while response == 0:
+    while response != 0:
         target_node = random.choice(nodes['controller'])
-        host = 'heat-admin@' + target_node[0]
+        host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
         response = os.system("ping -c 1 " + host)
 
