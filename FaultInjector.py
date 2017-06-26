@@ -378,7 +378,7 @@ def check_health():
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(host, username='heat-admin')
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-    response = str(ssh_stdout)
+    response = ssh_stdout.readlines()
     if debug:
         print response + "\n"
         print re.search("HEALTH_OK", response, flags=0)
