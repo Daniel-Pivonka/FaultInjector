@@ -224,12 +224,12 @@ def service_fault(node_type, service, downtime):
 
     target_node = random.choice(nodes[node_type])
     host = target_node[0]
-    response = subprocess.check_output("ping -c 1 "+ host, shell=True)
-    while response == False:
+    response = os.system("ping -c 1 " + host)
+    while response != 0:
         target_node = random.choice(nodes[node_type])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = subprocess.check_output("ping -c 1 "+ host, shell=True)
+        response = os.system("ping -c 1 " + host)
 
     with open('ceph-' + service + '-fault.yml') as f:
         config = yaml.load(f)
@@ -345,12 +345,12 @@ def check_health():
     """
     target_node = random.choice(nodes['controller'])
     host = target_node[0]
-    response = subprocess.check_output("ping -c 1 "+ host, shell=True)
-    while response == False:
+    response = os.system("ping -c 1 " + host)
+    while response != 0:
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
         time.sleep(10) # Wait 10 seconds to give nodes time to recover 
-        response = subprocess.check_output("ping -c 1 "+ host, shell=True)
+        response = os.system("ping -c 1 " + host)
 
     command = "sudo ceph -s | grep health"
 
