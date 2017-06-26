@@ -147,7 +147,7 @@ def random_mode(args):
 def deterministic_mode():
 
     # open file
-    with open("deterministic.yaml") as f:
+    with open("deterministic.txt") as f:
         
         # read line by line
         for line in f:
@@ -289,6 +289,7 @@ def node_fault(node_type, downtime):
     log.write('{:%Y-%m-%d %H:%M:%S} Node killed\n'.format(datetime.datetime.now()))
 
     # wait
+    print "waitng"
     time.sleep(60*downtime)
 
     # restore system
