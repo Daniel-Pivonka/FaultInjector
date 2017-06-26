@@ -233,6 +233,7 @@ def service_fault(node_type, service, downtime):
     response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
+    print "response:", response
     while response != 0:
         target_node = random.choice(nodes[node_type])
         host = target_node[0]
@@ -360,6 +361,7 @@ def check_health():
     response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
+    print "response:", response
     while response != 0:
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
