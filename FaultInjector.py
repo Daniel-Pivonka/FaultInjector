@@ -154,9 +154,11 @@ def deterministic_mode():
 
             #filter out commented and blank lines
             if line.startswith('#'):
-                print "commented line"
-            elif line == "\n":
-                print "blank line"
+                pass
+                #print "commented line"
+            elif line.strip(" ") == "\n":
+                pass
+                #print "blank line"
             else:
 
                 #break up words
