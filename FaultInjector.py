@@ -375,7 +375,7 @@ def check_health():
     command = "sudo ceph -s | grep health"
     print "Check health:"
     ssh = paramiko.SSHClient()
-    ssh.connect(host, username=heat-admin)
+    ssh.connect(host, username='heat-admin')
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
     response = str(ssh_stdout)
     if debug:
