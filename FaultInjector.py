@@ -3,6 +3,7 @@
 import argparse
 import datetime
 import os
+import paramiko
 import random
 import re
 import subprocess
@@ -373,19 +374,15 @@ def check_health():
 
     command = "sudo ceph -s | grep health"
     print "Check health:"
-    ssh = subprocess.Popen(["ssh", host, command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    response = ssh.stdout.readlines()
-    if response == []:
-        error = ssh.stderr.readlines()
-        print error
-        return False 
-    else:
-        response = str(response)
-        if debug:
-            print response + "\n"
-            print re.search("HEALTH_OK", response, flags=0)
-            print "\n"
-        return re.search("HEALTH_OK", response, flags=0)
+    ssh = paramiko.SSHClient()
+    ssh.connect(host, username=heat-admin)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+    response = str(ssh_stdout)
+    if debug:
+        print response + "\n"
+        print re.search("HEALTH_OK", response, flags=0)
+        print "\n"
+    return re.search("HEALTH_OK", response, flags=0)
 
     
 if __name__ == "__main__":
