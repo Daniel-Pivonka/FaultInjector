@@ -79,7 +79,7 @@ def main():
     deterministic_log.close()
 
     # Very sloppy way of not writing a deterministic template if in deterministic mode
-    if args.deterministic:
+    if args.deterministic != 'empty':
         os.remove(deterministic_log_filename)
     
 
