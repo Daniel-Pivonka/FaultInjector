@@ -48,7 +48,8 @@ def main():
     parser.add_argument('-s','--system', help='run system faults', required=False, action='store_true')
     parser.add_argument('-hw','--hardware', help='run hardware faults', required=False, action='store_true')
     parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins) default 30 mins', required=False, type=int, default=30, metavar='\b')
-    parser.add_argument('-d','--deterministic', help='injector will follow list of tasks in deterministic.yaml', required=False, action='store_true')
+    parser.add_argument('-d','--deterministic', help='injector will follow list of tasks in deterministic.txt or file specified'
+                        , required=False, metavar='', action='store', nargs='?', default = "empty", dest='deterministic')
     args = parser.parse_args()
 
     # open config and parse
@@ -58,12 +59,18 @@ def main():
     parse_config(config)
 
     # check deterministic mode
-    if args.deterministic:
-        log.write('{:%Y-%m-%d %H:%M:%S} Deterministic mode started\n'.format(datetime.datetime.now()))
-        deterministic_mode()
-    else:
+    if args.deterministic == 'empty':
+        #print "random"
         log.write('{:%Y-%m-%d %H:%M:%S} Random mode started\n'.format(datetime.datetime.now()))
         random_mode(args)
+    elif args.deterministic is None:
+        #print "d mode no file"
+        log.write('{:%Y-%m-%d %H:%M:%S} Deterministic mode started\n'.format(datetime.datetime.now()))
+        deterministic_mode("deterministic.txt")
+    else:
+        #print "d mode w/ file"
+        log.write('{:%Y-%m-%d %H:%M:%S} Deterministic mode started\n'.format(datetime.datetime.now()))
+        deterministic_mode(args.deterministic)
 
 
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
@@ -154,10 +161,10 @@ def random_mode(args):
             break
 
 
-def deterministic_mode():
+def deterministic_mode(filename):
 
     # open file
-    with open("deterministic.txt") as f:
+    with open(filename) as f:
         
         # read line by line
         for command in f:

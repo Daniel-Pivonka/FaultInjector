@@ -1,0 +1,13 @@
+# Example Faults:
+#
+#   service ceph-mon
+#   service ceph-osd
+#   system crash
+#
+# ------------------- 
+  
+service ceph-osd
+system crash
+service ceph-osd
+system crash
+system crash
