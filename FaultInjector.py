@@ -17,6 +17,7 @@ debug = False
 
 # global var for log file
 log = open('FaultInjector.log', 'a')
+global deterministic_log
 
 # Node dictionary holds the node type as a key and
 # the node ip and id as its value
@@ -155,19 +156,17 @@ def deterministic_mode():
     with open("deterministic.txt") as f:
         
         # read line by line
-        for line in f:
+        for command in f:
 
             # filter out commented and blank lines
-            if line.startswith('#'):
+            if command.startswith('#'): # comment line
                 pass
-                #print "commented line"
-            elif line.strip(" ") == "\n":
+            elif command.strip(" ") == "\n": # blank line
                 pass
-                #print "blank line"
             else:
 
                 # break up words
-                words = line.split(" ")
+                words = command.split(" ")
                 if words[0] == "service":
 
                     # services
