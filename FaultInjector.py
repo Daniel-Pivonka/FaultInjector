@@ -18,13 +18,6 @@ debug = False
 # global var for log file
 log = open('FaultInjector.log', 'a')
 
-# writes a file that can feed into a deterministic run
-dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
-# create directory if it doesn't exist
-if not os.path.exists(dir_path):
-    os.makedirs(dir_path)
-deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
-
 # Node dictionary holds the node type as a key and
 # the node ip and id as its value
 nodes = {
@@ -117,6 +110,14 @@ def random_mode(args):
 
     # set timelimit from cmd arg/default value
     timelimit = args.timelimit
+
+    # writes a file that can feed into a deterministic run
+    dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+    # create directory if it doesn't exist
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
+
 
     while True:
         # runtime info
