@@ -269,7 +269,8 @@ def service_fault(node_type, service, downtime):
         config = yaml.load(f)
         config[0]['hosts'] = target_node[0]
         for task in config[0]['tasks']:
-            task['seconds'] = str(downtime)
+            if task['name'] == 'Waiting for the cluster to recover':
+                task['shell'] = 'sleep ' + str(downtime)
 
     with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
