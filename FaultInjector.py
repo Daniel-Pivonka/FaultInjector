@@ -11,6 +11,7 @@ import signal
 import sys
 import time
 import yaml
+import select
 
 # extra messages printed if true
 debug = False
@@ -142,7 +143,19 @@ def random_mode(args):
         # time limit reached ask if user wants more time 
         while True:
 
-            response = raw_input('Do you want to keep running the injector? if yes, enter how many minutes else, enter "no"\n')
+            #usr input time out
+            print 'Do you want to keep running the injector? if yes, enter how many minutes else, enter "no"'
+            print "You have ten seconds to answer!"
+
+            i, o, e = select.select( [sys.stdin], [], [], 10 )
+
+            if (i):
+                response = sys.stdin.readline().strip()
+            else:
+                print "You did not respond in time. exiting!"
+                response = "no"
+
+            #evalutate responce
             if is_int(response):
                 timelimit = int(response)
                 # new time limit will be used in loop
