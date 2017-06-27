@@ -17,13 +17,7 @@ debug = False
 
 # global var for log file
 log = open('FaultInjector.log', 'a')
-
-# writes a file that can feed into a deterministic run
-dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
-# create directory if it doesn't exist
-if not os.path.exists(dir_path):
-    os.makedirs(dir_path)
-deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
+global deterministic_log
 
 # Node dictionary holds the node type as a key and
 # the node ip and id as its value
@@ -125,6 +119,14 @@ def random_mode(args):
     # set timelimit from cmd arg/default value
     timelimit = args.timelimit
 
+    # writes a file that can feed into a deterministic run
+    dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+    # create directory if it doesn't exist
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    deterministic_log = open(dir_path + str(datetime.datetime.now()) + '-run.txt', 'w')
+
+
     while True:
         # runtime info
         if debug:
@@ -161,19 +163,17 @@ def deterministic_mode(filename):
     with open(filename) as f:
         
         # read line by line
-        for line in f:
+        for command in f:
 
             # filter out commented and blank lines
-            if line.startswith('#'):
+            if command.startswith('#'): # comment line
                 pass
-                #print "commented line"
-            elif line.strip(" ") == "\n":
+            elif command.strip(" ") == "\n": # blank line
                 pass
-                #print "blank line"
             else:
 
                 # break up words
-                words = line.split(" ")
+                words = command.split(" ")
                 if words[0] == "service":
 
                     # services
