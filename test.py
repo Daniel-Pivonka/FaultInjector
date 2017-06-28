@@ -5,13 +5,13 @@ import time
 
 class Fault:
 	def stateless(self):
-		print "stateless"
+		raise NotImplementedError
 
 	def stateful(self):
-		print "stateful"
+		raise NotImplementedError
 
 	def deterministic(self):
-		print "deterministic"
+		raise NotImplementedError
 
 
 class Ceph(Fault):
