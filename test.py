@@ -26,11 +26,38 @@ class Ceph(Fault):
     def deterministic(self):
         print "ceph deterministic"
 
+    def check_health(self, controller_node):
+        """ Looks at a random functioning controller node
+        and checks the status of the ceph cluster returning
+        True if it's healthy
+        """
+        target_node = random.choice(nodes['controller'])
+        host = target_node[0]
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
+        while response != 0:
+            target_node = random.choice(nodes['controller'])
+            host = target_node[0]
+            time.sleep(10) # Wait 10 seconds to give nodes time to recover 
+            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                               stdout=open(os.devnull, 'w'),
+                               stderr=open(os.devnull, 'w'))
+
+        command = "sudo ceph -s | grep health"
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(host, username='heat-admin')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        response = str(ssh_stdout.readlines())
+        return re.search("HEALTH_OK", response, flags=0)
+
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
         self.ip = node_ip
         self.id = node_id 
+        self.faulted = False
 
 class Deployment:
     def __init__(self, filename):
