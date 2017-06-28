@@ -1,0 +1,6 @@
+- become: true
+  hosts: 192.168.24.6
+  tasks:
+  - become: true
+    name: Disabling auto restart of ceph-osd service
+    shell: systemctl stop ceph-osd.target

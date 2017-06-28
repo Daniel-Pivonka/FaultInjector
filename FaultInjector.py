@@ -265,20 +265,29 @@ def service_fault(node_type, service, downtime):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
 
-    with open('ceph-' + service + '-fault.yml') as f:
+    with open('ceph-' + service + '-fault-crash.yml') as f:
+        config = yaml.load(f)
+        print config
+        config[0]['hosts'] = target_node[0]
+
+    with open('ceph-' + service + '-fault-crash.yml', 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+    with open('ceph-' + service + '-fault-restore.yml') as f:
         config = yaml.load(f)
         config[0]['hosts'] = target_node[0]
-        for task in config[0]['tasks']:
-            if task['name'] == 'Giving time for cluster to recover':
-                task['shell'] = 'sleep ' + str(downtime)
 
-    with open('ceph-' + service + '-fault.yml', 'w') as f:
+    with open('ceph-' + service + '-fault-restore.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
     if check_health():    
         print "Cluster is healthy, executing fault."
         deterministic_log.write('service ceph-' + service + '\n')
-        subprocess.call('ansible-playbook ceph-' + service + '-fault.yml', shell=True)
+        subprocess.call('ansible-playbook ceph-' + service + '-fault-crash.yml', shell=True)
+        print "Waiting for the cluster to recover"
+        time.sleep(downtime)
+        subprocess.call('ansible-playbook ceph-' + service + '-fault-restore.yml', shell=True)
+
     else:
         print "Cluster is not healthy, waiting 30 seconds before trying another node."
         time.sleep(30)
