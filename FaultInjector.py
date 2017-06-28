@@ -267,14 +267,15 @@ def service_fault(node_type, service, downtime):
 
     with open('ceph-' + service + '-fault-crash.yml') as f:
         config = yaml.load(f)
-        config['hosts'] = target_node[0]
+        print config
+        config[0]['hosts'] = target_node[0]
 
     with open('ceph-' + service + '-fault.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
     with open('ceph-' + service + '-fault-restore.yml') as f:
         config = yaml.load(f)
-        config['hosts'] = target_node[0]
+        config[0]['hosts'] = target_node[0]
 
     with open('ceph-' + service + '-fault-restore.yml', 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
