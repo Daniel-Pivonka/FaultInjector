@@ -4,9 +4,3 @@
   - become: true
     name: Disabling auto restart of ceph-osd service
     shell: systemctl stop ceph-osd.target
-  - become: true 
-    shell: sleep 300
-    name: Waiting for the cluster to recover
-  - become: true
-    name: Restoring ceph-osd regular behavior
-    shell: systemctl start ceph-osd.target
