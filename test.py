@@ -47,6 +47,8 @@ class Deployment:
 log = open('FaultInjector.log', 'a')
 
 def main():
+    # signal handler to restore everything to normal
+    signal.signal(signal.SIGINT, signal_handler)
 
     # start injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
@@ -56,15 +58,18 @@ def main():
     parser.add_argument('-d','--deterministic', help='injector will follow the list of tasks in the file specified', action='store', nargs=1, dest='filepath')
     parser.add_argument('-sf','--stateful', help='injector will run in stateful random mode', required=False, action='store_true')
     parser.add_argument('-sl','--stateless', help='injector will run in stateless random mode', required=False, action='store_true')
+    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
 
     # check mode
     if args.filepath:
+        if args.timelimit:
+            print "Timelimit not applicable in deterministic mode"
         deterministic_start()
     elif args.stateful:
-        stateful_start()
+        stateful_start(args.timelimit)
     elif args.stateless:
-        stateless_start()
+        stateless_start(args.timelimit)
     else:
         print "No Mode Chosen"
 
@@ -74,15 +79,42 @@ def main():
 
 
 def deterministic_start():
-    print "det"
+    log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
+    print "deterministic"
 
-def stateful_start():
-    print "sf"
+def stateful_start(timelimit):
+    if timelimit is None:
+        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
+        print "indefinite timelimit"
+    else:
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
+        print "{} Minute Timelimit".format(timelimit)
 
-def stateless_start():
-    print "sl"
+    log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
+    print "stateful"
 
+def stateless_start(timelimit):
+    if timelimit is None:
+        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
+        print "indefinite timelimit"
+    else:
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
+        print "{} Minute Timelimit".format(timelimit)
 
+    log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
+    print "stateless"
+
+def signal_handler(signal, frame):
+        print('\nYou exited! Your environment will be restored to its original state.')
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
+
+        subprocess.call('ansible-playbook restart-nodes.yml', shell=True)
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+        log.close()
+
+        sys.exit(0)
 
 
 
