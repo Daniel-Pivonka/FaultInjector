@@ -41,15 +41,18 @@ def main():
     parser.add_argument('-d','--deterministic', help='injector will follow the list of tasks in the file specified', action='store', nargs=1, dest='filepath')
     parser.add_argument('-sf','--stateful', help='injector will run in stateful random mode', required=False, action='store_true')
     parser.add_argument('-sl','--stateless', help='injector will run in statelss random mode', required=False, action='store_true')
+    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
 
     # check mode
     if args.filepath:
+        if args.timelimit:
+            print "Timelimit not applicable in deterministic mode"
         deterministic_start()
     elif args.stateful:
-        stateful_start()
+        stateful_start(args.timelimit)
     elif args.stateless:
-        stateless_start()
+        stateless_start(args.timelimit)
     else:
         print "No Mode Chosen"
 
@@ -61,10 +64,17 @@ def main():
 def deterministic_start():
     print "det"
 
-def stateful_start():
+def stateful_start(timelimit):
+    if timelimit is None:
+        print "indefinite time"
+
+
     print "sf"
 
-def stateless_start():
+def stateless_start(timelimit):
+    if timelimit is None:
+        print "indefinite time"
+    
     print "sl"
 
 
