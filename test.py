@@ -32,6 +32,8 @@ class Ceph(Fault):
 log = open('FaultInjector.log', 'a')
 
 def main():
+    # signal handler to restore everything to normal
+    signal.signal(signal.SIGINT, signal_handler)
 
     # start injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
@@ -62,22 +64,42 @@ def main():
 
 
 def deterministic_start():
-    print "det"
+    log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
+    print "deterministic"
 
 def stateful_start(timelimit):
     if timelimit is None:
-        print "indefinite time"
+        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
+        print "indefinite timelimit"
+    else:
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
+        print "{} Minute Timelimit".format(timelimit)
 
-
-    print "sf"
+    log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
+    print "stateful"
 
 def stateless_start(timelimit):
     if timelimit is None:
-        print "indefinite time"
-    
-    print "sl"
+        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
+        print "indefinite timelimit"
+    else:
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
+        print "{} Minute Timelimit".format(timelimit)
 
+    log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
+    print "stateless"
 
+def signal_handler(signal, frame):
+        print('\nYou exited! Your environment will be restored to its original state.')
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
+
+        subprocess.call('ansible-playbook restart-nodes.yml', shell=True)
+
+        log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+        log.close()
+
+        sys.exit(0)
 
 
 
