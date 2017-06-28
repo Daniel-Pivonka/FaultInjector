@@ -45,11 +45,11 @@ def main():
 
     # check mode
     if args.filepath:
-        deterministic()
+        deterministic_start()
     elif args.stateful:
-        stateful()
+        stateful_start()
     elif args.stateless:
-        stateless()
+        stateless_start()
     else:
         print "No Mode Chosen"
 
@@ -58,13 +58,13 @@ def main():
     log.close()
 
 
-def deterministic():
+def deterministic_start():
     print "det"
 
-def stateful():
+def stateful_start():
     print "sf"
 
-def stateless():
+def stateless_start():
     print "sl"
 
 
