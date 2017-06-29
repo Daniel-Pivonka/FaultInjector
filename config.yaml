@@ -1,4 +1,6 @@
 numnodes: 4
+hci: true
+container: false
 node0: 
   ip: 192.168.24.13
   id: 43d83596-c6aa-47f7-ae53-5ee78616eed1
