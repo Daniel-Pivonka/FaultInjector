@@ -61,7 +61,7 @@ class Ceph(Fault):
         """ Looks at a random functioning controller node
             and checks the status of the ceph cluster returning
             True if it's healthy
-
+        """
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
