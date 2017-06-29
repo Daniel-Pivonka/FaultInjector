@@ -2,15 +2,16 @@
 
 import argparse
 import datetime
+import os
 import paramiko
 import random
+import re
 import signal
 import subprocess
+import sys
 import threading
 import time
-import os
 import yaml
-import sys
 
 """ Template class to make your own fault
     add an instance of your fault to the list of plugins in main
