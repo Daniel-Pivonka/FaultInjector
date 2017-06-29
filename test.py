@@ -127,10 +127,10 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             if deployment.hci:
-                if node.type == "osd-compute"
+                if node.type == "osd-compute":
                     candidate_nodes.append(node)
             else:
-                if node.type == "ceph"
+                if node.type == "ceph":
                     candidate_nodes.append(node)
 
         target_node = random.choice(candidate_nodes)
