@@ -12,6 +12,9 @@ import datetime
 """
 class Fault:
 
+    def __init__(self, deployment):
+        self.deployment = deployment
+
     def stateless(self):
         raise NotImplementedError
 
@@ -23,6 +26,10 @@ class Fault:
 
 
 class Ceph(Fault):
+
+    def __init__(self, deployment):
+        Fault.__init__(self, deployment)
+
     def stateless(self, target, fault_domain, deterministic_file):
         """ Handles writing the deterministic plan file
         """
@@ -58,20 +65,29 @@ class Ceph(Fault):
         """
         print "ceph deterministic"
 
-    def check_health(self, controller_node):
+    def check_health(self):
         """ Looks at a random functioning controller node
             and checks the status of the ceph cluster returning
             True if it's healthy
         """
-        target_node = random.choice(nodes['controller'])
-        host = target_node[0]
+        controllers = []
+        for node in self.deployment.nodes:
+            if node.type == "controller":
+                controllers.append(node)
+        if len(controllers) == 0:
+            print "Warning: No controller found in deployment"
+            return False
+
+        target_node = random.choice(controllers)
+        host = target_node.ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-            target_node = random.choice(nodes['controller'])
-            host = target_node[0]
-            time.sleep(10) # Wait 10 seconds to give nodes time to recover 
+            print "Could not connect to node @" + target_node.ip + ". Trying another..."
+            target_node = random.choice(controllers)
+            host = target_node.ip
+            time.sleep(20) # Wait 20 seconds to give nodes time to recover 
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
@@ -106,7 +122,7 @@ class Deployment:
         """ Takes in a deployment config file 
         """
         self.nodes = []
-        with open('config.yaml', 'r') as f:
+        with open(filename, 'r') as f:
             config = yaml.load(f)
         for node_index in range(config['numnodes']):
             current_node = config['node' + node_index]
