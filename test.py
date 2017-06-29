@@ -9,6 +9,7 @@ import threading
 import time
 import os
 import yaml
+import sys
 
 """ Template class to make your own fault
     add an instance of your fault to the list of plugins in main
@@ -19,7 +20,7 @@ class Fault:
     def __init__(self, deployment):
         self.deployment = deployment
 
-    def stateless(self, deterministic_file):
+    def stateless(self, deterministic_file, timelimit):
         raise NotImplementedError
 
     def stateful(self, deterministic_file):
@@ -36,16 +37,27 @@ class Ceph(Fault):
     def __repr__(self):
         return "Ceph"
 
-    def stateless(self, deterministic_file):
+    def stateless(self, deterministic_file, timelimit):
         """ func that will be called and run on main thread
             will write a log for deterministic mode
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
+
+        print "ceph stateless"
+
         # if fault_domain == "fault_type_1":
         #     result = fault_type_1(target)
         #     deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
-        print "ceph stateless"
+        
+        if timelimit is None:
+            # runtime loop
+            timeout = time.time() + 60 * timelimit
+            while time.time() < timeout:
+                pass
+        else:
+            while 1:
+                pass
 
     def stateful(self, deterministic_file):
         """ func that will be set up on a thread
@@ -228,7 +240,7 @@ def stateless_start(timelimit):
     deterministic_file = open(deterministic_filename, 'w')
 
     #start plugins stateless mode
-    plugin.stateless(deterministic_file)
+    plugin.stateless(deterministic_file, timelimit)
 
 
 def signal_handler(signal, frame):
@@ -243,8 +255,8 @@ def signal_handler(signal, frame):
 
         sys.exit(0)
 
-
-
+if __name__ == "__main__":
+    main()
 
 #   print "main"
 #   t1 = threading.Thread(target=thread1)
@@ -277,7 +289,3 @@ def signal_handler(signal, frame):
 #   print "im the thread3"
 #   time.sleep(5)
 #   print "thread3 again"
-
-
-if __name__ == "__main__":
-    main()
