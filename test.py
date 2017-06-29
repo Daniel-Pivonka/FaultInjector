@@ -33,6 +33,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
+        self.functions = [fault_type_1]
 
     def __repr__(self):
         return "Ceph"
@@ -121,9 +122,9 @@ class Ceph(Fault):
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
     def osd_service_fault(downtime):
-    """ Kills a random osd service specified on a random ceph node or osd-compute node
-        for 'downtime' seconds.
-    """
+        """ Kills a random osd service specified on a random ceph node or osd-compute node
+            for 'downtime' seconds.
+        """
         candidate_nodes = []
         for node in self.deployment.nodes:
             if deployment.hci:
