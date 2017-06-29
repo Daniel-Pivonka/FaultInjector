@@ -120,6 +120,57 @@ class Ceph(Fault):
         # Placeholder fault function
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
+    def osd_service_fault(downtime):
+    """ Kills a random osd service specified on a random ceph node or osd-compute node
+        for 'downtime' seconds.
+    """
+        candidate_nodes = []
+        for node in self.deployment.nodes:
+            if deployment.hci:
+                if node.type == "osd-compute"
+                    candidate_nodes.append(node)
+            else:
+                if node.type == "ceph"
+                    candidate_nodes.append(node)
+
+        target_node = random.choice(candidate_nodes)
+        host = target_node.ip
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
+        while response != 0:
+            target_node = random.choice(candidate_nodes)
+            host = target_node.ip
+            time.sleep(20) # Wait 20 seconds to give nodes time to recover 
+            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
+
+        with open('playbooks/ceph-osd-fault-crash.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+        with open('ceph-osd-fault-crash.yml', 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+
+        with open('ceph-osd-fault-restore.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+        with open('ceph-osd-fault-restore.yml', 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+
+        if check_health():    
+            print "Cluster is healthy, executing fault."
+            start_time = datetime.datetime.now() - global_start
+            subprocess.call('ansible-playbook ceph-osd-fault-crash.yml', shell=True)
+            time.sleep(downtime)
+            subprocess.call('ansible-playbook ceph-osd-fault-restore.yml', shell=True)
+            end_time = datetime.datetime.now() - global_start
+            return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
+
+        else:
+            print "Cluster is not healthy, waiting 30 seconds before trying another node."
+            time.sleep(30)
+
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
