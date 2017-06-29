@@ -124,7 +124,7 @@ class Deployment:
             config = yaml.load(f)
         for node_index in range(config['numnodes']):
             current_node = config['node' + str(node_index)]
-            nodes.append(Node(current_node['type'], current_node['ip'], current_node['id']))
+            self.nodes.append(Node(current_node['type'], current_node['ip'], current_node['id']))
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
