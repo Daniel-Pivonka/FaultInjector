@@ -214,7 +214,7 @@ def stateless_start(timelimit):
     #pick plugin to use
     plugin = random.choice(plugins)
 
-    log.write('{:%Y-%m-%d %H:%M:%S} {} Plugin Chosen\n'.format(datetime.datetime.now(), plugin.Name))
+    log.write('{:%Y-%m-%d %H:%M:%S} {} Plugin Chosen\n'.format(datetime.datetime.now(), plugin.__repr__()))
 
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
