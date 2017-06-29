@@ -18,10 +18,10 @@ class Fault:
     def __init__(self, deployment):
         self.deployment = deployment
 
-    def stateless(self):
+    def stateless(self, deterministic_file):
         raise NotImplementedError
 
-    def stateful(self):
+    def stateful(self, deterministic_file):
         raise NotImplementedError
 
     def deterministic(self):
@@ -35,26 +35,18 @@ class Ceph(Fault):
     def __repr__(self):
         return "Ceph"
 
-    def stateless(self, target, fault_domain, deterministic_file):
-        """ Handles writing the deterministic plan file
-        """
-        if fault_domain == "fault_type_1":
-            result = fault_type_1(target)
-            deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
-        print "ceph stateless"
-
-    def stateful(self, deterministic_file):
-        """ Handles writing the deterministic plan file
-        """
-    def stateless(self):
+    def stateless(self, deterministic_file):
         """ func that will be called and run on main thread
             will write a log for deterministic mode
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
+        # if fault_domain == "fault_type_1":
+        #     result = fault_type_1(target)
+        #     deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
         print "ceph stateless"
 
-    def stateful(self):
+    def stateful(self, deterministic_file):
         """ func that will be set up on a thread
             will write to a shared (all stateful threads will share) log for deterministic mode
             will take a timelimit or run indefinetly till ctrl-c
@@ -229,11 +221,11 @@ def stateless_start(timelimit):
     # create directory if it doesn't exist
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    deterministic_log_filename = dir_path + str(global_starttime) + '-run.txt'
-    deterministic_log = open(deterministic_log_filename, 'w')
+    deterministic_filename = dir_path + str(global_starttime) + '-run.txt'
+    deterministic_file = open(deterministic_filename, 'w')
 
     #start plugins stateless mode
-    plugin.stateless()
+    plugin.stateless(deterministic_file)
 
 
 def signal_handler(signal, frame):
