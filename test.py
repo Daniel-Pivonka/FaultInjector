@@ -23,11 +23,12 @@ class Fault:
 
 
 class Ceph(Fault):
-    def stateless(self, target, deterministic_file):
+    def stateless(self, target, fault_domain, deterministic_file):
         """ Handles writing the deterministic plan file
         """
-        result = fault_type_1(target)
-        deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
+        if fault_domain == "fault_type_1":
+            result = fault_type_1(target)
+            deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
         print "ceph stateless"
 
     def stateful(self, deterministic_file):
