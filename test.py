@@ -2,14 +2,16 @@
 
 import argparse
 import datetime
-import signal
+import os
+import paramiko
 import random
+import re
+import signal
 import subprocess
+import sys
 import threading
 import time
-import os
 import yaml
-import sys
 
 """ Template class to make your own fault
     add an instance of your fault to the list of plugins in main
@@ -52,12 +54,12 @@ class Ceph(Fault):
         #     deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
         
         if timelimit is None:
+            while 1:
+                pass
+        else: 
             # runtime loop
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
-                pass
-        else:
-            while 1:
                 pass
 
     def stateful(self, deterministic_file):
@@ -128,10 +130,10 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             if deployment.hci:
-                if node.type == "osd-compute"
+                if node.type == "osd-compute":
                     candidate_nodes.append(node)
             else:
-                if node.type == "ceph"
+                if node.type == "ceph":
                     candidate_nodes.append(node)
 
         target_node = random.choice(candidate_nodes)
