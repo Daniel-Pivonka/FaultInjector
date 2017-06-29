@@ -1,0 +1,12 @@
+- become: true
+  hosts: all
+  tasks:
+  - name: Restarting server
+    shell: sleep 2 && reboot
+    async: 1
+    poll: 0
+    become: yes
+    become_method: sudo
+    ignore_errors: true
+  - name: Waiting for server to come back after reboot
+    local_action: wait_for host={{ ansible_ssh_host }} state=started port=22 delay=30 timeout=300 connect_timeout=15

@@ -1,0 +1,14 @@
+- become: true
+  hosts: 192.168.24.10
+  tasks:
+  - become: true
+    name: Disabling auto restart of ceph-mon service
+    shell: systemctl disable ceph-mon@192.168.24.10
+  - become: true
+    name: Killing ceph-mon services
+    shell: pkill -f ceph-mon
+  - name: Waiting set amount of time before restart
+    shell: sleep 30
+  - become: true
+    name: Restoring ceph-mon regular behavior
+    shell: systemctl enable ceph-mon@192.168.24.10
