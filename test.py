@@ -8,6 +8,7 @@ import subprocess
 import threading
 import time
 import os
+import yaml
 
 """ Template class to make your own fault
     add an instance of your fault to the list of plugins in main
@@ -122,7 +123,7 @@ class Deployment:
         with open(filename, 'r') as f:
             config = yaml.load(f)
         for node_index in range(config['numnodes']):
-            current_node = config['node' + node_index]
+            current_node = config['node' + str(node_index)]
             nodes.append(Node(current_node['type'], current_node['ip'], current_node['id']))
 
 # global var for start time of program
@@ -135,8 +136,10 @@ log = open('FaultInjector.log', 'a')
 plugins = []
 
 def main():
+    deployment = Deployment("config.yaml")
+
     #create list of all plugins
-    plugins.append(Ceph())
+    plugins.append(Ceph(deployment))
 
     # signal handler to restore everything to normal
     signal.signal(signal.SIGINT, signal_handler)
