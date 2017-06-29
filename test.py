@@ -5,6 +5,11 @@ import datetime
 # import threading
 # import time
 
+
+
+
+""" Template class for faults
+"""
 class Fault:
     def stateless(self):
         raise NotImplementedError
@@ -18,12 +23,27 @@ class Fault:
 
 class Ceph(Fault):
     def stateless(self, target):
+        """ func that will be called and run on main thread
+            will write a log for deterministic mode
+            will take a timelimit or run indefinetly till ctrl-c
+            will do things randomly (pick node to fault and timing)
+        """
         print "ceph stateless"
 
     def stateful(self):
+        """ func that will be set up on a thread
+            will write to a shared (all stateful threads will share) log for deterministic mode
+            will take a timelimit or run indefinetly till ctrl-c
+            will do things randomly (pick node to fault and timing)
+        """
         print "ceph stateful"
 
     def deterministic(self):
+        """ func that will be set up on a thread
+            will take a start time, end time and waiting times (time between fault and restore)
+            will take specific node/osd to fault (ip or uuid)
+            will run until completion
+        """
         print "ceph deterministic"
 
     def check_health(self, controller_node):
@@ -106,10 +126,21 @@ def main():
 
 
 def deterministic_start():
+    """ func that will read deterministic log
+        will create all threads (one per entry in log) and spawn them
+        will wait for all threads to complete
+    """
     log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
     print "deterministic"
 
 def stateful_start(timelimit):
+    """ func that will create a thread for every plugin
+        will create a deterministci file that will be passed to every thread
+        will pass all threads the timelimit (could be infiniety)
+        will spawn all threads
+        will wait for all threads to compplete or for ctrl-c
+    """
+
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
         print "indefinite timelimit"
@@ -121,6 +152,12 @@ def stateful_start(timelimit):
     print "stateful"
 
 def stateless_start(timelimit):
+    """ func that will read from stateless config
+        will run one plugin's statless mode on main thread
+        ill pass the timelimit (could be infiniety)
+    """
+
+
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
         print "indefinite timelimit"
