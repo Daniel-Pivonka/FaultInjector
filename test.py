@@ -11,6 +11,7 @@ import datetime
 """ Template class for faults
 """
 class Fault:
+
     def stateless(self):
         raise NotImplementedError
 
@@ -22,6 +23,16 @@ class Fault:
 
 
 class Ceph(Fault):
+    def stateless(self, target, deterministic_file):
+        """ Handles writing the deterministic plan file
+        """
+        result = fault_type_1(target)
+        deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
+        print "ceph stateless"
+
+    def stateful(self, deterministic_file):
+        """ Handles writing the deterministic plan file
+        """
     def stateless(self, target):
         """ func that will be called and run on main thread
             will write a log for deterministic mode
@@ -48,8 +59,8 @@ class Ceph(Fault):
 
     def check_health(self, controller_node):
         """ Looks at a random functioning controller node
-        and checks the status of the ceph cluster returning
-        True if it's healthy
+            and checks the status of the ceph cluster returning
+            True if it's healthy
         """
         target_node = random.choice(nodes['controller'])
         host = target_node[0]
@@ -72,6 +83,16 @@ class Ceph(Fault):
         response = str(ssh_stdout.readlines())
         return re.search("HEALTH_OK", response, flags=0)
 
+    # Write fault functions below --------------------------------------------- 
+
+    def fault_type_1():
+        start_time = datetime.datetime.now() - global_start
+        # Call to playbook goes here
+        # Delay x amount of time
+        end_time = datetime.datetime.now() - global_start
+        # Placeholder fault function
+        return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
+
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
@@ -89,6 +110,9 @@ class Deployment:
         for node_index in range(config['numnodes']):
             current_node = config['node' + node_index]
             nodes.append(Node(current_node['type'], current_node['ip'], current_node['id']))
+
+# global var for start time of program
+global_starttime = datetime.datetime.now()
 
 # global var for log file
 log = open('FaultInjector.log', 'a')
