@@ -179,7 +179,7 @@ class Ceph(Fault):
             start_time = datetime.datetime.now() - global_starttime
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + 'minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
             #time.sleep(downtime * 60)
             time.sleep(60) # temporary placeholder for testing
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
@@ -190,7 +190,7 @@ class Ceph(Fault):
 
         else:
             print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
-            log.write('{:%Y-%m-%d %H:%M:%S} "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
             time.sleep(10)
 
 class Node:
