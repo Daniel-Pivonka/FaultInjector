@@ -193,6 +193,52 @@ class Ceph(Fault):
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
             time.sleep(10)
 
+        # Deterministic fault functions below ---------------------------------------------
+        
+        def det_osd_service_fault(self, target_ip, downtime):
+            """ Kills a random osd service specified on a random ceph node or osd-compute node
+            """
+            host = target_node.ip
+            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                       stdout=open(os.devnull, 'w'),
+                                       stderr=open(os.devnull, 'w'))
+
+            # Make sure target node is reachable 
+            if response != 0:
+                print "[det_osd_service_fault] error: target node unreachable, exiting fault function"
+                return None
+
+            target_node.occupied = True # Mark node as being used 
+
+            with open('playbooks/ceph-osd-fault-crash.yml') as f:
+                config = yaml.load(f)
+                config[0]['hosts'] = host
+            with open('ceph-osd-fault-crash.yml', 'w') as f:
+                yaml.dump(config, f, default_flow_style=False)
+
+            with open('playbooks/ceph-osd-fault-restore.yml') as f:
+                config = yaml.load(f)
+                config[0]['hosts'] = host
+            with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+                yaml.dump(config, f, default_flow_style=False)
+
+            if self.check_health():    
+                print "[det_ceph-osd-fault] cluster is healthy, executing fault."
+                subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+                log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+                #time.sleep(downtime * 60)
+                time.sleep(60) # temporary placeholder for testing
+                subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+                target_node.occupied = False # Free up the node
+                print "[det_osd_service_fault] deterministic step completed"
+                return True 
+
+            else:
+                print "[ceph-osd-fault] cluster is not healthy, moving onto next step without faulting"
+                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, moving onto next step without faulting\n'.format(datetime.datetime.now()))
+                time.sleep(10)
+
+
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
