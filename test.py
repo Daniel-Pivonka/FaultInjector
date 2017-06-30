@@ -61,7 +61,8 @@ class Ceph(Fault):
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
                 result = random.choice(self.functions)() # Calls a fault function and stores the results
-                print result
+                if result is None:
+                    continue
                 deterministic_file.write(result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
             deterministic_file.close()
 
@@ -319,7 +320,7 @@ def signal_handler(signal, frame):
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
-        subprocess.call('ansible-playbook restart-nodes.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
         log.close()
