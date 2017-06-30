@@ -171,7 +171,7 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        if check_health():    
+        if self.check_health():    
             print "Cluster is healthy, executing fault."
             start_time = datetime.datetime.now() - global_start
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
@@ -180,7 +180,7 @@ class Ceph(Fault):
             time.sleep(downtime * 60)
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_start
-            exit_status = check_health()
+            exit_status = self.check_health()
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] # Placeholder exit status variable
 
