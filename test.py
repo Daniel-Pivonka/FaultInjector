@@ -342,8 +342,6 @@ def deterministic_start(filepath):
             #break into list
             words = line.strip("| ").split(" | ")
 
-            print words
-
             #find matching plugin
             for plugin in plugins:
                 if plugin.__repr__() == words[0].strip(" "):
