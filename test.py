@@ -64,8 +64,11 @@ class Ceph(Fault):
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
                 result = random.choice(self.functions)() # Calls a fault function and stores the results
-                deterministic_file.write(result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
-                deterministic_file.close()
+                if result is None:
+                    continue
+                deterministic_file.write(self.__repr__() + " | " + str(result[0]) + " | " + str(result[1]) + " | " + str(result[2]) + \
+                                         " | " + str(result[3]) + " | " + str(result[4]) + " | " + str(result[5]))
+            deterministic_file.close()
 
                 
 
@@ -138,7 +141,7 @@ class Ceph(Fault):
         """
         candidate_nodes = []
         for node in self.deployment.nodes:
-            if deployment.hci:
+            if self.deployment.hci:
                 if node.type == "osd-compute":
                     candidate_nodes.append(node)
             else:
@@ -168,29 +171,30 @@ class Ceph(Fault):
         with open('ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        with open('ceph-osd-fault-restore.yml') as f:
+        with open('playbooks/ceph-osd-fault-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-        with open('ceph-osd-fault-restore.yml', 'w') as f:
+        with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        if check_health():    
-            print "Cluster is healthy, executing fault."
-            start_time = datetime.datetime.now() - global_start
-            subprocess.call('ansible-playbook ceph-osd-fault-crash.yml', shell=True)
+        if self.check_health():    
+            print "[ceph-osd-fault] cluster is healthy, executing fault."
+            start_time = datetime.datetime.now() - global_starttime
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Waiting ' + downtime + 'minutes before introducing OSD again.\n'.format(datetime.datetime.now()))
-            time.sleep(downtime * 60)
-            subprocess.call('ansible-playbook ceph-osd-fault-restore.yml', shell=True)
-            end_time = datetime.datetime.now() - global_start
-            exit_status = check_health()
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + 'minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+            #time.sleep(downtime * 60)
+            time.sleep(60) # temporary placeholder for testing
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+            end_time = datetime.datetime.now() - global_starttime
+            exit_status = self.check_health()
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] # Placeholder exit status variable
 
         else:
-            print "Cluster is not healthy, waiting 30 seconds before trying another node."
-            log.write('{:%Y-%m-%d %H:%M:%S} "[ceph-osd-fault] Cluster is not healthy, waiting 30 seconds before trying another node.\n'.format(datetime.datetime.now()))
-            time.sleep(30)
+            print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
+            log.write('{:%Y-%m-%d %H:%M:%S} "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
+            time.sleep(10)
 
 class Node:
     def __init__(self, node_type, node_ip, node_id):
@@ -204,6 +208,7 @@ class Deployment:
         """ Takes in a deployment config file 
         """
         self.nodes = []
+        self.hci = True # Todo: read in config file for this
         with open(filename, 'r') as f:
             config = yaml.load(f)
         for node_index in range(config['numnodes']):
@@ -343,7 +348,7 @@ def signal_handler(signal, frame):
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
-        subprocess.call('ansible-playbook restart-nodes.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
         log.close()
