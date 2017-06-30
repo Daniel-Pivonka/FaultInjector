@@ -67,7 +67,7 @@ class Ceph(Fault):
                 if result is None:
                     continue
                 deterministic_file.write(self.__repr__() + " | " + str(result[0]) + " | " + str(result[1]) + " | " + str(result[2]) + \
-                                         " | " + str(result[3]) + " | " + str(result[4]) + " | " + str(result[5]))
+                                         " | " + str(result[3]) + " | " + str(result[4]) + " | " + str(result[5]) + '\n')
             deterministic_file.close()
 
                 
