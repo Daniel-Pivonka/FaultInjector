@@ -95,7 +95,7 @@ class Ceph(Fault):
             if node.type == "controller":
                 controllers.append(node)
         if len(controllers) == 0:
-            print "Warning: No controller found in deployment"
+            print "[check_health] warning: no controller found in deployment"
             return False
 
         target_node = random.choice(controllers)
@@ -104,7 +104,7 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-            print "Could not connect to node @" + target_node.ip + ". Trying another..."
+            print "[check_health] could not connect to node @" + target_node.ip + ", trying another after 20 seconds..."
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
@@ -118,7 +118,7 @@ class Ceph(Fault):
         ssh.connect(host, username='heat-admin')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = str(ssh_stdout.readlines())
-        return re.search("HEALTH_OK", response, flags=0)
+        return False if re.search("HEALTH_OK", response, flags=0) == None else True
 
     # Write fault functions below --------------------------------------------- 
 
@@ -186,7 +186,7 @@ class Ceph(Fault):
             end_time = datetime.datetime.now() - global_starttime
             exit_status = self.check_health()
             target_node.occupied = False # Free up the node
-            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] # Placeholder exit status variable
+            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
         else:
             print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
