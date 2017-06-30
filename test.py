@@ -179,7 +179,8 @@ class Ceph(Fault):
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + 'minutes before introducing OSD again\n'.format(datetime.datetime.now()))
-            time.sleep(downtime * 60)
+            #time.sleep(downtime * 60)
+            time.sleep(60) # temporary placeholder for testing
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_starttime
             exit_status = self.check_health()
