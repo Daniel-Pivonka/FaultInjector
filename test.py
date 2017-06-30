@@ -130,7 +130,7 @@ class Ceph(Fault):
         # Placeholder fault function
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
-    def osd_service_fault():
+    def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node or osd-compute node
         """
         candidate_nodes = []
