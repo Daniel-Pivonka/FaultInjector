@@ -63,7 +63,7 @@ class Ceph(Fault):
                 result = random.choice(self.functions)() # Calls a fault function and stores the results
                 if result is None:
                     continue
-                deterministic_file.write(self.__repr__() + " | ", str(result[0]) + " | " + str(result[1]) + " | " + str(result[2]) + /
+                deterministic_file.write(self.__repr__() + " | ", str(result[0]) + " | " + str(result[1]) + " | " + str(result[2]) + \
                                          " | " + str(result[3]) + " | " + str(result[4]) + " | " + str(result[5]))
             deterministic_file.close()
 
