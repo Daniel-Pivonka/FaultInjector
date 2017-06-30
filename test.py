@@ -61,8 +61,9 @@ class Ceph(Fault):
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
                 result = random.choice(self.functions)() # Calls a fault function and stores the results
+                print result
                 deterministic_file.write(result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
-                deterministic_file.close()
+            deterministic_file.close()
 
                 
 
