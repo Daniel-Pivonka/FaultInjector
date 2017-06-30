@@ -18,8 +18,7 @@ be checked before running the main program
 f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
 config = yaml.load(f)
 
-controller_response = subprocess.Popen('. stackrc && nova list | grep control', stdout=subprocess.PIPE)
-controller_response = controller_response.read()
+controller_response = subprocess.check_output(['. ', 'stackrc', '&&', 'nova', 'list', '|', 'grep', 'control'])
 
 print controller_response 
 
