@@ -35,7 +35,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
-        self.functions = [self.template_fault]
+        self.functions = [self.osd_service_fault]
 
     def __repr__(self):
         return "Ceph"
@@ -46,7 +46,7 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-
+        deterministic_file = open(deterministic_file, 'w')
         print "ceph stateless"
 
         # if fault_domain == "template_fault":
@@ -60,7 +60,10 @@ class Ceph(Fault):
             # runtime loop
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
-                random.choice(self.functions)()
+                result = random.choice(self.functions)() # Calls a fault function and stores the results
+                deterministic_file.write(result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
+                deterministic_file.close()
+
                 
 
     def stateful(self, deterministic_file):
@@ -127,9 +130,8 @@ class Ceph(Fault):
         # Placeholder fault function
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
-    def osd_service_fault(downtime):
+    def osd_service_fault():
         """ Kills a random osd service specified on a random ceph node or osd-compute node
-            for 'downtime' seconds.
         """
         candidate_nodes = []
         for node in self.deployment.nodes:
@@ -145,13 +147,17 @@ class Ceph(Fault):
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
-        while response != 0:
+        while response != 0 or target_node.occupied:
             target_node = random.choice(candidate_nodes)
             host = target_node.ip
-            time.sleep(20) # Wait 20 seconds to give nodes time to recover 
+            time.sleep(20) # Wait 20 seconds to give nodes time to recover
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find acceptable node. \
+                        Waiting 20 seconds before searching for a different node to fault.\n'.format(datetime.datetime.now())) 
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
+
+            target_node.occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
@@ -170,15 +176,17 @@ class Ceph(Fault):
             start_time = datetime.datetime.now() - global_start
             subprocess.call('ansible-playbook ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} Waiting ' downtime + 'minutes before introducing OSD again.\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Waiting ' downtime + 'minutes before introducing OSD again.\n'.format(datetime.datetime.now()))
             time.sleep(downtime * 60)
             subprocess.call('ansible-playbook ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_start
             exit_status = check_health()
-            return [start_time, end_time, exit_status] # Placeholder exit status variable
+            target_node.occupied = False # Free up the node
+            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] # Placeholder exit status variable
 
         else:
             print "Cluster is not healthy, waiting 30 seconds before trying another node."
+            log.write('{:%Y-%m-%d %H:%M:%S} "[ceph-osd-fault] Cluster is not healthy, waiting 30 seconds before trying another node.\n'.format(datetime.datetime.now()))
             time.sleep(30)
 
 class Node:
@@ -186,7 +194,7 @@ class Node:
         self.type = node_type
         self.ip = node_ip
         self.id = node_id 
-        self.faulted = False
+        self.occupied = False
 
 class Deployment:
     def __init__(self, filename):
