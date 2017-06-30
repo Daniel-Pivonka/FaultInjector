@@ -21,6 +21,8 @@ class Fault:
 
     def __init__(self, deployment):
         self.deployment = deployment
+        #create a list of fault functions
+        self.functions = []
 
     def stateless(self, deterministic_file, timelimit):
         raise NotImplementedError
@@ -35,6 +37,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
+        #create a list of fault functions
         self.functions = [self.osd_service_fault]
 
     def __repr__(self):
@@ -55,7 +58,7 @@ class Ceph(Fault):
         
         if timelimit is None:
             while 1:
-                pass
+                random.choice(self.functions)()
         else: 
             # runtime loop
             timeout = time.time() + 60 * timelimit
@@ -67,8 +70,6 @@ class Ceph(Fault):
                                          " | " + str(result[3]) + " | " + str(result[4]) + " | " + str(result[5]) + '\n')
             deterministic_file.close()
 
-                
-
     def stateful(self, deterministic_file):
         """ func that will be set up on a thread
             will write to a shared (all stateful threads will share) log for deterministic mode
@@ -77,13 +78,32 @@ class Ceph(Fault):
         """
         print "ceph stateful"
 
-    def deterministic(self):
+    def deterministic(self, args):
         """ func that will be set up on a thread
             will take a start time, end time and waiting times (time between fault and restore)
             will take specific node/osd to fault (ip or uuid)
             will run until completion
         """
         print "ceph deterministic"
+
+        #convert endtime to seconds
+        l = args[3].split(':')
+        secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
+
+        #find target node
+        for node in self.deployment.nodes:
+            if node.ip == args[2]:
+                target = node
+
+        #wait until starttime
+        while time.time() < int(global_starttime.strftime('%s')) + secs:
+            time.sleep(1)
+
+        #call fault
+        if args[1] == 'ceph-osd-fault':
+            self.det_osd_service_fault(target, int(args[5]))
+        else:
+            print "no matching function found"
 
     def check_health(self):
         """ Looks at a random functioning controller node
@@ -195,48 +215,48 @@ class Ceph(Fault):
 
         # Deterministic fault functions below ---------------------------------------------
         
-        def det_osd_service_fault(self, target_ip, downtime):
-            """ Kills a random osd service specified on a random ceph node or osd-compute node
-            """
-            host = target_node.ip
-            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
-                                       stdout=open(os.devnull, 'w'),
-                                       stderr=open(os.devnull, 'w'))
+    def det_osd_service_fault(self, target_node, downtime):
+        """ Kills a random osd service specified on a random ceph node or osd-compute node
+        """
+        host = target_node.ip
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
 
-            # Make sure target node is reachable 
-            if response != 0:
-                print "[det_osd_service_fault] error: target node unreachable, exiting fault function"
-                return None
+        # Make sure target node is reachable 
+        if response != 0:
+            print "[det_osd_service_fault] error: target node unreachable, exiting fault function"
+            return None
 
-            target_node.occupied = True # Mark node as being used 
+        target_node.occupied = True # Mark node as being used 
 
-            with open('playbooks/ceph-osd-fault-crash.yml') as f:
-                config = yaml.load(f)
-                config[0]['hosts'] = host
-            with open('ceph-osd-fault-crash.yml', 'w') as f:
-                yaml.dump(config, f, default_flow_style=False)
+        with open('playbooks/ceph-osd-fault-crash.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+        with open('ceph-osd-fault-crash.yml', 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
 
-            with open('playbooks/ceph-osd-fault-restore.yml') as f:
-                config = yaml.load(f)
-                config[0]['hosts'] = host
-            with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
-                yaml.dump(config, f, default_flow_style=False)
+        with open('playbooks/ceph-osd-fault-restore.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+        with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
 
-            if self.check_health():    
-                print "[det_ceph-osd-fault] cluster is healthy, executing fault."
-                subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-                log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
-                #time.sleep(downtime * 60)
-                time.sleep(60) # temporary placeholder for testing
-                subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-                target_node.occupied = False # Free up the node
-                print "[det_osd_service_fault] deterministic step completed"
-                return True 
+        if self.check_health():    
+            print "[det_ceph-osd-fault] cluster is healthy, executing fault."
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+            log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+            #time.sleep(downtime * 60)
+            time.sleep(60) # temporary placeholder for testing
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+            target_node.occupied = False # Free up the node
+            print "[det_osd_service_fault] deterministic step completed"
+            return True 
 
-            else:
-                print "[ceph-osd-fault] cluster is not healthy, moving onto next step without faulting"
-                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, moving onto next step without faulting\n'.format(datetime.datetime.now()))
-                time.sleep(10)
+        else:
+            print "[ceph-osd-fault] cluster is not healthy, moving onto next step without faulting"
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, moving onto next step without faulting\n'.format(datetime.datetime.now()))
+            time.sleep(10)
 
 
 class Node:
@@ -291,7 +311,7 @@ def main():
     if args.filepath:
         if args.timelimit:
             print "Timelimit not applicable in deterministic mode"
-        deterministic_start()
+        deterministic_start(args.filepath)
     elif args.stateful:
         stateful_start(args.timelimit)
     elif args.stateless:
@@ -304,13 +324,37 @@ def main():
     log.close()
 
 
-def deterministic_start():
+def deterministic_start(filepath):
     """ func that will read deterministic log
         will create all threads (one per entry in log) and spawn them
         will wait for all threads to complete
     """
-    log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
     print "deterministic"
+    log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
+
+    #threads
+    threads = []
+
+    # open file
+    with open(filepath[0]) as f:
+        # read line by line
+        for line in f:
+            #break into list
+            words = line.strip("| ").split(" | ")
+
+            #find matching plugin
+            for plugin in plugins:
+                if plugin.__repr__() == words[0].strip(" "):
+                    #create thread
+                    threads.append(threading.Thread(target=plugin.deterministic, args=(words,)))
+
+    #start all threads
+    for thread in threads:
+        thread.start()
+      
+    #wait for all threads to end              
+    for thread in threads:
+        thread.join()
 
 def stateful_start(timelimit):
     """ func that will create a thread for every plugin
@@ -377,35 +421,3 @@ def signal_handler(signal, frame):
 
 if __name__ == "__main__":
     main()
-
-#   print "main"
-#   t1 = threading.Thread(target=thread1)
-#   t2 = threading.Thread(target=thread2)
-#   t3 = threading.Thread(target=thread3)
-#   t1.start()
-#   t2.start()
-#   t3.start()
-
-#   t1.join()
-#   t2.join()
-#   t3.join()
-
-#   print "done"
-
-# def thread1():
-#   time.sleep(5)
-#   print "im the thread1"
-#   time.sleep(5)
-#   print "thread1 again"
-
-# def thread2():
-#   time.sleep(5)
-#   print "im the thread2"
-#   time.sleep(5)
-#   print "thread2 again"
-
-# def thread3():
-#   time.sleep(5)
-#   print "im the thread3"
-#   time.sleep(5)
-#   print "thread3 again"
