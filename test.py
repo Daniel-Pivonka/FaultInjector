@@ -201,6 +201,7 @@ class Deployment:
         """ Takes in a deployment config file 
         """
         self.nodes = []
+        self.hci = True # Todo: read in config file for this
         with open(filename, 'r') as f:
             config = yaml.load(f)
         for node_index in range(config['numnodes']):
