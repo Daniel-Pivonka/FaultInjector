@@ -35,7 +35,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
-        self.functions = [self.fault_type_1]
+        self.functions = [self.template_fault]
 
     def __repr__(self):
         return "Ceph"
@@ -49,8 +49,8 @@ class Ceph(Fault):
 
         print "ceph stateless"
 
-        # if fault_domain == "fault_type_1":
-        #     result = fault_type_1(target)
+        # if fault_domain == "template_fault":
+        #     result = template_fault(target)
         #     deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
         
         if timelimit is None:
@@ -116,9 +116,9 @@ class Ceph(Fault):
 
     # Write fault functions below --------------------------------------------- 
 
-    def fault_type_1(self):
+    def template_fault(self):
 
-        print "sup"
+        print "template_fault was called"
 
         start_time = datetime.datetime.now() - global_starttime
         # Call to playbook goes here
@@ -169,10 +169,13 @@ class Ceph(Fault):
             print "Cluster is healthy, executing fault."
             start_time = datetime.datetime.now() - global_start
             subprocess.call('ansible-playbook ceph-osd-fault-crash.yml', shell=True)
-            time.sleep(downtime)
+            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+            log.write('{:%Y-%m-%d %H:%M:%S} Waiting ' downtime + 'minutes before introducing OSD again.\n'.format(datetime.datetime.now()))
+            time.sleep(downtime * 60)
             subprocess.call('ansible-playbook ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_start
-            return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
+            exit_status = check_health()
+            return [start_time, end_time, exit_status] # Placeholder exit status variable
 
         else:
             print "Cluster is not healthy, waiting 30 seconds before trying another node."
