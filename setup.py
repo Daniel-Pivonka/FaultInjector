@@ -14,7 +14,7 @@ be checked before running the main program
 
 
 # Open config file  
-f = open('playbooks/ceph-osd-fault-restore.yml', 'w')
+f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
 config = yaml.load(f)
 
 controller_response = subprocess.check_output(['. stackrc && nova list | grep control'])
