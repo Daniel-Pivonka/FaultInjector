@@ -310,7 +310,7 @@ def stateless_start(timelimit):
     # create directory if it doesn't exist
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    deterministic_filename = dir_path + str(global_starttime) + '-run.txt'
+    deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
 
     #start plugins stateless mode
