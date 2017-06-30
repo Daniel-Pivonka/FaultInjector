@@ -21,6 +21,8 @@ class Fault:
 
     def __init__(self, deployment):
         self.deployment = deployment
+        #create a list of fault functions
+        self.functions = []
 
     def stateless(self, deterministic_file, timelimit):
         raise NotImplementedError
@@ -35,6 +37,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
+        #create a list of fault functions
         self.functions = [self.fault_type_1]
 
     def __repr__(self):
@@ -55,7 +58,7 @@ class Ceph(Fault):
         
         if timelimit is None:
             while 1:
-                pass
+                random.choice(self.functions)()
         else: 
             # runtime loop
             timeout = time.time() + 60 * timelimit
