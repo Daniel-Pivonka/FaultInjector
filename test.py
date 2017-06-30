@@ -46,7 +46,7 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        deterministic_file = open(deterministic_file, 'w')
+        #deterministic_file = open(deterministic_file, 'w')
         print "ceph stateless"
 
         # if fault_domain == "template_fault":
