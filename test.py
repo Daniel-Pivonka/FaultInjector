@@ -35,7 +35,7 @@ class Ceph(Fault):
 
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
-        self.functions = [Ceph.fault_type_1]
+        self.functions = [self.fault_type_1]
 
     def __repr__(self):
         return "Ceph"
@@ -60,7 +60,7 @@ class Ceph(Fault):
             # runtime loop
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
-                random.choice(self.functions)(self)
+                random.choice(self.functions)()
                 
 
     def stateful(self, deterministic_file):
@@ -120,10 +120,10 @@ class Ceph(Fault):
 
         print "sup"
 
-        start_time = datetime.datetime.now() - global_start
+        start_time = datetime.datetime.now() - global_starttime
         # Call to playbook goes here
         # Delay x amount of time
-        end_time = datetime.datetime.now() - global_start
+        end_time = datetime.datetime.now() - global_starttime
         # Placeholder fault function
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
