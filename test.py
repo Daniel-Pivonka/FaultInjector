@@ -63,7 +63,7 @@ class Ceph(Fault):
                 result = random.choice(self.functions)() # Calls a fault function and stores the results
                 if result is None:
                     continue
-                deterministic_file.write(result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
+                deterministic_file.write(self.__repr__(), "|", result[0], "|", result[1], "|", result[2], "|", result[3], "|", result[4], "|", result[5])
             deterministic_file.close()
 
                 
@@ -175,13 +175,13 @@ class Ceph(Fault):
 
         if self.check_health():    
             print "[ceph-osd-fault] cluster is healthy, executing fault."
-            start_time = datetime.datetime.now() - global_start
+            start_time = datetime.datetime.now() - global_starttime
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + downtime + 'minutes before introducing OSD again\n'.format(datetime.datetime.now()))
             time.sleep(downtime * 60)
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-            end_time = datetime.datetime.now() - global_start
+            end_time = datetime.datetime.now() - global_starttime
             exit_status = self.check_health()
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] # Placeholder exit status variable
@@ -189,7 +189,7 @@ class Ceph(Fault):
         else:
             print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
             log.write('{:%Y-%m-%d %H:%M:%S} "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
-            time.sleep(30)
+            time.sleep(10)
 
 class Node:
     def __init__(self, node_type, node_ip, node_id):
