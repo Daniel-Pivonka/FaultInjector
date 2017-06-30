@@ -86,26 +86,24 @@ class Ceph(Fault):
         """
         print "ceph deterministic"
 
+        #convert endtime to seconds
         l = args[3].split(':')
-
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
-        while time.time() < int(global_starttime.strftime('%s')) + secs:
-            time.sleep(1)
-
-        print "start"
-
-
+        #find target node
         for node in self.deployment.nodes:
             if node.ip == args[2]:
                 target = node
 
+        #wait until starttime
+        while time.time() < int(global_starttime.strftime('%s')) + secs:
+            time.sleep(1)
+
+        #call fault
         if args[1] == 'ceph-osd-fault':
             self.det_osd_service_fault(target, int(args[5]))
         else:
             print "no matching function found"
-
-
 
     def check_health(self):
         """ Looks at a random functioning controller node
