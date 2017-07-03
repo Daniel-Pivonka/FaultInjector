@@ -54,7 +54,7 @@ pool_sizes = [] # List of sizes used to find the min
 for pool in json_response:
 	config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
 	pool_sizes.append(pool['size'])
-config['ceph']['pools_and_replication_size'] = min(pool_sizes)
+config['ceph']['minimum_replication_size'] = min(pool_sizes)
 
 # --------------------------------------------------------------------------
 
