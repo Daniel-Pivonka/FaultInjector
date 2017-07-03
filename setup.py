@@ -25,7 +25,7 @@ config['deployment'] = {}
 # Discover nodes
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')
 for line in node_response:
-	node_fields = line.split('|')
+	node_fields = line[1:-1].split('|')
 	print node_fields
 	node_id = line.rpartition('overcloud')[0].replace('|', '').replace(' ', '')
 	print node_id 
