@@ -18,13 +18,20 @@ config = yaml.load(f)
 if config is None:
 	config = {}
 
-# Find controller ip address
-controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
-controller_ip = controller_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
+# General deployment fields:
+
+config['deployment'] = {}
+
+# Discover nodes
+node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT)
+print node_response
+for line in node_response:
+	print "\n", line
+	node_ip_addresses = controller_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
 if controller_ip == '':
-	print "error: could not find controller ip address"
+	print "error: could not find a controller ip address"
 else:
-	config['controller ip'] = controller_ip
+	config['deployment']['controller ip'] = controller_ip
 
 # Ceph specific fields -----------------------------------------------------
 
@@ -45,6 +52,8 @@ for pool in json_response:
 	config['ceph']['pools_replication_size'][pool['pool_name']] = pool['size']
 	pool_sizes.append(pool['size'])
 config['ceph']['min_replication_size'] = min(pool_sizes)
+
+# --------------------------------------------------------------------------
 
 # Dump changes to file and close it
 yaml.safe_dump(config, f, default_flow_style=False)
