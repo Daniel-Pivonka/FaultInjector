@@ -20,9 +20,7 @@ if config is None:
 
 # Find controller ip address
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
-controller_ip = controller_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '')
-print "controller ip:" + controller_ip + "END"
-
+controller_ip = controller_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
 if controller_ip == '':
 	print "error: could not find controller ip address"
 else:
@@ -39,8 +37,7 @@ replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
 for pool in json_response:
-	print pool['pool_name']
-	print pool['size']
+	config['pools'][pool['pool_name']] = pool['size']
 
 
 # Dump changes to file and close it
