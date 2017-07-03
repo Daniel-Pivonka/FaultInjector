@@ -22,7 +22,7 @@ controller_response = subprocess.check_output('. ../stackrc && nova list | grep 
 
 print controller_response 
 
-replica_size_command = 'ceph osd pool ls detail -f json'
+replica_size_command = 'sudo ceph osd pool ls detail -f json'
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
