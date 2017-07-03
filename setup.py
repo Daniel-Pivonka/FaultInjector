@@ -23,7 +23,7 @@ try:
 except subprocess.CalledProcessError as non_zero_return:
 	print non_zero_return.returncode, non_zero_return.output 
 
-print controller_response 
+#print controller_response 
 
 replica_size_command = 'ceph osd pool ls detail -f json'
 
