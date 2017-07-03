@@ -38,10 +38,11 @@ for line in node_response:
 	node_fields = line[1:-1].split('|')
 	node_id = node_fields[0].strip()
 	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
+	node_name = node_fields[1].partition('-')[-1].rpartition(' ')[0].strip()
 	if node_type == 'osd-compute':
 		config['deployment']['hci'] = True
 	node_ip = node_fields[5].partition('=')[-1].strip()
-	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip}
+	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip, 'node_name': node_name}
 
 config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
@@ -69,6 +70,22 @@ if args.activate_ceph:
 		config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
 		pool_sizes.append(pool['size'])
 	config['ceph']['minimum_replication_size'] = min(pool_sizes)
+"""
+	# Find osd count 
+	osd_count_command = 'sudo ceph osd tree -f json'
+	ssh = paramiko.SSHClient()
+	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	ssh.connect('192.168.24.13', username='heat-admin')
+	ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(osd_count_command)
+	osd_count_response = ssh_stdout.read()
+	ssh_stdout.channel.close()
+	json_response = json.loads(osd_count_response)
+	for ceph_node in json_response:
+		for node in config['deployment']['nodes']:
+			if (node['node_type'] == 'osd-compute') or (node['node_type'] == 'ceph'):
+				if ceph_node['name'] == node['type']
+			"""
+
 
 # --------------------------------------------------------------------------
 
