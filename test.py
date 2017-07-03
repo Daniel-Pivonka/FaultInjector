@@ -33,6 +33,10 @@ class Fault:
     def deterministic(self):
         raise NotImplementedError
 
+    def check_exit_signal(self):
+        if stopper.is_set():
+                sys.exit(0)
+
 class Ceph(Fault):
 
     def __init__(self, deployment):
@@ -84,7 +88,6 @@ class Ceph(Fault):
             will take specific node/osd to fault (ip or uuid)
             will run until completion
         """
-        print "ceph deterministic"
 
         #convert endtime to seconds
         l = args[3].split(':')
@@ -97,6 +100,7 @@ class Ceph(Fault):
 
         #wait until starttime
         while time.time() < int(global_starttime.strftime('%s')) + secs:
+            self.check_exit_signal()
             time.sleep(1)
 
         #call fault
@@ -200,8 +204,7 @@ class Ceph(Fault):
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
-            #time.sleep(downtime * 60)
-            time.sleep(60) # temporary placeholder for testing
+            time.sleep(downtime * 60)
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_starttime
             exit_status = self.check_health()
@@ -218,23 +221,35 @@ class Ceph(Fault):
     def det_osd_service_fault(self, target_node, downtime):
         """ Kills a random osd service specified on a random ceph node or osd-compute node
         """
+
+        #check for exit signal
+        self.check_exit_signal()
+
         host = target_node.ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
+
+        #check for exit signal
+        self.check_exit_signal()
 
         # Make sure target node is reachable 
         if response != 0:
             print "[det_osd_service_fault] error: target node unreachable, exiting fault function"
             return None
 
+        #TODO: check if node is already occupied!!!!!!
+
         target_node.occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-        with open('ceph-osd-fault-crash.yml', 'w') as f:
+        with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
+
+        #check for exit signal
+        self.check_exit_signal()
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
             config = yaml.load(f)
@@ -242,12 +257,20 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
+        #check for exit signal
+        self.check_exit_signal()
+
         if self.check_health():    
             print "[det_ceph-osd-fault] cluster is healthy, executing fault."
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
-            #time.sleep(downtime * 60)
-            time.sleep(60) # temporary placeholder for testing
+            
+            while downtime > 0:
+                #check for exit signal
+                self.check_exit_signal()
+                time.sleep(60)
+                downtime -= 1
+
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             target_node.occupied = False # Free up the node
             print "[det_osd_service_fault] deterministic step completed"
@@ -287,6 +310,12 @@ log = open('FaultInjector.log', 'a')
 #global list of all plugins
 plugins = []
 
+#global list of threads
+threads = []
+
+#global exit signal for threads
+stopper = threading.Event()
+
 def main():
     deployment = Deployment("config.yaml")
 
@@ -322,6 +351,7 @@ def main():
     # end injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
+    print "fin"
 
 
 def deterministic_start(filepath):
@@ -329,11 +359,7 @@ def deterministic_start(filepath):
         will create all threads (one per entry in log) and spawn them
         will wait for all threads to complete
     """
-    print "deterministic"
     log.write('{:%Y-%m-%d %H:%M:%S} Deterministic Mode Started\n'.format(datetime.datetime.now()))
-
-    #threads
-    threads = []
 
     # open file
     with open(filepath[0]) as f:
@@ -352,9 +378,15 @@ def deterministic_start(filepath):
     for thread in threads:
         thread.start()
       
-    #wait for all threads to end              
-    for thread in threads:
-        thread.join()
+    #wait for all threads to end  
+    not_done = True
+    while not_done:
+        not_done = False
+        for thread in threads:
+            if thread.isAlive():
+                not_done = True
+        time.sleep(1)
+
 
 def stateful_start(timelimit):
     """ func that will create a thread for every plugin
@@ -408,9 +440,15 @@ def stateless_start(timelimit):
 
 
 def signal_handler(signal, frame):
-        print('\nYou exited! Your environment will be restored to its original state.')
+        
+        print('\nYou exited!\nPlease wait for your environment will be restored.\nThis may take some time.')
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
+
+        stopper.set()
+
+        for thread in threads:
+            thread.join()
 
         subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
