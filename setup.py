@@ -21,7 +21,8 @@ config = yaml.load(f)
 
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
 
-print controller_response 
+ip = controller_response.rpartition('=')[-1].strip(' |')
+print ip
 
 replica_size_command = 'sudo ceph osd pool ls detail -f json'
 
