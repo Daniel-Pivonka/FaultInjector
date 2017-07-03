@@ -20,7 +20,7 @@ if config is None:
 
 # General deployment fields:
 
-config['deployment'] = {'nodes': {}, 'hci': false, 'containerized': false}
+config['deployment'] = {'nodes': {}, 'hci': False, 'containerized': False}
 
 # Discover nodes
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
