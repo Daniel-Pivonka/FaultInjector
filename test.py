@@ -81,6 +81,9 @@ class Ceph(Fault):
             will do things randomly (pick node to fault and timing)
         """
         print "ceph stateful"
+   
+        self.check_exit_signal()
+
 
     def deterministic(self, args):
         """ func that will be set up on a thread
@@ -128,13 +131,8 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-<<<<<<< HEAD
             print ("[check_health] could not connect to node @" + 
                    target_node.ip + ", trying another after 20 seconds...")
-=======
-            print "[check_health] could not connect to node @" +  \
-                    target_node.ip + ", trying another after 20 seconds..."
->>>>>>> 439066ff8b9f6ed868f96460d051525503674279
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
@@ -443,7 +441,7 @@ def stateful_start(timelimit):
 
     #create thread for every plugin
     for plugin in plugins:
-        threads.append(threading.Thread(target=plugin.stateful, args=()))
+        threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file,)))
 
     #start all threads
     for thread in threads:
