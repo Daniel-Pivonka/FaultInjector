@@ -128,8 +128,13 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
+<<<<<<< HEAD
             print ("[check_health] could not connect to node @" + 
                    target_node.ip + ", trying another after 20 seconds...")
+=======
+            print "[check_health] could not connect to node @" +  \
+                    target_node.ip + ", trying another after 20 seconds..."
+>>>>>>> 439066ff8b9f6ed868f96460d051525503674279
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
