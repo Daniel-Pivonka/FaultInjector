@@ -33,8 +33,8 @@ replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
 for pool in json_response:
-	print pool
-	print "\n"
+	print pool['pool_name']
+	print pool['size']
 
 
 # Dump changes to file and close it
