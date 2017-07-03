@@ -42,7 +42,7 @@ for line in node_response:
 	if node_type == 'osd-compute':
 		config['deployment']['hci'] = True
 	node_ip = node_fields[5].partition('=')[-1].strip()
-	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip, 'node_name': "|" + node_name + "|"}
+	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip, 'node_name': node_name}
 
 config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
