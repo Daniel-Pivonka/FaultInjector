@@ -19,13 +19,17 @@ be checked before running the main program
 f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
 config = yaml.load(f)
 
+# Find controller ip address
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
+controller_ip = controller_response.rpartition('=')[-1].replace(" |", "")
 
-ip = controller_response.rpartition('=')[-1].replace(" |", "")
-print ip
+if controller_ip == '':
+	print "error: could not find controller ip address"
+else:
+	config['controller ip'] = controller_ip
 
+# Find deployment pools' replica sizes
 replica_size_command = 'sudo ceph osd pool ls detail -f json'
-
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect('192.168.24.13', username='heat-admin')
