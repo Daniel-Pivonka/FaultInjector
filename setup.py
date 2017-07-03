@@ -23,8 +23,7 @@ if config is None:
 config['deployment'] = {}
 
 # Discover nodes
-node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT)
-print node_response
+node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')
 for line in node_response:
 	print "\n", line
 	#node_ip_addresses = line.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
