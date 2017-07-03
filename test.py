@@ -205,7 +205,7 @@ class Ceph(Fault):
             print "[ceph-osd-fault] cluster is healthy, executing fault."
             start_time = datetime.datetime.now() - global_starttime
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+            downtime = 1 # random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                       str(downtime) + ' minutes before introducing OSD again \
                       \n'.format(datetime.datetime.now()))
