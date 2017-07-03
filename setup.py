@@ -26,6 +26,7 @@ controller_ip = controller_response.rpartition('=')[-1].replace(" |", "")
 if controller_ip == '':
 	print "error: could not find controller ip address"
 else:
+	print type(config)
 	config['controller ip'] = controller_ip
 
 # Find deployment pools' replica sizes
