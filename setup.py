@@ -18,7 +18,10 @@ be checked before running the main program
 f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
 config = yaml.load(f)
 
-controller_response = subprocess.check_output('. stackrc && nova list | grep control', shell=True, stderr=subprocess.STDOUT)
+try:
+	controller_response = subprocess.check_output('. stackrc && nova list | grep control', shell=True, stderr=subprocess.STDOUT)
+except subprocess.CalledProcessError as non_zero_return:
+	print non_zero_return.returncode, non_zero_return.output 
 
 print controller_response 
 
