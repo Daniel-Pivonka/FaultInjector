@@ -29,7 +29,7 @@ for line in node_response:
 	print node_fields
 	node_id = node_fields[0].strip()
 	print node_id 
-	node_type = node_fields[1].partition('-').rpartition('-')
+	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
 	print node_type
 	#print "\n", line
 	#node_ip_addresses = line.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
