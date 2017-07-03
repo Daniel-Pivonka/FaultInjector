@@ -26,6 +26,7 @@ config['deployment'] = {}
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')
 for line in node_response:
 	node_fields = line[1:-1].split('|')
+	print node_fields
 	node_id = node_fields[0].strip()
 	print node_id 
 	node_type = node_fields[1].partition('-').rpartition('-')
