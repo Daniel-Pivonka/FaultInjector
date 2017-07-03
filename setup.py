@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import argparse
 import json
 import paramiko
 import subprocess
@@ -11,6 +12,13 @@ as thouroughly as possible. Note that some parameters in the config
 like "HCI" may not be filled in certain cases, so the config should
 be checked before running the main program
 """
+
+# Manage arguments passed with the script
+
+parser = argparse.ArgumentParser(description='Fault Injector Setup')
+parser.add_argument('-c','--ceph', help='setup will look for ceph fields in the deployment', required=False, dest='activate_ceph', action='store_true')
+parser.set_defaults(activate_ceph=False)
+args = parser.parse_args()
 
 # Open config file  
 f = open('config.yaml', 'w+')
@@ -38,25 +46,27 @@ config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
 # Ceph specific fields -----------------------------------------------------
 
-print "Discovering Ceph-specific information..."
+if args.activate_ceph:
 
-config['ceph'] = {}
+	print "Discovering Ceph-specific information..."
 
-# Find deployment pools' replica sizes
-replica_size_command = 'sudo ceph osd pool ls detail -f json'
-ssh = paramiko.SSHClient()
-ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect('192.168.24.13', username='heat-admin')
-ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
-replica_response = ssh_stdout.read()
-ssh_stdout.channel.close()
-json_response = json.loads(replica_response)
-config['ceph']['pools_and_replication_size'] = {}
-pool_sizes = [] # List of sizes used to find the min
-for pool in json_response:
-	config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
-	pool_sizes.append(pool['size'])
-config['ceph']['minimum_replication_size'] = min(pool_sizes)
+	config['ceph'] = {}
+
+	# Find deployment pools' replica sizes
+	replica_size_command = 'sudo ceph osd pool ls detail -f json'
+	ssh = paramiko.SSHClient()
+	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	ssh.connect('192.168.24.13', username='heat-admin')
+	ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
+	replica_response = ssh_stdout.read()
+	ssh_stdout.channel.close()
+	json_response = json.loads(replica_response)
+	config['ceph']['pools_and_replication_size'] = {}
+	pool_sizes = [] # List of sizes used to find the min
+	for pool in json_response:
+		config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
+		pool_sizes.append(pool['size'])
+	config['ceph']['minimum_replication_size'] = min(pool_sizes)
 
 # --------------------------------------------------------------------------
 
