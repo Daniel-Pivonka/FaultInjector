@@ -296,9 +296,9 @@ class Deployment:
         self.nodes = []
         with open(filename, 'r') as f:
             config = yaml.load(f)
-            for node in config['deployment']['nodes']:
+            for node_id in config['deployment']['nodes']:
                 print node['node_type']
-                self.nodes.append(Node(node['node_type'], node['node_ip'], node))
+                self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], config['deployment']['nodes'][node_id]['node_ip'], node_ip))
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
