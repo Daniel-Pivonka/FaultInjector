@@ -27,7 +27,8 @@ node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlpla
 print node_response
 for line in node_response:
 	print "\n", line
-	node_ip_addresses = controller_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
+	node_ip_addresses = node_response.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
+	print node_ip_addresses
 if controller_ip == '':
 	print "error: could not find a controller ip address"
 else:
