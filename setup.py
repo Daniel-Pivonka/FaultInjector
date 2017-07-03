@@ -26,6 +26,10 @@ if controller_ip == '':
 else:
 	config['controller ip'] = controller_ip
 
+# Ceph specific fields -----------------------------------------------------
+
+config['ceph'] = {}
+
 # Find deployment pools' replica sizes
 replica_size_command = 'sudo ceph osd pool ls detail -f json'
 ssh = paramiko.SSHClient()
@@ -35,12 +39,12 @@ ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
-config['pools_replication_size'] = {}
+config['ceph']['pools_replication_size'] = {}
 pool_sizes = [] # List of sizes used to find the min
 for pool in json_response:
-	config['pools_replication_size'][pool['pool_name']] = pool['size']
+	config['ceph']['pools_replication_size'][pool['pool_name']] = pool['size']
 	pool_sizes.append(pool['size'])
-config['min_replication_size'] = min(pool_sizes)
+config['ceph']['min_replication_size'] = min(pool_sizes)
 
 # Dump changes to file and close it
 yaml.safe_dump(config, f, default_flow_style=False)
