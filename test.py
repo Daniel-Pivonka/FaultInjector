@@ -27,15 +27,42 @@ class Fault:
     def stateless(self, deterministic_file, timelimit):
         raise NotImplementedError
 
-    def stateful(self, deterministic_file):
+    def stateful(self, deterministic_file, timelimit):
         raise NotImplementedError
 
-    def deterministic(self):
+    def deterministic(self, args):
         raise NotImplementedError
 
     def check_exit_signal(self):
         if stopper.is_set():
                 sys.exit(0)
+
+class Node_fault(Fault):
+    def __init__(self, deployment):
+        Fault.__init__(self, deployment)
+        #create a list of fault functions
+        self.functions = [self.node_kill_fault]
+
+    def __repr__(self):
+        return "Node_fault"
+
+    def stateless(self, deterministic_file, timelimit):
+        raise NotImplementedError
+
+    def stateful(self, deterministic_file, timelimit):
+        raise NotImplementedError
+
+    def deterministic(self, args):
+        raise NotImplementedError
+
+    # Write fault functions below --------------------------------------------- 
+
+    def node_kill_fault(self):
+        pass
+
+    def det_node_kill_fault(self, target_node, downtime):
+        pass
+
 
 class Ceph(Fault):
 
@@ -74,7 +101,7 @@ class Ceph(Fault):
                                          " | " + str(result[5]) + '\n')
             deterministic_file.close()
 
-    def stateful(self, deterministic_file):
+    def stateful(self, deterministic_file, timelimit):
         """ func that will be set up on a thread
             will write to a shared (all stateful threads will share) log for deterministic mode
             will take a timelimit or run indefinetly till ctrl-c
@@ -83,7 +110,6 @@ class Ceph(Fault):
         print "ceph stateful"
    
         self.check_exit_signal()
-
 
     def deterministic(self, args):
         """ func that will be set up on a thread
@@ -441,7 +467,7 @@ def stateful_start(timelimit):
 
     #create thread for every plugin
     for plugin in plugins:
-        threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file,)))
+        threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit)))
 
     #start all threads
     for thread in threads:
