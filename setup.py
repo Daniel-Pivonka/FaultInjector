@@ -29,6 +29,7 @@ ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect('192.168.24.13', username='heat-admin')
 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 replica_response = ssh_stdout.readlines()
+ssh_stdout.channel.close()
 print replica_response
 
 
