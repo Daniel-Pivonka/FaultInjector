@@ -20,7 +20,7 @@ if config is None:
 
 # General deployment fields:
 
-config['deployment'] = {}
+config['deployment'] = {'nodes': {}, 'hci': false, 'containerized': false}
 
 # Discover nodes
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
@@ -29,7 +29,7 @@ for line in node_response:
 	node_id = node_fields[0].strip()
 	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
 	node_ip = node_fields[5].partition('=')[-1].strip()
-	config['deployment'][node_id] = {'node_type': node_type, 'node_ip': node_ip}
+	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip}
 
 
 # Ceph specific fields -----------------------------------------------------
