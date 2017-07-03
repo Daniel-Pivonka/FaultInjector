@@ -21,7 +21,8 @@ config = yaml.load(f)
 try:
 	controller_response = subprocess.check_output('. ../stackrc && nova list | grep control', shell=True, stderr=subprocess.STDOUT)
 except subprocess.CalledProcessError as non_zero_return:
-	print non_zero_return.returncode, non_zero_return.output 
+	print "code", non_zero_return.returncode
+	print "output", non_zero_return.output 
 
 #print controller_response 
 
