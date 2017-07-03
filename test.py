@@ -295,7 +295,6 @@ class Ceph(Fault):
                         \n'.format(datetime.datetime.now()))
             time.sleep(10)
 
-
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
@@ -321,8 +320,6 @@ class Deployment:
                 self.num_nodes = config['deployment']['num_nodes']
                 #fill hosts file with ips
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip'])+"\n")
-
-
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
@@ -381,7 +378,6 @@ def main():
     log.close()
     print "fin"
 
-
 def deterministic_start(filepath):
     """ func that will read deterministic log
         will create all threads (one per entry in log) and spawn them
@@ -415,7 +411,6 @@ def deterministic_start(filepath):
                 not_done = True
         time.sleep(1)
 
-
 def stateful_start(timelimit):
     """ func that will create a thread for every plugin
         will create a deterministci file that will be passed to every thread
@@ -423,6 +418,8 @@ def stateful_start(timelimit):
         will spawn all threads
         will wait for all threads to compplete or for ctrl-c
     """
+    log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
+    print "stateful"
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
@@ -431,10 +428,30 @@ def stateful_start(timelimit):
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
         print "{} Minute Timelimit".format(timelimit)
 
+     # writes a file that can feed into a deterministic run
+    dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+    # create directory if it doesn't exist
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
+    deterministic_file = open(deterministic_filename, 'w')
 
+    #create thread for every plugin
+    for plugin in plugins:
+        threads.append(threading.Thread(target=plugin.stateful, args=()))
 
-    log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print "stateful"
+    #start all threads
+    for thread in threads:
+        thread.start()
+      
+    #wait for all threads to end  
+    not_done = True
+    while not_done:
+        not_done = False
+        for thread in threads:
+            if thread.isAlive():
+                not_done = True
+        time.sleep(1)
 
 def stateless_start(timelimit):
     """ func that will read from stateless config
@@ -465,7 +482,6 @@ def stateless_start(timelimit):
 
     #start plugins stateless mode
     plugin.stateless(deterministic_file, timelimit)
-
 
 def signal_handler(signal, frame):
         
