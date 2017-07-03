@@ -13,7 +13,7 @@ be checked before running the main program
 """
 
 # Open config file  
-f = open('custom_config.yaml', 'w+')
+f = open('config.yaml', 'w+')
 config = yaml.load(f)
 if config is None:
 	config = {}
