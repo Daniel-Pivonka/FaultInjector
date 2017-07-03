@@ -189,7 +189,7 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-        with open('ceph-osd-fault-crash.yml', 'w') as f:
+        with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
