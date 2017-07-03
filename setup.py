@@ -37,9 +37,9 @@ ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
 config['pools_replication_size'] = {}
 for pool in json_response:
-	config['pools_replication_size'][pool['pool_name'].decode('utf-8')] = pool['size']
+	config['pools_replication_size'][pool['pool_name']] = pool['size']
 
 
 # Dump changes to file and close it
-yaml.dump(config, f, default_flow_style=False)
+yaml.safedump(config, f, default_flow_style=False)
 f.close()
