@@ -20,7 +20,7 @@ if config is None:
 
 # Find controller ip address
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
-controller_ip = controller_response.rpartition('=')[-1].replace(" |", "")
+controller_ip = controller_response.rpartition('=')[-1].rstrip(['|', ' '])
 
 if controller_ip == '':
 	print "error: could not find controller ip address"
