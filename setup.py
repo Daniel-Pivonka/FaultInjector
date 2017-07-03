@@ -22,7 +22,7 @@ if config is None:
 
 print "Discovering general deployment information..."
 
-config['deployment'] = {'nodes': {}, 'hci': False, 'containerized': False}
+config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_nodes': 0}
 
 # Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
@@ -32,6 +32,8 @@ for line in node_response:
 	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
 	node_ip = node_fields[5].partition('=')[-1].strip()
 	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip}
+
+config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
 
 # Ceph specific fields -----------------------------------------------------
