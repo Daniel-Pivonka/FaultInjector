@@ -18,11 +18,7 @@ be checked before running the main program
 f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
 config = yaml.load(f)
 
-#try:
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
-# except subprocess.CalledProcessError as non_zero_return:
-# 	print "code", non_zero_return.returncode
-# 	print "output", non_zero_return.output 
 
 print controller_response 
 
@@ -32,7 +28,7 @@ ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect('192.168.24.13', username='heat-admin')
 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
-replica_response = str(ssh_stdout.readlines())
+replica_response = ssh_stdout.readlines()
 print replica_response
 
 
