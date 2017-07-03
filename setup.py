@@ -20,9 +20,11 @@ if config is None:
 
 # General deployment fields:
 
+print "Discovering general deployment information..."
+
 config['deployment'] = {'nodes': {}, 'hci': False, 'containerized': False}
 
-# Discover nodes
+# Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
 for line in node_response:
 	node_fields = line[1:-1].split('|')
@@ -33,6 +35,8 @@ for line in node_response:
 
 
 # Ceph specific fields -----------------------------------------------------
+
+print "Discovering Ceph-specific information..."
 
 config['ceph'] = {}
 
@@ -48,12 +52,13 @@ json_response = json.loads(replica_response)
 config['ceph']['pools_replication_size'] = {}
 pool_sizes = [] # List of sizes used to find the min
 for pool in json_response:
-	config['ceph']['pools_replication_size'][pool['pool_name']] = pool['size']
+	config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
 	pool_sizes.append(pool['size'])
-config['ceph']['min_replication_size'] = min(pool_sizes)
+config['ceph']['pools_and_replication_size'] = min(pool_sizes)
 
 # --------------------------------------------------------------------------
 
 # Dump changes to file and close it
 yaml.safe_dump(config, f, default_flow_style=False)
 f.close()
+print "Completed!"
