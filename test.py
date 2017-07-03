@@ -306,6 +306,9 @@ class Deployment:
         """ Takes in a deployment config file 
         """
         self.nodes = []
+
+        hosts = open('hosts', 'w')
+
         with open(filename, 'r') as f:
             config = yaml.load(f)
             for node_id in config['deployment']['nodes']:
@@ -314,6 +317,10 @@ class Deployment:
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
+                #fill hosts file with ips
+                hosts.write((config['deployment']['nodes'][node_id]['node_ip'])+"\n")
+
+
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
