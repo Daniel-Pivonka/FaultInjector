@@ -36,9 +36,11 @@ replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
 config['pools_replication_size'] = {}
+pool_sizes = [] # List of sizes used to find the min
 for pool in json_response:
 	config['pools_replication_size'][pool['pool_name']] = pool['size']
-
+	pool_sizes.append(pool['size'])
+config['min_replication_size'] = min(pool_sizes)
 
 # Dump changes to file and close it
 yaml.safe_dump(config, f, default_flow_style=False)
