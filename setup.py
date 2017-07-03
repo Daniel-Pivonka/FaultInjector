@@ -23,7 +23,7 @@ if config is None:
 config['deployment'] = {}
 
 # Discover nodes
-node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')
+node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
 for line in node_response:
 	node_fields = line[1:-1].split('|')
 	print node_fields
