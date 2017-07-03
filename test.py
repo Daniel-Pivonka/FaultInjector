@@ -53,13 +53,10 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        #deterministic_file = open(deterministic_file, 'w')
-        print "ceph stateless"
+        # eterministic_file = open(deterministic_file, 'w')
 
-        # if fault_domain == "template_fault":
-        #     result = template_fault(target)
-        #     deterministic_file.write("Fault Type 1 | " + str(target) + " | " + result[0] + " | Wait Time | " + result[1] + " | " + result[2] + "\n")
-        
+        print "Beginning Ceph stateless mode"
+
         if timelimit is None:
             while 1:
                 random.choice(self.functions)()
@@ -67,7 +64,8 @@ class Ceph(Fault):
             # runtime loop
             timeout = time.time() + 60 * timelimit
             while time.time() < timeout:
-                result = random.choice(self.functions)() # Calls a fault function and stores the results
+                # Calls a fault function and stores the results
+                result = random.choice(self.functions)() 
                 if result is None:
                     continue
                 deterministic_file.write(self.__repr__() + " | " + str(result[0]) + " | " + str(result[1]) + " | " + str(result[2]) + \
@@ -128,7 +126,8 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-            print "[check_health] could not connect to node @" + target_node.ip + ", trying another after 20 seconds..."
+            print "[check_health] could not connect to node @" + 
+                   target_node.ip + ", trying another after 20 seconds..."
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
@@ -158,7 +157,8 @@ class Ceph(Fault):
         return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
 
     def osd_service_fault(self):
-        """ Kills a random osd service specified on a random ceph node or osd-compute node
+        """ Kills a random osd service specified on a random ceph node
+            or osd-compute node
         """
         candidate_nodes = []
         for node in self.deployment.nodes:
@@ -178,8 +178,9 @@ class Ceph(Fault):
             target_node = random.choice(candidate_nodes)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find acceptable node. \
-                        Waiting 20 seconds before searching for a different node to fault.\n'.format(datetime.datetime.now())) 
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
+                        acceptable node. Waiting 20 seconds before searching \
+                        for a different node to fault.\n'.format(datetime.datetime.now())) 
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
@@ -203,7 +204,9 @@ class Ceph(Fault):
             start_time = datetime.datetime.now() - global_starttime
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
+                      str(downtime) + ' minutes before introducing OSD again \
+                      \n'.format(datetime.datetime.now()))
             time.sleep(downtime * 60)
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_starttime
@@ -212,8 +215,11 @@ class Ceph(Fault):
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
         else:
-            print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type\n'.format(datetime.datetime.now()))
+            print "[ceph-osd-fault] cluster is not healthy, returning to \
+                    stateless function to pick another fault type"
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
+                       healthy, returning to stateless function to pick another \
+                       fault type\n'.format(datetime.datetime.now()))
             time.sleep(10)
 
         # Deterministic fault functions below ---------------------------------------------
@@ -235,7 +241,8 @@ class Ceph(Fault):
 
         # Make sure target node is reachable 
         if response != 0:
-            print "[det_osd_service_fault] error: target node unreachable, exiting fault function"
+            print "[det_osd_service_fault] error: target node unreachable, \
+                    exiting fault function"
             return None
 
         #TODO: check if node is already occupied!!!!!!
@@ -263,7 +270,9 @@ class Ceph(Fault):
         if self.check_health():    
             print "[det_ceph-osd-fault] cluster is healthy, executing fault."
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + str(downtime) + ' minutes before introducing OSD again\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + 
+                        str(downtime) + ' minutes before introducing OSD \
+                        again\n'.format(datetime.datetime.now()))
             
             while downtime > 0:
                 #check for exit signal
@@ -277,8 +286,11 @@ class Ceph(Fault):
             return True 
 
         else:
-            print "[ceph-osd-fault] cluster is not healthy, moving onto next step without faulting"
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not healthy, moving onto next step without faulting\n'.format(datetime.datetime.now()))
+            print "[ceph-osd-fault] cluster is not healthy, moving onto \
+                    next step without faulting"
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
+                        healthy, moving onto next step without faulting \
+                        \n'.format(datetime.datetime.now()))
             time.sleep(10)
 
 
@@ -297,7 +309,8 @@ class Deployment:
         with open(filename, 'r') as f:
             config = yaml.load(f)
             for node_id in config['deployment']['nodes']:
-                self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], config['deployment']['nodes'][node_id]['node_ip'], node_id))
+                self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], \
+                     config['deployment']['nodes'][node_id]['node_ip'], node_id))
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
@@ -331,10 +344,15 @@ def main():
 
     # create argument parser
     parser = argparse.ArgumentParser(description='Fault Injector')
-    parser.add_argument('-d','--deterministic', help='injector will follow the list of tasks in the file specified', action='store', nargs=1, dest='filepath')
-    parser.add_argument('-sf','--stateful', help='injector will run in stateful random mode', required=False, action='store_true')
-    parser.add_argument('-sl','--stateless', help='injector will run in stateless random mode', required=False, action='store_true')
-    parser.add_argument('-t','--timelimit', help='timelimit for injector to run (mins)', required=False, type=int, metavar='\b')
+    parser.add_argument('-d','--deterministic', help='injector will follow the \
+                         list of tasks in the file specified', action='store', 
+                        nargs=1, dest='filepath')
+    parser.add_argument('-sf','--stateful', help='injector will run in stateful \
+                        random mode', required=False, action='store_true')
+    parser.add_argument('-sl','--stateless', help='injector will run in stateless \
+                        random mode', required=False, action='store_true')
+    parser.add_argument('-t','--timelimit', help='timelimit for injector to run \
+                         (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
 
     # check mode
