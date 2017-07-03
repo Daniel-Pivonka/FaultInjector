@@ -70,7 +70,7 @@ if args.activate_ceph:
 		config['ceph']['pools_and_replication_size'][pool['pool_name']] = pool['size']
 		pool_sizes.append(pool['size'])
 	config['ceph']['minimum_replication_size'] = min(pool_sizes)
-
+"""
 	# Find osd count 
 	osd_count_command = 'sudo ceph osd tree -f json'
 	ssh = paramiko.SSHClient()
@@ -83,8 +83,8 @@ if args.activate_ceph:
 	for ceph_node in json_response:
 		for node in config['deployment']['nodes']:
 			if (node['node_type'] == 'osd-compute') or (node['node_type'] == 'ceph'):
-				if ceph_node['name'][] == node['type']
-			
+				if ceph_node['name'] == node['type']
+			"""
 
 
 # --------------------------------------------------------------------------
