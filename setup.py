@@ -41,5 +41,5 @@ for pool in json_response:
 
 
 # Dump changes to file and close it
-yaml.safedump(config, f, default_flow_style=False)
+yaml.safe_dump(config, f, default_flow_style=False)
 f.close()
