@@ -24,7 +24,6 @@ controller_ip = controller_response.rpartition('=')[-1].replace('|', '').replace
 if controller_ip == '':
 	print "error: could not find controller ip address"
 else:
-	print type(config)
 	config['controller ip'] = controller_ip
 
 # Find deployment pools' replica sizes
@@ -36,9 +35,9 @@ ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
 json_response = json.loads(replica_response)
-config['pools'] = {}
+config['pools_replication_size'] = {}
 for pool in json_response:
-	config['pools'][pool['pool_name']] = pool['size']
+	config['pools'][pool['pool_name'].decode('utf-8')] = pool['size']
 
 
 # Dump changes to file and close it
