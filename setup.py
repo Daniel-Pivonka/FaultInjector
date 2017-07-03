@@ -12,12 +12,11 @@ like "HCI" may not be filled in certain cases, so the config should
 be checked before running the main program
 """
 
-
-
-
 # Open config file  
-f = open('custom_config.yml', 'w+')
+f = open('custom_config.yaml', 'w+')
 config = yaml.load(f)
+if config is None:
+	config = {}
 
 # Find controller ip address
 controller_response = subprocess.check_output('. ../stackrc && nova list | grep control || true', shell=True, stderr=subprocess.STDOUT)
