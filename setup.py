@@ -38,6 +38,8 @@ for line in node_response:
 	node_fields = line[1:-1].split('|')
 	node_id = node_fields[0].strip()
 	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
+	if node_type == 'osd-compute':
+		config['deployment']['hci'] = True
 	node_ip = node_fields[5].partition('=')[-1].strip()
 	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip}
 
