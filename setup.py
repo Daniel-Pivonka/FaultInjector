@@ -16,7 +16,7 @@ be checked before running the main program
 
 
 # Open config file  
-f = open('playbooks/ceph-osd-fault-restore.yml', 'w+')
+f = open('custom_config.yml', 'w+')
 config = yaml.load(f)
 
 # Find controller ip address
