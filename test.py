@@ -294,12 +294,15 @@ class Deployment:
         """ Takes in a deployment config file 
         """
         self.nodes = []
-        self.hci = True # Todo: read in config file for this
         with open(filename, 'r') as f:
             config = yaml.load(f)
-        for node_index in range(config['numnodes']):
-            current_node = config['node' + str(node_index)]
-            self.nodes.append(Node(current_node['type'], current_node['ip'], current_node['id']))
+            for node in config['deployment']['nodes']:
+                self.nodes.append(Node(node['node_type'], current_node['node_ip'], node))
+            self.hci = config['deployment']['hci']
+            self.containerized = config['deployment']['containerized']
+            self.num_nodes = config['deployment']['num_nodes']
+
+        print self.nodes, self.hci, self.containerized, self.num_nodes
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
