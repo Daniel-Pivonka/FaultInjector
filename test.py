@@ -302,8 +302,6 @@ class Deployment:
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
 
-        print self.nodes, self.hci, self.containerized, self.num_nodes
-
 # global var for start time of program
 global_starttime = datetime.datetime.now()
 
