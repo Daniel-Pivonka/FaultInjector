@@ -27,12 +27,12 @@ node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlpla
 print node_response
 for line in node_response:
 	print "\n", line
-	node_ip_addresses = line.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
-	print node_ip_addresses
-if controller_ip == '':
-	print "error: could not find a controller ip address"
-else:
-	config['deployment']['controller ip'] = controller_ip
+	#node_ip_addresses = line.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
+	#print node_ip_addresses
+#if controller_ip == '':
+#	print "error: could not find a controller ip address"
+#else:
+#	config['deployment']['controller ip'] = controller_ip
 
 # Ceph specific fields -----------------------------------------------------
 
