@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import json
 import paramiko
 import subprocess
 import yaml 
@@ -30,7 +31,8 @@ ssh.connect('192.168.24.13', username='heat-admin')
 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 replica_response = ssh_stdout.read()
 ssh_stdout.channel.close()
-print replica_response
+json_response = json.loads(replica_response)
+print json_response
 
 
 # Dump changes to file and close it
