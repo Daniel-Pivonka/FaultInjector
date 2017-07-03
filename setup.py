@@ -29,6 +29,7 @@ for line in node_response:
 	print node_fields
 	node_id = node_fields[0].strip()
 	print node_id 
+	print 'node fields:\n', node_fields
 	node_type = node_fields[1].partition('-')#[-1]#.rpartition('-')[0]
 	print node_type
 	#print "\n", line
