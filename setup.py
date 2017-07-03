@@ -26,10 +26,9 @@ config['deployment'] = {}
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')
 for line in node_response:
 	node_fields = line[1:-1].split('|')
-	print node_fields
-	node_id = line.rpartition('overcloud')[0].replace('|', '').replace(' ', '')
+	node_id = node_fields[0].strip()
 	print node_id 
-	node_type = line.rpartition('overcloud')[-1].partition('|')[0].strip()[1:-2]
+	node_type = node_fields.partition('-').rpartition('-')
 	print node_type
 	#print "\n", line
 	#node_ip_addresses = line.rpartition('=')[-1].replace('|', '').replace(' ', '').replace('\n', '') # Isolate the ip in the string 
