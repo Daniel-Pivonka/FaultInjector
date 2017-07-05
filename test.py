@@ -330,7 +330,8 @@ class Node:
 
 class Deployment:
     def __init__(self, filename):
-        """ Takes in a deployment config file 
+        """ Takes in a deployment config file and parses it for the
+            deployment configuration 
         """
         self.nodes = []
 
@@ -338,14 +339,21 @@ class Deployment:
 
         with open(filename, 'r') as f:
             config = yaml.load(f)
+
+            # Check for a Ceph deployment
+            if 'ceph' in config:
+                ceph_deployment = True
+
             for node_id in config['deployment']['nodes']:
                 self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], \
                      config['deployment']['nodes'][node_id]['node_ip'], node_id))
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
-                #fill hosts file with ips
-                hosts.write((config['deployment']['nodes'][node_id]['node_ip'])+"\n")
+                # Fill hosts file with IPs
+                hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
+                if ceph_deployment:
+                    self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
