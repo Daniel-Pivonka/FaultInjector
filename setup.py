@@ -92,7 +92,7 @@ if args.activate_ceph:
 			if (config['deployment']['nodes'][node_id]['node_type'] == 'osd-compute') \
 				or (config['deployment']['nodes'][node_id]['node_type'] == 'ceph'):
 				print 'name:', ceph_node['name']
-				print 'name to match:', config['deployment']['nodes'][node_id]['node_name'
+				print 'name to match:', config['deployment']['nodes'][node_id]['node_name']
 				if ceph_node['name'] == config['deployment']['nodes'][node_id]['node_name']:
 					print "HERE"
 					config['deployment']['nodes'][node_id]['num_osds'] = len(json_responce[ceph_node]['children'])
