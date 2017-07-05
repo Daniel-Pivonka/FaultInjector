@@ -472,11 +472,7 @@ def stateful_start(timelimit):
 
     #create thread for every plugin
     for plugin in plugins:
-<<<<<<< HEAD
-        threads.append(threading.Thread(target=plugin.stateful, args=()))
-=======
         threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit)))
->>>>>>> cec6fcf73221ba76b7b618595b341693132f325f
 
     #start all threads
     for thread in threads:
