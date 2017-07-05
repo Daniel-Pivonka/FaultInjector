@@ -237,7 +237,7 @@ class Ceph(Fault):
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                       str(downtime) + ' minutes before introducing OSD again \
                       \n'.format(datetime.datetime.now()))
-            time.sleep(downtime * 60)
+            time.sleep(30) #(downtime * 60)
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             end_time = datetime.datetime.now() - global_starttime
             exit_status = self.check_health()
@@ -398,7 +398,7 @@ def main():
     # check mode
     if args.filepath:
         if args.timelimit:
-            print "Timelimit not applicable in deterministic mode"
+            print "Time Limit not applicable in deterministic mode"
         deterministic_start(args.filepath)
     elif args.stateful:
         stateful_start(args.timelimit)
@@ -457,10 +457,10 @@ def stateful_start(timelimit):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
-        print "indefinite timelimit"
+        print "Indefinite Time Limit"
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print "{} Minute Timelimit".format(timelimit)
+        print "{} Minute Time Limit".format(timelimit)
 
      # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
@@ -495,11 +495,11 @@ def stateless_start(timelimit):
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
 
     if timelimit is None:
-        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit Enabled\n'.format(datetime.datetime.now()))
-        print "indefinite timelimit"
+        log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
+        print "Indefinite Time Limit"
     else:
-        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print "{} Minute Timelimit".format(timelimit)
+        log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
+        print "{} Minute Time Limit".format(timelimit)
 
     #pick plugin to use
     plugin = random.choice(plugins)
@@ -519,7 +519,7 @@ def stateless_start(timelimit):
 
 def signal_handler(signal, frame):
         
-        print('\nYou exited!\nPlease wait for your environment will be restored.\nThis may take some time.')
+        print('\nYou exited!\nPlease wait while your environment is restored.\nThis may take some time.')
 
         log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
