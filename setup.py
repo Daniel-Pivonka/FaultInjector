@@ -82,8 +82,8 @@ if args.activate_ceph:
 	json_response = json.loads(osd_count_response)
 
 	# Initalize num_osds field
-	for node in config['deployment']['nodes']:
-		node['num_osds'] = 0
+	for node_id in config['deployment']['nodes']:
+		config['deployment']['nodes'][node_id]['num_osds'] = 0
 
 	# Count number of osds in each node and assign them appropriately 	
 	for ceph_node in json_response['nodes']:
