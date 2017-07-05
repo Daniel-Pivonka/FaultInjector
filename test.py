@@ -247,12 +247,7 @@ class Ceph(Fault):
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
         else:
-            cluster_not_healthy = """
-                                    [ceph-osd-fault] cluster is not healthy, 
-                                    returning to stateless function to pick 
-                                    another fault type
-                                    """
-            print cluster_not_healthy
+            print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
                        healthy, returning to stateless function to pick another \
                        fault type\n'.format(datetime.datetime.now()))
