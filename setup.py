@@ -96,7 +96,7 @@ if args.activate_ceph:
 				if node_name == config['deployment']['nodes'][node_id]['node_name']:
 					print "HERE"
 					print config['deployment']['nodes'][node_id]['num_osds']
-					print len(json_response[ceph_node]['children'])
+					print json_response[ceph_node]['children']
 					config['deployment']['nodes'][node_id]['num_osds'] = len(json_response[ceph_node]['children'])
 
 
