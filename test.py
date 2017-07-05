@@ -81,9 +81,6 @@ class Ceph(Fault):
             will do things randomly (pick node to fault and timing)
         """
         print "ceph stateful"
-   
-        self.check_exit_signal()
-
 
     def deterministic(self, args):
         """ func that will be set up on a thread
@@ -131,8 +128,8 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-            print ("[check_health] could not connect to node @" + 
-                   target_node.ip + ", trying another after 20 seconds...")
+            print "[check_health] could not connect to node @" +  \
+                    target_node.ip + ", trying another after 20 seconds..."
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
@@ -208,7 +205,7 @@ class Ceph(Fault):
             print "[ceph-osd-fault] cluster is healthy, executing fault."
             start_time = datetime.datetime.now() - global_starttime
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            downtime = 1 # random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                       str(downtime) + ' minutes before introducing OSD again \
                       \n'.format(datetime.datetime.now()))
@@ -249,8 +246,6 @@ class Ceph(Fault):
             print "[det_osd_service_fault] error: target node unreachable, \
                     exiting fault function"
             return None
-
-        #TODO: check if node is already occupied!!!!!!
 
         target_node.occupied = True # Mark node as being used 
 
@@ -441,7 +436,7 @@ def stateful_start(timelimit):
 
     #create thread for every plugin
     for plugin in plugins:
-        threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file,)))
+        threads.append(threading.Thread(target=plugin.stateful, args=()))
 
     #start all threads
     for thread in threads:
