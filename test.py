@@ -99,6 +99,8 @@ class Ceph(Fault):
                                         " | " + str(result[1]) + " | " + str(result[2]) + 
                                          " | " + str(result[3]) + " | " + str(result[4]) + 
                                          " | " + str(result[5]) + '\n')
+                deterministic_file.flush()
+                os.fsync()
             deterministic_file.close()
 
     def stateful(self, deterministic_file, timelimit):
