@@ -86,7 +86,7 @@ if args.activate_ceph:
 	#	node['num_osds'] = 0
 
 	# Count number of osds in each node and assign them appropriately 	
-	for ceph_node in json_response:
+	for ceph_node in json_response['nodes']:
 		print ceph_node
 		for node_id in config['deployment']['nodes']:
 			if (config['deployment']['nodes'][node_id]['node_type'] == 'osd-compute') \
