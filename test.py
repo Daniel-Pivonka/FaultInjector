@@ -37,6 +37,19 @@ class Fault:
         if stopper.is_set():
                 sys.exit(0)
 
+    # Write fault functions below --------------------------------------------- 
+
+    def template_fault(self):
+
+        print "template_fault was called"
+
+        start_time = datetime.datetime.now() - global_starttime
+        # Call to playbook goes here
+        # Delay x amount of time
+        end_time = datetime.datetime.now() - global_starttime
+        # Placeholder fault function
+        return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
+
 class Node_fault(Fault):
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
@@ -47,9 +60,6 @@ class Node_fault(Fault):
         return "Node_fault"
 
     def stateless(self, deterministic_file, timelimit):
-        raise NotImplementedError
-
-    def stateful(self, deterministic_file, timelimit):
         raise NotImplementedError
 
     def deterministic(self, args):
@@ -72,17 +82,6 @@ class Ceph(Fault):
 
     def __repr__(self):
         return "Ceph"
-
-    def stateless(self, deterministic_file, timelimit, num_faults):
-        """ func that will be called and run on main thread
-            will write a log for deterministic mode
-            will take a timelimit or run indefinetly till ctrl-c
-            will do things randomly (pick node to fault and timing)
-            faults up to num_faults things at once
-        """
-        print "ceph stateless"
-        self.check_exit_signal()
-        
 
     def stateful(self, deterministic_file, timelimit):
         """ func that will be set up on a thread
@@ -185,17 +184,6 @@ class Ceph(Fault):
 
     # Write fault functions below --------------------------------------------- 
 
-    def template_fault(self):
-
-        print "template_fault was called"
-
-        start_time = datetime.datetime.now() - global_starttime
-        # Call to playbook goes here
-        # Delay x amount of time
-        end_time = datetime.datetime.now() - global_starttime
-        # Placeholder fault function
-        return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
-
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
             or osd-compute node
@@ -261,10 +249,8 @@ class Ceph(Fault):
                        fault type\n'.format(datetime.datetime.now()))
             time.sleep(10)
 
-
     # Deterministic fault functions below ---------------------------------------------
-
-        
+     
     def det_osd_service_fault(self, target_node, downtime):
         """ Kills a random osd service specified on a random ceph node or osd-compute node
         """
@@ -332,14 +318,12 @@ class Ceph(Fault):
                         \n'.format(datetime.datetime.now()))
             time.sleep(10)
 
-
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
         self.ip = node_ip
         self.id = node_id 
         self.occupied = False
-
 
 class Deployment:
     def __init__(self, filename):
