@@ -73,32 +73,16 @@ class Ceph(Fault):
     def __repr__(self):
         return "Ceph"
 
-    def stateless(self, deterministic_file, timelimit):
+    def stateless(self, deterministic_file, timelimit, num_faults):
         """ func that will be called and run on main thread
             will write a log for deterministic mode
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
+            faults up to num_faults things at once
         """
-        # eterministic_file = open(deterministic_file, 'w')
-
-        print "Beginning Ceph stateless mode"
-
-        if timelimit is None:
-            while 1:
-                random.choice(self.functions)()
-        else: 
-            # runtime loop
-            timeout = time.time() + 60 * timelimit
-            while time.time() < timeout:
-                # Calls a fault function and stores the results
-                result = random.choice(self.functions)() 
-                if result is None:
-                    continue
-                deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
-                                        " | " + str(result[1]) + " | " + str(result[2]) + 
-                                         " | " + str(result[3]) + " | " + str(result[4]) + 
-                                         " | " + str(result[5]) + '\n')
-            deterministic_file.close()
+        print "ceph stateless"
+        self.check_exit_signal()
+        
 
     def stateful(self, deterministic_file, timelimit):
         """ func that will be set up on a thread
@@ -106,8 +90,35 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        print "ceph stateful"
-        self.check_exit_signal()
+        print "Beginning Ceph stateful mode"
+
+        # Infinite loop for indefinite mode
+        while timelimit is None:
+            result = random.choice(self.functions)()
+            if result is None:
+                continue
+            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
+                                    " | " + str(result[1]) + " | " + str(result[2]) + 
+                                     " | " + str(result[3]) + " | " + str(result[4]) + 
+                                     " | " + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+
+        # Standard runtime loop
+        timeout = time.time() + 60 * timelimit
+        while time.time() < timeout:
+            # Calls a fault function and stores the results
+            result = random.choice(self.functions)() 
+            if result is None:
+                continue
+            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
+                                    " | " + str(result[1]) + " | " + str(result[2]) + 
+                                     " | " + str(result[3]) + " | " + str(result[4]) + 
+                                     " | " + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+
+        deterministic_file.close()
 
     def deterministic(self, args):
         """ func that will be set up on a thread
@@ -244,14 +255,15 @@ class Ceph(Fault):
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
         else:
-            print "[ceph-osd-fault] cluster is not healthy, returning to \
-                    stateless function to pick another fault type"
+            print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
                        healthy, returning to stateless function to pick another \
                        fault type\n'.format(datetime.datetime.now()))
             time.sleep(10)
 
-        # Deterministic fault functions below ---------------------------------------------
+
+    # Deterministic fault functions below ---------------------------------------------
+
         
     def det_osd_service_fault(self, target_node, downtime):
         """ Kills a random osd service specified on a random ceph node or osd-compute node
@@ -320,12 +332,14 @@ class Ceph(Fault):
                         \n'.format(datetime.datetime.now()))
             time.sleep(10)
 
+
 class Node:
     def __init__(self, node_type, node_ip, node_id):
         self.type = node_type
         self.ip = node_ip
         self.id = node_id 
         self.occupied = False
+
 
 class Deployment:
     def __init__(self, filename):
