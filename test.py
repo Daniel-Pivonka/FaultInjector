@@ -102,6 +102,8 @@ class Ceph(Fault):
                                      " | " + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
+            #check for exit signal
+            self.check_exit_signal()
 
         # Standard runtime loop
         timeout = time.time() + 60 * timelimit
@@ -116,6 +118,8 @@ class Ceph(Fault):
                                      " | " + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
+            #check for exit signal
+            self.check_exit_signal()
 
         deterministic_file.close()
 
@@ -197,6 +201,9 @@ class Ceph(Fault):
                 if node.type == "ceph":
                     candidate_nodes.append(node)
 
+        #check for exit signal
+        self.check_exit_signal()
+
         target_node = random.choice(candidate_nodes)
         host = target_node.ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
@@ -214,6 +221,8 @@ class Ceph(Fault):
                                    stderr=open(os.devnull, 'w'))
 
             target_node.occupied = True # Mark node as being used 
+            #check for exit signal
+            self.check_exit_signal()
 
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
@@ -226,6 +235,9 @@ class Ceph(Fault):
             config[0]['hosts'] = host
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
+
+        #check for exit signal
+        self.check_exit_signal()
 
         if self.check_health():    
             print "[ceph-osd-fault] cluster is healthy, executing fault."
