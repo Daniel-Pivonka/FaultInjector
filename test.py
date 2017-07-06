@@ -62,8 +62,8 @@ class Node_fault(Fault):
     def __repr__(self):
         return "Node_fault"
 
-    def stateless(self, deterministic_file, timelimit):
-        print "hey"
+    def stateless(self, deterministic_file, timelimit, numfaults):
+        print numfaults
 
     def deterministic(self, args):
         raise NotImplementedError
@@ -404,7 +404,8 @@ def main():
     parser.add_argument('-sf','--stateful', help='injector will run in stateful \
                         random mode', required=False, action='store_true')
     parser.add_argument('-sl','--stateless', help='injector will run in stateless \
-                        random mode', required=False, action='store_true')
+                        mode with specified number of faults', required=False,
+                        type=int, nargs=1, dest='numfaults')
     parser.add_argument('-t','--timelimit', help='timelimit for injector to run \
                          (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
@@ -416,8 +417,8 @@ def main():
         deterministic_start(args.filepath)
     elif args.stateful:
         stateful_start(args.timelimit)
-    elif args.stateless:
-        stateless_start(args.timelimit, node_fault)
+    elif args.numfaults:
+        stateless_start(args.timelimit, node_fault, args.numfaults)
     else:
         print "No Mode Chosen"
 
@@ -500,7 +501,7 @@ def stateful_start(timelimit):
                 not_done = True
         time.sleep(1)
 
-def stateless_start(timelimit, node_fault):
+def stateless_start(timelimit, node_fault, numfaults):
     """ func that will read from stateless config
         will run Node_fault statless mode on main thread
         will pass the timelimit (could be infiniety)
@@ -523,7 +524,7 @@ def stateless_start(timelimit, node_fault):
     deterministic_file = open(deterministic_filename, 'w')
 
     #start Node_fault stateless mode
-    node_fault.stateless(deterministic_file, timelimit)
+    node_fault.stateless(deterministic_file, timelimit, numfaults)
 
 def signal_handler(signal, frame):
         
