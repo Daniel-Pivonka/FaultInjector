@@ -63,7 +63,6 @@ class Node_fault(Fault):
     def det_node_kill_fault(self, target_node, downtime):
         pass
 
-
 class Ceph(Fault):
 
     def __init__(self, deployment):
