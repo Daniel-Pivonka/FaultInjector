@@ -13,16 +13,19 @@ import threading
 import time
 import yaml
 
-""" Template class to make your own fault
-    add an instance of your fault to the list of plugins in main
-"""
+
 class Fault:
-    Name = NotImplementedError
+    """ Template class to make your own fault
+    add an instance of your fault to the list of plugins in main
+    """
 
     def __init__(self, deployment):
         self.deployment = deployment
         #create a list of fault functions
         self.functions = []
+
+    def __repr__(self):
+        raise NotImplementedError
 
     def stateless(self, deterministic_file, timelimit):
         raise NotImplementedError
