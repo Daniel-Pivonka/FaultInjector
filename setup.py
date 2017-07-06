@@ -34,6 +34,8 @@ config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_
 
 # Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
+print "node response"
+print node_response
 for line in node_response:
 	node_fields = line[1:-1].split('|')
 	node_id = node_fields[0].strip()
