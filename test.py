@@ -60,7 +60,7 @@ class Node_fault(Fault):
         return "Node_fault"
 
     def stateless(self, deterministic_file, timelimit):
-        raise NotImplementedError
+        print "hey"
 
     def deterministic(self, args):
         raise NotImplementedError
@@ -370,8 +370,10 @@ stopper = threading.Event()
 def main():
     deployment = Deployment("config.yaml")
 
-    #create list of all plugins
+    #create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
+    #plugins.append()
+    node_fault = Node_fault(deployment)
 
     # signal handler to restore everything to normal
     signal.signal(signal.SIGINT, signal_handler)
@@ -400,14 +402,13 @@ def main():
     elif args.stateful:
         stateful_start(args.timelimit)
     elif args.stateless:
-        stateless_start(args.timelimit)
+        stateless_start(args.timelimit, node_fault)
     else:
         print "No Mode Chosen"
 
     # end injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
     log.close()
-    print "fin"
 
 def deterministic_start(filepath):
     """ func that will read deterministic log
@@ -484,10 +485,10 @@ def stateful_start(timelimit):
                 not_done = True
         time.sleep(1)
 
-def stateless_start(timelimit):
+def stateless_start(timelimit, node_fault):
     """ func that will read from stateless config
-        will run one plugin's statless mode on main thread
-        ill pass the timelimit (could be infiniety)
+        will run Node_fault statless mode on main thread
+        will pass the timelimit (could be infiniety)
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
 
@@ -498,11 +499,6 @@ def stateless_start(timelimit):
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
         print "{} Minute Time Limit".format(timelimit)
 
-    #pick plugin to use
-    plugin = random.choice(plugins)
-
-    log.write('{:%Y-%m-%d %H:%M:%S} {} Plugin Chosen\n'.format(datetime.datetime.now(), plugin.__repr__()))
-
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
     # create directory if it doesn't exist
@@ -511,8 +507,8 @@ def stateless_start(timelimit):
     deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
 
-    #start plugins stateless mode
-    plugin.stateless(deterministic_file, timelimit)
+    #start Node_fault stateless mode
+    node_fault.stateless(deterministic_file, timelimit)
 
 def signal_handler(signal, frame):
         
