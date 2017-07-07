@@ -69,6 +69,7 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
                                      ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
@@ -84,6 +85,7 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
                                      ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
@@ -92,7 +94,7 @@ class Node_fault(Fault):
             os.fsync(deterministic_file.fileno())
             #check for exit signal
             self.check_exit_signal()
-
+        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
         deterministic_file.close()
 
     def deterministic(self, args):
@@ -143,7 +145,7 @@ class Node_fault(Fault):
 
         # wait
 
-        #################FIX ME FOR PRODUCTION##############
+        ################# FIX ME FOR PRODUCTION ##############
         downtime = 1#random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
 
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
@@ -186,6 +188,8 @@ class Ceph(Fault):
             will do things randomly (pick node to fault and timing)
         """
         print 'Beginning Ceph stateful mode'
+
+        osd_limit = self.deployment.min_replication_size - 1
 
         # Infinite loop for indefinite mode
         while timelimit is None:
@@ -242,6 +246,7 @@ class Ceph(Fault):
 
         #call fault
         if args[1] == 'ceph-osd-fault':
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
             self.det_osd_service_fault(target, int(args[5]))
         else:
             print 'no matching function found'
@@ -305,10 +310,18 @@ class Ceph(Fault):
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
-        while response != 0 or target_node.occupied:
+
+        # Count the number of downed osds
+        nodes_occupied = 0
+        for node in self.deployment.nodes:
+            if node.occupied:
+                nodes_occupied += 1
+
+        while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= nodes_occupied):
             target_node = random.choice(candidate_nodes)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover
+            print '[ceph-osd-fault] Failed to find acceptable node. Waiting 20 seconds before searching for a different node to fault'
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
                         acceptable node. Waiting 20 seconds before searching \
                         for a different node to fault.\n'.format(datetime.datetime.now())) 
@@ -335,27 +348,21 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        if self.check_health():    
-            print '[ceph-osd-fault] cluster is healthy, executing fault.'
-            start_time = datetime.datetime.now() - global_starttime
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
-                      str(downtime) + ' minutes before introducing OSD again \
-                      \n'.format(datetime.datetime.now()))
-            time.sleep(30) #(downtime * 60)
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-            end_time = datetime.datetime.now() - global_starttime
-            exit_status = self.check_health()
-            target_node.occupied = False # Free up the node
-            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
+        print '[ceph-osd-fault] executing fault'
+        start_time = datetime.datetime.now() - global_starttime
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
+                  str(downtime) + ' minutes before introducing OSD again' +
+                  '\n'.format(datetime.datetime.now()))
+        time.sleep(30) #(downtime * 60)
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        end_time = datetime.datetime.now() - global_starttime
+        exit_status = False # Not currently using exit status 
+        target_node.occupied = False # Free up the node
+        return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
-        else:
-            print '[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type'
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
-                       healthy, returning to stateless function to pick another \
-                       fault type\n'.format(datetime.datetime.now()))
-            time.sleep(10)
+
 
     # Deterministic fault functions below ---------------------------------------------
      
@@ -464,6 +471,7 @@ class Deployment:
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
                 if ceph_deployment:
                     self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
+                    self.min_replication_size = config['ceph']['minimum_replication-size']
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
