@@ -546,6 +546,9 @@ class Deployment:
             # Check for a Ceph deployment
             ceph_deployment = 'ceph' in config
 
+            if ceph_deployment:
+                num_osds = 0
+
             for node_id in config['deployment']['nodes']:
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
                      config['deployment']['nodes'][node_id]['node_ip'], node_id), 'PLACEHOLDER'])
@@ -559,7 +562,7 @@ class Deployment:
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
                 if ceph_deployment:
-                    self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
+                    self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
                     print 'self.osds', self.osds
