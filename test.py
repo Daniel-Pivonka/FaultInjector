@@ -562,6 +562,7 @@ class Deployment:
                     self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
+                    print 'self.osds', self.osds
 
 
 
