@@ -34,7 +34,7 @@ print "Discovering general deployment information..."
 config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_nodes': 0}
 
 # Discover node properties
-node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
+node_response = subprocess.check_output('. ~/stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
 if "|" not in node_response[0]:
 	print "Nova list command outputted an unexpected response, skipping the collection of general deployment information..."
 else:
@@ -64,11 +64,9 @@ if args.activate_ceph:
 
 	for node_id in config['deployment']['nodes']:
 			if (config['deployment']['nodes'][node_id]['node_type'] == 'controller'):
-				#print 'controller node found!! breaking'
 				contoller_ip = config['deployment']['nodes'][node_id]['node_ip']
 				break
 			else: 
-				#print 'controller ip is none'
 				contoller_ip = None
 
 	if contoller_ip is None:
