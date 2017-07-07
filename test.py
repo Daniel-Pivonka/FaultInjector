@@ -311,10 +311,10 @@ class Ceph(Fault):
         for node in self.deployment.nodes:
             print node
             if self.deployment.hci:
-                if node[1].type == 'osd-compute':
+                if node[0].type == 'osd-compute':
                     candidate_nodes.append(node)
             else:
-                if 'ceph' in node[1].type:
+                if 'ceph' in node[0].type:
                     candidate_nodes.append(node)
 
         #check for exit signal
@@ -541,8 +541,7 @@ class Deployment:
             for node_id in config['deployment']['nodes']:
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
                      config['deployment']['nodes'][node_id]['node_ip'], node_id), 'PLACEHOLDER'])
-                print 'most recent self.nodes:'
-                print self.nodes[-1]
+
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
@@ -556,8 +555,6 @@ class Deployment:
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
 
-            print 'all nodes\n\n'
-            print self.nodes
 
 
 # global var for start time of program
