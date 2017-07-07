@@ -306,6 +306,8 @@ class Ceph(Fault):
             or osd-compute node
         """
         candidate_nodes = []
+        print 'deployment nodes'
+        print self.deployment.nodes
         for node in self.deployment.nodes:
             print node
             if self.deployment.hci:
