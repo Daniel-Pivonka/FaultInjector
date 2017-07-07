@@ -547,7 +547,7 @@ class Deployment:
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
                 if ceph_deployment:
-                    self.nodes[-1] = config['deployment']['nodes'][node_id]['osds']
+                    self.nodes[-1][-1] = config['deployment']['nodes'][node_id]['osds']
                 # Fill hosts file with IPs
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
