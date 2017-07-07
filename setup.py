@@ -35,8 +35,6 @@ config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_
 
 # Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
-print "node response"
-print node_response[0]
 if "|" not in node_response[0]:
 	print "Nova list command outputted an unexpected response, skipping the collection of general deployment information..."
 else:
@@ -54,12 +52,20 @@ else:
 
 # Dump changes to the file
 yaml.safe_dump(config, f, default_flow_style=False)
+f.close()
 
 # Ceph specific fields -----------------------------------------------------
 
 if args.activate_ceph:
 
 	print "Discovering Ceph-specific information..."
+
+	# Open config file  
+	f = open('config.yaml', 'w+')
+	config = yaml.load(f)
+	if config is None:
+		config = {}
+
 
 	config['ceph'] = {}
 
