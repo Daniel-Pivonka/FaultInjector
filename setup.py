@@ -92,7 +92,7 @@ if args.activate_ceph:
 	osd_count_command = 'sudo ceph osd tree -f json'
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	ssh.connect('192.168.24.13', username='heat-admin')
+	ssh.connect(contoller_ip, username='heat-admin')
 	ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(osd_count_command)
 	osd_count_response = ssh_stdout.read()
 	ssh_stdout.channel.close()
