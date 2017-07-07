@@ -307,6 +307,7 @@ class Ceph(Fault):
         """
         candidate_nodes = []
         for node in self.deployment.nodes:
+            print node
             if self.deployment.hci:
                 if node[0].type == 'osd-compute':
                     candidate_nodes.append(node)
