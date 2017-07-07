@@ -317,19 +317,19 @@ class Ceph(Fault):
                                    stderr=open(os.devnull, 'w'))
 
         # Count the number of downed osds
-        nodes_occupied = 0
-        for node in self.deployment.nodes:
-            if node.occupied:
-                nodes_occupied += 1
+        osds_occupied = 0
+        for osd in self.deployment.osds:
+            if not osd: # If osd is off
+                osds_occupied += 1
 
-        while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= nodes_occupied):
+        target_osd = random.choice(target_node[1])
+
+        while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= osds_occupied):
             target_node = random.choice(candidate_nodes)
             host = target_node.ip
-            time.sleep(20) # Wait 20 seconds to give nodes time to recover
-            print '[ceph-osd-fault] Failed to find acceptable node. Waiting 20 seconds before searching for a different node to fault'
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
-                        acceptable node. Waiting 20 seconds before searching \
-                        for a different node to fault.\n'.format(datetime.datetime.now())) 
+            time.sleep(1) # Wait 20 seconds to give nodes time to recover
+            print '[ceph-osd-fault] Target node/osd down, trying to find acceptable node'
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(datetime.datetime.now())) 
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
@@ -341,12 +341,14 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
+            config[0]['tasks']['shell'] = 'systemctl stop ceph-osd@' + target_osd
         with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
+            config[0]['tasks']['shell'] = 'systemctl start ceph-osd@' + target_osd
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
@@ -367,6 +369,7 @@ class Ceph(Fault):
         target_node.occupied = False # Free up the node
         return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
+"""
         def mon_service_fault(self):
             """ Kills a random osd service specified on a random ceph node
             or osd-compute node
@@ -439,7 +442,7 @@ class Ceph(Fault):
             exit_status = False # Not currently using exit status 
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
-
+"""
 
     # Deterministic fault functions below ---------------------------------------------
      
@@ -529,16 +532,21 @@ class Deployment:
             ceph_deployment = 'ceph' in config
 
             for node_id in config['deployment']['nodes']:
-                self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], \
-                     config['deployment']['nodes'][node_id]['node_ip'], node_id))
+                self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
+                     config['deployment']['nodes'][node_id]['node_ip'], node_id), None])
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
+                if ceph_deployment:
+                    self.nodes[-1] = config['deployment']['nodes'][node_id]['osds']
                 # Fill hosts file with IPs
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
+
                 if ceph_deployment:
                     self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
+                    self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
+
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
