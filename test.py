@@ -211,7 +211,7 @@ class Ceph(Fault):
             # Add space if ip is short
             if len(result[2]) == 12:
                 result[2] = result[2] + '  '
-            elif len(result[2]) == 13
+            elif len(result[2]) == 13:
                 result[2] = result[2] + ' '
 
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
