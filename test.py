@@ -105,6 +105,11 @@ class Node_fault(Fault):
     def node_kill_fault(self):
         #chose node to fault
         target_node = random.choice(self.deployment.nodes)
+        while target_node.occupied:
+            target_node = random.choice(self.deployment.nodes)
+
+        target_node.occupied = True
+
 
         #check for exit signal
         self.check_exit_signal()
@@ -146,7 +151,7 @@ class Node_fault(Fault):
         # wait
 
         ################# FIX ME FOR PRODUCTION ##############
-        downtime = 1#random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
 
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
                       str(downtime) + ' minutes before restoring \
@@ -154,7 +159,7 @@ class Node_fault(Fault):
         while downtime > 0:
                 #check for exit signal
                 self.check_exit_signal()
-                time.sleep(60)
+                time.sleep(5)#60)
                 downtime -= 1
 
         # restore system
