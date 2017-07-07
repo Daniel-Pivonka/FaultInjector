@@ -136,6 +136,11 @@ class Node_fault(Fault):
             for task in restore_config[0]['tasks']:
                 if task['name'] == 'Power on server':
                     task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node.id
+                if task['name'] == 'waiting 30 secs for server to come back':
+                    task['local_action'] = 'wait_for host='+ target_node.ip +' port=22 state=started delay=30 timeout=120'
+
+
+
 
         with open('playbooks/'+restore_filename, 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
@@ -166,6 +171,8 @@ class Node_fault(Fault):
         subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
+
+        target_node.occupied = False
 
         #clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
