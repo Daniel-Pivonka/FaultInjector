@@ -120,4 +120,3 @@ if args.activate_ceph:
 yaml.safe_dump(config, f, default_flow_style=False)
 f.close()
 print "Completed!"
-"""
