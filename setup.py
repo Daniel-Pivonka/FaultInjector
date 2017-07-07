@@ -52,17 +52,12 @@ else:
 
 # Dump changes to the file
 yaml.safe_dump(config, f, default_flow_style=False)
-f.close()
+f.flush
 
 # Ceph specific fields -----------------------------------------------------
-"""
 if args.activate_ceph:
 
 	print "Discovering Ceph-specific information..."
-
-	# Open config file  
-	f = open('config.yaml', 'w+')
-	config = yaml.load(f)
 
 	config['ceph'] = {}
 
