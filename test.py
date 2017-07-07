@@ -348,14 +348,19 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-            config[0]['tasks']['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
+            for task in config[0]['tasks']:
+                if task['name'] == 'Disabling auto restart of ceph-osd service':
+                    task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
         with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-            config[0]['tasks']['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
+            for task in config[0]['tasks']:
+                if task['name'] == 'Restoring ceph-osd regular behavior':
+                    task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
+            
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
