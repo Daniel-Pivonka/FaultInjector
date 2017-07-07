@@ -12,6 +12,7 @@ import sys
 import threading
 import time
 import yaml
+import string
 
 
 class Fault:
@@ -62,8 +63,37 @@ class Node_fault(Fault):
     def __repr__(self):
         return "Node_fault"
 
-    def stateless(self, deterministic_file, timelimit, numfaults):
-        print numfaults
+    def stateless(self, deterministic_file, timelimit):
+        # Infinite loop for indefinite mode
+        while timelimit is None:
+            result = random.choice(self.functions)()
+            if result is None:
+                continue
+            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
+                                    " | " + str(result[1]) + " | " + str(result[2]) + 
+                                     " | " + str(result[3]) + " | " + str(result[4]) + 
+                                     " | " + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+            #check for exit signal
+            self.check_exit_signal()
+
+        # Standard runtime loop
+        timeout = time.time() + 60 * timelimit
+        while time.time() < timeout:
+            result = random.choice(self.functions)()
+            if result is None:
+                continue
+            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
+                                    " | " + str(result[1]) + " | " + str(result[2]) + 
+                                     " | " + str(result[3]) + " | " + str(result[4]) + 
+                                     " | " + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+            #check for exit signal
+            self.check_exit_signal()
+
+        deterministic_file.close()
 
     def deterministic(self, args):
         raise NotImplementedError
@@ -71,7 +101,69 @@ class Node_fault(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def node_kill_fault(self):
-        pass
+        #chose node to fault
+        target_node = random.choice(self.deployment.nodes)
+
+        #check for exit signal
+        self.check_exit_signal()
+
+        #create tmp file for playbook
+        crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+        # modify crash playbook
+        with open('playbooks/system-crash.yml') as f:
+            crash_config = yaml.load(f)
+            crash_config[0]['hosts'] = target_node.ip
+            for task in crash_config[0]['tasks']:
+                if task['name'] == 'Power off server':
+                    task['local_action'] = 'shell . ../stackrc && nova stop ' + target_node.id        
+
+        with open('playbooks/'+crash_filename, 'w') as f:
+            yaml.dump(crash_config, f, default_flow_style=False)
+
+        # modify restore playbook
+        with open('playbooks/system-restore.yml') as f:
+            restore_config = yaml.load(f)
+            restore_config[0]['hosts'] = target_node.ip
+            for task in restore_config[0]['tasks']:
+                if task['name'] == 'Power on server':
+                    task['local_action'] = 'shell . ../stackrc && nova start ' + target_node.id
+
+        with open('playbooks/'+restore_filename, 'w') as f:
+            yaml.dump(restore_config, f, default_flow_style=False)
+
+        #check for exit signal
+        self.check_exit_signal()
+
+        # crash system
+        start_time = datetime.datetime.now() - global_starttime
+        subprocess.call("ansible-playbook playbooks/"+crash_filename, shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node killed\n'.format(datetime.datetime.now()))
+
+        # wait
+        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
+                      str(downtime) + ' minutes before restoring \
+                      \n'.format(datetime.datetime.now()))
+        while downtime > 0:
+                #check for exit signal
+                self.check_exit_signal()
+                time.sleep(60)
+                downtime -= 1
+
+        # restore system
+        subprocess.call("ansible-playbook playbooks/"+restore_filename, shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
+        end_time = datetime.datetime.now() - global_starttime
+
+        #clean up tmp files
+        for f in os.listdir("playbooks/"):
+            if re.search("tmp_.*", f):
+                os.remove(os.path.join("playbooks/", f))
+
+        return ['node-kill-fault', target_node.ip, start_time, end_time, downtime, False]
 
     def det_node_kill_fault(self, target_node, downtime):
         pass
@@ -418,7 +510,7 @@ def main():
     elif args.stateful:
         stateful_start(args.timelimit)
     elif args.numfaults:
-        stateless_start(args.timelimit, node_fault, args.numfaults)
+        stateless_start(args.timelimit, node_fault, args.numfaults[0])
     else:
         print "No Mode Chosen"
 
@@ -523,8 +615,23 @@ def stateless_start(timelimit, node_fault, numfaults):
     deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
 
-    #start Node_fault stateless mode
-    node_fault.stateless(deterministic_file, timelimit, numfaults)
+    #create thread for number of faults
+    while numfaults > 0:
+        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file, timelimit)))
+        numfaults -= 1
+
+    #start all threads
+    for thread in threads:
+        thread.start()
+      
+    #wait for all threads to end  
+    not_done = True
+    while not_done:
+        not_done = False
+        for thread in threads:
+            if thread.isAlive():
+                not_done = True
+        time.sleep(1)
 
 def signal_handler(signal, frame):
         
@@ -538,6 +645,11 @@ def signal_handler(signal, frame):
             thread.join()
 
         subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
+
+        #clean up tmp files
+        for f in os.listdir("playbooks/"):
+            if re.search("tmp_.*", f):
+                os.remove(os.path.join("playbooks/", f))
 
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
         log.close()
