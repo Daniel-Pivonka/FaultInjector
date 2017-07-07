@@ -306,10 +306,7 @@ class Ceph(Fault):
             or osd-compute node
         """
         candidate_nodes = []
-        print 'deployment nodes'
-        print self.deployment.nodes
         for node in self.deployment.nodes:
-            print node
             if self.deployment.hci:
                 if node[0].type == 'osd-compute':
                     candidate_nodes.append(node)
@@ -321,7 +318,7 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         target_node = random.choice(candidate_nodes)
-        host = target_node.ip
+        host = target_node[0].ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
@@ -334,9 +331,9 @@ class Ceph(Fault):
 
         target_osd = random.choice(target_node[1])
 
-        while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= osds_occupied):
+        while response != 0 or target_node[0].occupied or (self.deployment.min_replication_size >= osds_occupied):
             target_node = random.choice(candidate_nodes)
-            host = target_node.ip
+            host = target_node[0].ip
             time.sleep(1) # Wait 20 seconds to give nodes time to recover
             print '[ceph-osd-fault] Target node/osd down, trying to find acceptable node'
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(datetime.datetime.now())) 
@@ -344,7 +341,7 @@ class Ceph(Fault):
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
 
-            target_node.occupied = True # Mark node as being used 
+            target_node[0].occupied = True # Mark node as being used 
             #check for exit signal
             self.check_exit_signal()
 
@@ -376,8 +373,8 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
         end_time = datetime.datetime.now() - global_starttime
         exit_status = False # Not currently using exit status 
-        target_node.occupied = False # Free up the node
-        return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
+        target_node[0].occupied = False # Free up the node
+        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
 
         """
         def mon_service_fault(self):
