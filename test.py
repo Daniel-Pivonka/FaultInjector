@@ -117,7 +117,7 @@ class Node_fault(Fault):
             crash_config[0]['hosts'] = target_node.ip
             for task in crash_config[0]['tasks']:
                 if task['name'] == 'Power off server':
-                    task['local_action'] = 'shell . ../stackrc && nova stop ' + target_node.id        
+                    task['local_action'] = 'shell . ~/stackrc && nova stop ' + target_node.id        
 
         with open('playbooks/'+crash_filename, 'w') as f:
             yaml.dump(crash_config, f, default_flow_style=False)
@@ -128,7 +128,7 @@ class Node_fault(Fault):
             restore_config[0]['hosts'] = target_node.ip
             for task in restore_config[0]['tasks']:
                 if task['name'] == 'Power on server':
-                    task['local_action'] = 'shell . ../stackrc && nova start ' + target_node.id
+                    task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node.id
 
         with open('playbooks/'+restore_filename, 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
