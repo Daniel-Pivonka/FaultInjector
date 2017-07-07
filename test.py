@@ -378,9 +378,6 @@ class Ceph(Fault):
 
 """
         def mon_service_fault(self):
-            """ Kills a random osd service specified on a random ceph node
-            or osd-compute node
-        """
             candidate_nodes = []
             for node in self.deployment.nodes:
                 if self.deployment.hci:
