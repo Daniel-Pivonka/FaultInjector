@@ -308,10 +308,10 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             if self.deployment.hci:
-                if node.type == 'osd-compute':
+                if node[0].type == 'osd-compute':
                     candidate_nodes.append(node)
             else:
-                if 'ceph' in node.type:
+                if 'ceph' in node[0].type:
                     candidate_nodes.append(node)
 
         #check for exit signal
@@ -446,7 +446,7 @@ class Ceph(Fault):
             exit_status = False # Not currently using exit status 
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
-        """
+    """
 
     # Deterministic fault functions below ---------------------------------------------
      
