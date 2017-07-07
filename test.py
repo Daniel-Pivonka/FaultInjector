@@ -540,7 +540,7 @@ class Deployment:
 
             for node_id in config['deployment']['nodes']:
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
-                     config['deployment']['nodes'][node_id]['node_ip'], node_id), None])
+                     config['deployment']['nodes'][node_id]['node_ip'], node_id), 'PLACEHOLDER'])
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
