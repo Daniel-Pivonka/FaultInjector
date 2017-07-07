@@ -521,7 +521,7 @@ class Deployment:
                 sys.exit('Error: config.yaml is is missing node information, cannot continue')
 
             # Check for a Ceph deployment
-            ceph_deployment = 'ceph' in config:
+            ceph_deployment = 'ceph' in config
 
             for node_id in config['deployment']['nodes']:
                 self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], \
