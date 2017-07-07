@@ -208,11 +208,16 @@ class Ceph(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
+
             # Add space if ip is short
+            print 'before'
+            print result[2]
             if len(result[2]) == 12:
                 result[2] = result[2] + '  '
             elif len(result[2]) == 13:
                 result[2] = result[2] + ' '
+            print 'after'
+            print result[2]
 
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
