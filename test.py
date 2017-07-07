@@ -556,6 +556,9 @@ class Deployment:
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
 
+            print 'all nodes\n\n'
+            print self.nodes
+
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
