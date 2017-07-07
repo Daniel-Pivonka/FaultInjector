@@ -357,7 +357,6 @@ class Deployment:
             if config['deployment']['num_nodes'] == 0:
                 sys.exit("Error: config.yaml is is missing node information, cannot continue")
 
-
             # Check for a Ceph deployment
             if 'ceph' in config:
                 ceph_deployment = True
