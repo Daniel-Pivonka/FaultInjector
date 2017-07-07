@@ -309,10 +309,10 @@ class Ceph(Fault):
         for node in self.deployment.nodes:
             print node
             if self.deployment.hci:
-                if node[0].type == 'osd-compute':
+                if node[1].type == 'osd-compute':
                     candidate_nodes.append(node)
             else:
-                if 'ceph' in node[0].type:
+                if 'ceph' in node[1].type:
                     candidate_nodes.append(node)
 
         #check for exit signal
