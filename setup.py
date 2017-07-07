@@ -4,6 +4,7 @@ import argparse
 import json
 import paramiko
 import subprocess
+import sys
 import yaml 
 
 """
@@ -34,21 +35,26 @@ config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_
 
 # Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
-for line in node_response:
-	node_fields = line[1:-1].split('|')
-	node_id = node_fields[0].strip()
-	node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
-	node_name = node_fields[1].partition('-')[-1].rpartition(' ')[0].strip()
-	if node_type == 'osd-compute':
-		config['deployment']['hci'] = True
-	node_ip = node_fields[5].partition('=')[-1].strip()
-	config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip, 'node_name': node_name}
+if "|" not in node_response[0]:
+	print "Nova list command outputted an unexpected response, skipping the collection of general deployment information..."
+else:
+	for line in node_response:
+		node_fields = line[1:-1].split('|')
+		node_id = node_fields[0].strip()
+		node_type = node_fields[1].partition('-')[-1].rpartition('-')[0]
+		node_name = node_fields[1].partition('-')[-1].rpartition(' ')[0].strip()
+		if node_type == 'osd-compute':
+			config['deployment']['hci'] = True
+		node_ip = node_fields[5].partition('=')[-1].strip()
+		config['deployment']['nodes'][node_id] = {'node_type': node_type, 'node_ip': node_ip, 'node_name': node_name}
 
-config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
+	config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
+# Dump changes to the file
+yaml.safe_dump(config, f, default_flow_style=False)
+f.flush
 
 # Ceph specific fields -----------------------------------------------------
-
 if args.activate_ceph:
 
 	print "Discovering Ceph-specific information..."
@@ -59,7 +65,20 @@ if args.activate_ceph:
 	replica_size_command = 'sudo ceph osd pool ls detail -f json'
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	ssh.connect('192.168.24.13', username='heat-admin')
+
+	for node_id in config['deployment']['nodes']:
+			if (config['deployment']['nodes'][node_id]['node_type'] == 'osd-compute'):
+				contoller_ip = config['deployment']['nodes'][node_id]['node_ip']
+				break
+			else: 
+				contoller_ip = None
+
+	if contoller_ip is None:
+		yaml.safe_dump(config, f, default_flow_style=False)
+		f.close()
+		sys.exit("No controller node found, cannot continue with Ceph setup")
+
+	ssh.connect(contoller_ip, username='heat-admin')
 	ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 	replica_response = ssh_stdout.read()
 	ssh_stdout.channel.close()
