@@ -137,7 +137,7 @@ class Node_fault(Fault):
                 if task['name'] == 'Power on server':
                     task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node.id
                 if task['name'] == 'waiting 30 secs for server to come back':
-                    task['local_action'] = 'wait_for host='+ target_node.ip +' port=22 state=started delay=30 timeout=60'
+                    task['local_action'] = 'wait_for host='+ target_node.ip +' port=22 state=started delay=30 timeout=120'
 
 
 
