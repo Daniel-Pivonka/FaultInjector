@@ -142,7 +142,9 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node killed\n'.format(datetime.datetime.now()))
 
         # wait
-        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+
+        #################FIX ME FOR PRODUCTION##############
+        downtime = 1#random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
 
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
                       str(downtime) + ' minutes before restoring \
