@@ -63,9 +63,6 @@ if args.activate_ceph:
 	# Open config file  
 	f = open('config.yaml', 'w+')
 	config = yaml.load(f)
-	if config is None:
-		config = {}
-
 
 	config['ceph'] = {}
 
