@@ -63,14 +63,14 @@ if args.activate_ceph:
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 	for node_id in config['deployment']['nodes']:
-			if (config['deployment']['nodes'][node_id]['node_type'] == 'osd-compute'):
-				print 'controller node found!! breaking'
+			if (config['deployment']['nodes'][node_id]['node_type'] == 'controller'):
+				#print 'controller node found!! breaking'
 				contoller_ip = config['deployment']['nodes'][node_id]['node_ip']
 				break
 			else: 
-				print 'controller ip is none'
+				#print 'controller ip is none'
 				contoller_ip = None
-	
+
 	if contoller_ip is None:
 		yaml.safe_dump(config, f, default_flow_style=False)
 		f.close()
