@@ -50,10 +50,6 @@ else:
 
 	config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
-# Dump changes to the file
-yaml.safe_dump(config, f, default_flow_style=False)
-f.flush
-
 # Ceph specific fields -----------------------------------------------------
 if args.activate_ceph:
 
