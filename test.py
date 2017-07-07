@@ -172,6 +172,8 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
+        target_node.occupied = False
+
         #clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
