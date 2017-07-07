@@ -210,10 +210,10 @@ class Ceph(Fault):
                 continue
 
             # Add space if ip is short
-            if len(result[2]) == 12:
-                result[2] = result[2] + '  '
-            elif len(result[2]) == 13:
-                result[2] = result[2] + ' '
+            if len(result[1]) == 12:
+                result[1] = result[1] + '  '
+            elif len(result[1]) == 13:
+                result[1] = result[1] + ' '
 
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
@@ -233,10 +233,10 @@ class Ceph(Fault):
                 continue
 
              # Add space if ip is short
-            if len(result[2]) == 12:
-                result[2] = result[2] + '  '
-            elif len(result[2]) == 13:
-                result[2] = result[2] + ' '
+            if len(result[1]) == 12:
+                result[1] = result[1] + '  '
+            elif len(result[1]) == 13:
+                result[1] = result[1] + ' '
                     
             deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
