@@ -45,14 +45,14 @@ class Fault:
 
     def template_fault(self):
 
-        print "template_fault was called"
+        print 'template_fault was called'
 
         start_time = datetime.datetime.now() - global_starttime
         # Call to playbook goes here
         # Delay x amount of time
         end_time = datetime.datetime.now() - global_starttime
         # Placeholder fault function
-        return [start_time, end_time, "Exit Status"] # Placeholder exit status variable
+        return [start_time, end_time, 'Exit Status'] # Placeholder exit status variable
 
 class Node_fault(Fault):
     def __init__(self, deployment):
@@ -61,7 +61,7 @@ class Node_fault(Fault):
         self.functions = [self.node_kill_fault]
 
     def __repr__(self):
-        return "Node_fault"
+        return 'Node_fault'
 
     def stateless(self, deterministic_file, timelimit):
         # Infinite loop for indefinite mode
@@ -69,10 +69,11 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
-                                    " | " + str(result[1]) + " | " + str(result[2]) + 
-                                     " | " + str(result[3]) + " | " + str(result[4]) + 
-                                     " | " + str(result[5]) + '\n')
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             #check for exit signal
@@ -84,14 +85,17 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
-                                    " | " + str(result[1]) + " | " + str(result[2]) + 
-                                     " | " + str(result[3]) + " | " + str(result[4]) + 
-                                     " | " + str(result[5]) + '\n')
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             #check for exit signal
             self.check_exit_signal()
+
+        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
 
     def deterministic(self, args):
         raise NotImplementedError
@@ -136,12 +140,12 @@ class Node_fault(Fault):
 
         # crash system
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call("ansible-playbook playbooks/"+crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/'+crash_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node killed\n'.format(datetime.datetime.now()))
 
         # wait
 
-        #################FIX ME FOR PRODUCTION##############
+        ################# FIX ME FOR PRODUCTION ##############
         downtime = 1#random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
 
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
@@ -154,13 +158,13 @@ class Node_fault(Fault):
                 downtime -= 1
 
         # restore system
-        subprocess.call("ansible-playbook playbooks/"+restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
         #clean up tmp files
-        os.remove(os.path.join("playbooks/", crash_filename))
-        os.remove(os.path.join("playbooks/", restore_filename))
+        os.remove(os.path.join('playbooks/', crash_filename))
+        os.remove(os.path.join('playbooks/', restore_filename))
 
         return ['node-kill-fault', target_node.ip, start_time, end_time, downtime, False]
 
@@ -175,7 +179,7 @@ class Ceph(Fault):
         self.functions = [self.osd_service_fault]
 
     def __repr__(self):
-        return "Ceph"
+        return 'Ceph'
 
     def stateful(self, deterministic_file, timelimit):
         """ func that will be set up on a thread
@@ -183,20 +187,22 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        print "Beginning Ceph stateful mode"
+        print 'Beginning Ceph stateful mode'
+
+        osd_limit = self.deployment.min_replication_size - 1
 
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
-                                    " | " + str(result[1]) + " | " + str(result[2]) + 
-                                     " | " + str(result[3]) + " | " + str(result[4]) + 
-                                     " | " + str(result[5]) + '\n')
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
-            #check for exit signal
+            # check for exit signal
             self.check_exit_signal()
 
         # Standard runtime loop
@@ -206,10 +212,10 @@ class Ceph(Fault):
             result = random.choice(self.functions)() 
             if result is None:
                 continue
-            deterministic_file.write(self.__repr__() + " | " + str(result[0]) + 
-                                    " | " + str(result[1]) + " | " + str(result[2]) + 
-                                     " | " + str(result[3]) + " | " + str(result[4]) + 
-                                     " | " + str(result[5]) + '\n')
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             #check for exit signal
@@ -240,9 +246,10 @@ class Ceph(Fault):
 
         #call fault
         if args[1] == 'ceph-osd-fault':
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
             self.det_osd_service_fault(target, int(args[5]))
         else:
-            print "no matching function found"
+            print 'no matching function found'
 
     def check_health(self):
         """ Looks at a random functioning controller node
@@ -251,10 +258,10 @@ class Ceph(Fault):
         """
         controllers = []
         for node in self.deployment.nodes:
-            if node.type == "controller":
+            if 'control' in node.type:
                 controllers.append(node)
         if len(controllers) == 0:
-            print "[check_health] warning: no controller found in deployment"
+            print '[check_health] warning: no controller found in deployment'
             return False
 
         target_node = random.choice(controllers)
@@ -263,8 +270,8 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
         while response != 0:
-            print "[check_health] could not connect to node @" +  \
-                    target_node.ip + ", trying another after 20 seconds..."
+            print '[check_health] could not connect to node @' +  \
+                    target_node.ip + ', trying another after 20 seconds...'
             target_node = random.choice(controllers)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover 
@@ -272,13 +279,13 @@ class Ceph(Fault):
                                stdout=open(os.devnull, 'w'),
                                stderr=open(os.devnull, 'w'))
 
-        command = "sudo ceph -s | grep health"
+        command = 'sudo ceph -s | grep health'
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='heat-admin')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = str(ssh_stdout.readlines())
-        return False if re.search("HEALTH_OK", response, flags=0) == None else True
+        return False if re.search('HEALTH_OK', response, flags=0) == None else True
 
     # Write fault functions below --------------------------------------------- 
 
@@ -289,10 +296,10 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             if self.deployment.hci:
-                if node.type == "osd-compute":
+                if node.type == 'osd-compute':
                     candidate_nodes.append(node)
             else:
-                if node.type == "ceph":
+                if 'ceph' in node.type:
                     candidate_nodes.append(node)
 
         #check for exit signal
@@ -303,10 +310,18 @@ class Ceph(Fault):
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
-        while response != 0 or target_node.occupied:
+
+        # Count the number of downed osds
+        nodes_occupied = 0
+        for node in self.deployment.nodes:
+            if node.occupied:
+                nodes_occupied += 1
+
+        while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= nodes_occupied):
             target_node = random.choice(candidate_nodes)
             host = target_node.ip
             time.sleep(20) # Wait 20 seconds to give nodes time to recover
+            print '[ceph-osd-fault] Failed to find acceptable node. Waiting 20 seconds before searching for a different node to fault'
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
                         acceptable node. Waiting 20 seconds before searching \
                         for a different node to fault.\n'.format(datetime.datetime.now())) 
@@ -333,27 +348,21 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        if self.check_health():    
-            print "[ceph-osd-fault] cluster is healthy, executing fault."
-            start_time = datetime.datetime.now() - global_starttime
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
-                      str(downtime) + ' minutes before introducing OSD again \
-                      \n'.format(datetime.datetime.now()))
-            time.sleep(30) #(downtime * 60)
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-            end_time = datetime.datetime.now() - global_starttime
-            exit_status = self.check_health()
-            target_node.occupied = False # Free up the node
-            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
+        print '[ceph-osd-fault] executing fault'
+        start_time = datetime.datetime.now() - global_starttime
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
+                  str(downtime) + ' minutes before introducing OSD again' +
+                  '\n'.format(datetime.datetime.now()))
+        time.sleep(30) #(downtime * 60)
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        end_time = datetime.datetime.now() - global_starttime
+        exit_status = False # Not currently using exit status 
+        target_node.occupied = False # Free up the node
+        return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
-        else:
-            print "[ceph-osd-fault] cluster is not healthy, returning to stateless function to pick another fault type"
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
-                       healthy, returning to stateless function to pick another \
-                       fault type\n'.format(datetime.datetime.now()))
-            time.sleep(10)
+
 
     # Deterministic fault functions below ---------------------------------------------
      
@@ -374,8 +383,8 @@ class Ceph(Fault):
 
         # Make sure target node is reachable 
         if response != 0:
-            print "[det_osd_service_fault] error: target node unreachable, \
-                    exiting fault function"
+            print '[det_osd_service_fault] error: target node unreachable, \
+                    exiting fault function'
             return None
 
         target_node.occupied = True # Mark node as being used 
@@ -399,7 +408,7 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         if self.check_health():    
-            print "[det_ceph-osd-fault] cluster is healthy, executing fault."
+            print '[det_ceph-osd-fault] cluster is healthy, executing fault.'
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
             log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + 
                         str(downtime) + ' minutes before introducing OSD \
@@ -413,12 +422,12 @@ class Ceph(Fault):
 
             subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
             target_node.occupied = False # Free up the node
-            print "[det_osd_service_fault] deterministic step completed"
+            print '[det_osd_service_fault] deterministic step completed'
             return True 
 
         else:
-            print "[ceph-osd-fault] cluster is not healthy, moving onto \
-                    next step without faulting"
+            print '[ceph-osd-fault] cluster is not healthy, moving onto \
+                    next step without faulting'
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
                         healthy, moving onto next step without faulting \
                         \n'.format(datetime.datetime.now()))
@@ -444,9 +453,9 @@ class Deployment:
             config = yaml.load(f)
 
             if config is None:
-                sys.exit("Error: config.yaml is empty, please fill it out manually or try running setup.py")
+                sys.exit('Error: config.yaml is empty, please fill it out manually or try running setup.py')
             if config['deployment']['num_nodes'] == 0:
-                sys.exit("Error: config.yaml is is missing node information, cannot continue")
+                sys.exit('Error: config.yaml is is missing node information, cannot continue')
 
             # Check for a Ceph deployment
             if 'ceph' in config:
@@ -462,6 +471,7 @@ class Deployment:
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
                 if ceph_deployment:
                     self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
+                    self.min_replication_size = config['ceph']['minimum_replication-size']
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
@@ -479,7 +489,7 @@ threads = []
 stopper = threading.Event()
 
 def main():
-    deployment = Deployment("config.yaml")
+    deployment = Deployment('config.yaml')
 
     #create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
@@ -509,14 +519,14 @@ def main():
     # check mode
     if args.filepath:
         if args.timelimit:
-            print "Time Limit not applicable in deterministic mode"
+            print 'Time Limit not applicable in deterministic mode'
         deterministic_start(args.filepath)
     elif args.stateful:
         stateful_start(args.timelimit)
     elif args.numfaults:
         stateless_start(args.timelimit, node_fault, args.numfaults[0])
     else:
-        print "No Mode Chosen"
+        print 'No Mode Chosen'
 
     # end injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
@@ -534,11 +544,11 @@ def deterministic_start(filepath):
         # read line by line
         for line in f:
             #break into list
-            words = line.strip("| ").split(" | ")
+            words = line.strip('| ').split(' | ')
 
             #find matching plugin
             for plugin in plugins:
-                if plugin.__repr__() == words[0].strip(" "):
+                if plugin.__repr__() == words[0].strip(' '):
                     #create thread
                     threads.append(threading.Thread(target=plugin.deterministic, args=(words,)))
 
@@ -563,21 +573,21 @@ def stateful_start(timelimit):
         will wait for all threads to compplete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print "stateful"
+    print 'stateful'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
-        print "Indefinite Time Limit"
+        print 'Indefinite Time Limit'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print "{} Minute Time Limit".format(timelimit)
+        print '{} Minute Time Limit'.format(timelimit)
 
      # writes a file that can feed into a deterministic run
-    dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+    dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
     # create directory if it doesn't exist
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
+    deterministic_filename = dir_path + str(global_starttime).replace(' ', '_') + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
 
     #create thread for every plugin
@@ -606,17 +616,17 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
-        print "Indefinite Time Limit"
+        print 'Indefinite Time Limit'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
-        print "{} Minute Time Limit".format(timelimit)
+        print '{} Minute Time Limit'.format(timelimit)
 
     # writes a file that can feed into a deterministic run
-    dir_path = os.path.join(os.path.dirname(__file__), "deterministic-runs/")
+    dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
     # create directory if it doesn't exist
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    deterministic_filename = dir_path + str(global_starttime).replace(" ", "_") + '-run.txt'
+    deterministic_filename = dir_path + str(global_starttime).replace(' ', '_') + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
 
     #create thread for number of faults
@@ -653,14 +663,14 @@ def signal_handler(signal, frame):
         subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
         #clean up tmp files
-        for f in os.listdir("playbooks/"):
-            if re.search("tmp_.*", f):
-                os.remove(os.path.join("playbooks/", f))
+        for f in os.listdir('playbooks/'):
+            if re.search('tmp_.*', f):
+                os.remove(os.path.join('playbooks/', f))
 
         log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
         log.close()
 
         sys.exit(0)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
