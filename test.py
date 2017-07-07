@@ -329,6 +329,8 @@ class Ceph(Fault):
             if not osd: # If osd is off
                 osds_occupied += 1
 
+        print 'occupied osds:', osds_occupied
+
         target_osd = random.choice(target_node[1])
 
         while response != 0 or target_node[0].occupied or (osds_occupied >= self.deployment.min_replication_size):
@@ -368,6 +370,7 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         print '[ceph-osd-fault] executing fault'
+        self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
         downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
@@ -376,6 +379,7 @@ class Ceph(Fault):
                   '\n'.format(datetime.datetime.now()))
         time.sleep(30) #(downtime * 60)
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         exit_status = False # Not currently using exit status 
         target_node[0].occupied = False # Free up the node
