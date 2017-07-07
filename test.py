@@ -547,7 +547,7 @@ class Deployment:
             ceph_deployment = 'ceph' in config
 
             if ceph_deployment:
-                num_osds = 0
+                self.num_osds = 0
 
             for node_id in config['deployment']['nodes']:
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
