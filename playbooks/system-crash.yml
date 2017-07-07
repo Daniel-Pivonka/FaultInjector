@@ -1,5 +1,5 @@
 - become: true
-  hosts: 192.168.24.10
+  hosts: 192.168.24.6
   tasks:
   - async: 1
     become: true
@@ -7,5 +7,6 @@
     name: Crash server
     poll: 0
     shell: sleep 2 && echo c > /proc/sysrq-trigger
-  - local_action: shell . ../stackrc && nova stop 602b74d5-5300-422d-88cf-f16a8b52cc0c
+  - local_action: shell . ~/stackrc && nova stop d2780a15-8d29-4fdd-8379-2a5af7c8b264
     name: Power off server
+
