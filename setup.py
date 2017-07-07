@@ -34,6 +34,8 @@ config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_
 
 # Discover node properties
 node_response = subprocess.check_output('. ../stackrc && nova list | grep ctlplane || true', shell=True, stderr=subprocess.STDOUT).split('\n')[:-1]
+print "node response"
+print node_response
 if "|" not in node_response:
 	print "Nova list command outputted an unexpected response, skipping the collection of general deployment information..."
 else:
