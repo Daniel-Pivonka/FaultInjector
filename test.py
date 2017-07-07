@@ -362,6 +362,78 @@ class Ceph(Fault):
         target_node.occupied = False # Free up the node
         return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
+        def mon_service_fault(self):
+            """ Kills a random osd service specified on a random ceph node
+            or osd-compute node
+        """
+            candidate_nodes = []
+            for node in self.deployment.nodes:
+                if self.deployment.hci:
+                    if node.type == 'osd-compute':
+                        candidate_nodes.append(node)
+                else:
+                    if 'ceph' in node.type:
+                        candidate_nodes.append(node)
+
+            #check for exit signal
+            self.check_exit_signal()
+
+            target_node = random.choice(candidate_nodes)
+            host = target_node.ip
+            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                       stdout=open(os.devnull, 'w'),
+                                       stderr=open(os.devnull, 'w'))
+
+            # Count the number of downed osds
+            nodes_occupied = 0
+            for node in self.deployment.nodes:
+                if node.occupied:
+                    nodes_occupied += 1
+
+            while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= nodes_occupied):
+                target_node = random.choice(candidate_nodes)
+                host = target_node.ip
+                time.sleep(20) # Wait 20 seconds to give nodes time to recover
+                print '[ceph-osd-fault] Failed to find acceptable node. Waiting 20 seconds before searching for a different node to fault'
+                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
+                            acceptable node. Waiting 20 seconds before searching \
+                            for a different node to fault.\n'.format(datetime.datetime.now())) 
+                response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                       stdout=open(os.devnull, 'w'),
+                                       stderr=open(os.devnull, 'w'))
+
+                target_node.occupied = True # Mark node as being used 
+                #check for exit signal
+                self.check_exit_signal()
+
+            with open('playbooks/ceph-osd-fault-crash.yml') as f:
+                config = yaml.load(f)
+                config[0]['hosts'] = host
+            with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
+                yaml.dump(config, f, default_flow_style=False)
+
+            with open('playbooks/ceph-osd-fault-restore.yml') as f:
+                config = yaml.load(f)
+                config[0]['hosts'] = host
+            with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+                yaml.dump(config, f, default_flow_style=False)
+
+            #check for exit signal
+            self.check_exit_signal()
+
+            print '[ceph-osd-fault] executing fault'
+            start_time = datetime.datetime.now() - global_starttime
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
+                      str(downtime) + ' minutes before introducing OSD again' +
+                      '\n'.format(datetime.datetime.now()))
+            time.sleep(30) #(downtime * 60)
+            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+            end_time = datetime.datetime.now() - global_starttime
+            exit_status = False # Not currently using exit status 
+            target_node.occupied = False # Free up the node
+            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
 
     # Deterministic fault functions below ---------------------------------------------
@@ -407,31 +479,22 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        if self.check_health():    
-            print '[det_ceph-osd-fault] cluster is healthy, executing fault.'
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + 
-                        str(downtime) + ' minutes before introducing OSD \
-                        again\n'.format(datetime.datetime.now()))
-            
-            while downtime > 0:
-                #check for exit signal
-                self.check_exit_signal()
-                time.sleep(60)
-                downtime -= 1
+        print '[det_ceph-osd-fault] executing fault.'
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + 
+                    str(downtime) + ' minutes before introducing OSD \
+                    again\n'.format(datetime.datetime.now()))
+        
+        while downtime > 0:
+            #check for exit signal
+            self.check_exit_signal()
+            time.sleep(60)
+            downtime -= 1
 
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-            target_node.occupied = False # Free up the node
-            print '[det_osd_service_fault] deterministic step completed'
-            return True 
-
-        else:
-            print '[ceph-osd-fault] cluster is not healthy, moving onto \
-                    next step without faulting'
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] cluster is not \
-                        healthy, moving onto next step without faulting \
-                        \n'.format(datetime.datetime.now()))
-            time.sleep(10)
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        target_node.occupied = False # Free up the node
+        print '[det_osd_service_fault] deterministic step completed'
+        return True 
 
 class Node:
     def __init__(self, node_type, node_ip, node_id):
@@ -458,8 +521,7 @@ class Deployment:
                 sys.exit('Error: config.yaml is is missing node information, cannot continue')
 
             # Check for a Ceph deployment
-            if 'ceph' in config:
-                ceph_deployment = True
+            ceph_deployment = 'ceph' in config:
 
             for node_id in config['deployment']['nodes']:
                 self.nodes.append(Node(config['deployment']['nodes'][node_id]['node_type'], \
