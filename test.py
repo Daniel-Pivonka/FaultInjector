@@ -161,9 +161,8 @@ class Node_fault(Fault):
         end_time = datetime.datetime.now() - global_starttime
 
         #clean up tmp files
-        for f in os.listdir("playbooks/"):
-            if re.search("tmp_.*", f):
-                os.remove(os.path.join("playbooks/", f))
+        os.remove(os.path.join("playbooks/", crash_filename))
+        os.remove(os.path.join("playbooks/", restore_filename))
 
         return ['node-kill-fault', target_node.ip, start_time, end_time, downtime, False]
 
