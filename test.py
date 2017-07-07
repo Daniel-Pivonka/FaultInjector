@@ -376,7 +376,7 @@ class Ceph(Fault):
         target_node.occupied = False # Free up the node
         return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
 
-"""
+        """
         def mon_service_fault(self):
             candidate_nodes = []
             for node in self.deployment.nodes:
@@ -446,7 +446,7 @@ class Ceph(Fault):
             exit_status = False # Not currently using exit status 
             target_node.occupied = False # Free up the node
             return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
-"""
+        """
 
     # Deterministic fault functions below ---------------------------------------------
      
