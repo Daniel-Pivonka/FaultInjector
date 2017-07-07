@@ -93,8 +93,6 @@ class Node_fault(Fault):
             #check for exit signal
             self.check_exit_signal()
 
-        deterministic_file.close()
-
     def deterministic(self, args):
         raise NotImplementedError
 
@@ -638,6 +636,8 @@ def stateless_start(timelimit, node_fault, numfaults):
             if thread.isAlive():
                 not_done = True
         time.sleep(1)
+
+    deterministic_file.close()
 
 def signal_handler(signal, frame):
         
