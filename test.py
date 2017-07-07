@@ -533,7 +533,7 @@ class Deployment:
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
                 if ceph_deployment:
                     self.num_osds = config['deployment']['nodes'][node_id]['num_osds']
-                    self.min_replication_size = config['ceph']['minimum_replication-size']
+                    self.min_replication_size = config['ceph']['minimum_replication_size']
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
