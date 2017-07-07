@@ -94,8 +94,8 @@ class Node_fault(Fault):
             os.fsync(deterministic_file.fileno())
             #check for exit signal
             self.check_exit_signal()
+
         log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
-        deterministic_file.close()
 
     def deterministic(self, args):
         raise NotImplementedError
@@ -708,6 +708,8 @@ def stateless_start(timelimit, node_fault, numfaults):
             if thread.isAlive():
                 not_done = True
         time.sleep(1)
+
+    deterministic_file.close()
 
 def signal_handler(signal, frame):
         
