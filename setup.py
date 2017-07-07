@@ -4,6 +4,7 @@ import argparse
 import json
 import paramiko
 import subprocess
+import sys
 import yaml 
 
 """
@@ -51,6 +52,8 @@ else:
 
 	config['deployment']['num_nodes'] = len(config['deployment']['nodes'])
 
+# Dump changes to the file
+yaml.safe_dump(config, f, default_flow_style=False)
 
 # Ceph specific fields -----------------------------------------------------
 
@@ -64,7 +67,20 @@ if args.activate_ceph:
 	replica_size_command = 'sudo ceph osd pool ls detail -f json'
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	ssh.connect('192.168.24.13', username='heat-admin')
+
+	for node_id in config['deployment']['nodes']:
+			if (config['deployment']['nodes'][node_id]['node_type'] == 'osd-compute'):
+				contoller_ip = config['deployment']['nodes'][node_id]['node_ip']
+				break
+			else: 
+				contoller_ip = None
+
+	if contoller_ip is None:
+		yaml.safe_dump(config, f, default_flow_style=False)
+		f.close()
+		sys.exit("No controller node found, cannot continue with Ceph setup")
+
+	ssh.connect(contoller_ip, username='heat-admin')
 	ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(replica_size_command)
 	replica_response = ssh_stdout.read()
 	ssh_stdout.channel.close()
