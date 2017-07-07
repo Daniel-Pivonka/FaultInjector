@@ -55,7 +55,7 @@ yaml.safe_dump(config, f, default_flow_style=False)
 f.close()
 
 # Ceph specific fields -----------------------------------------------------
-
+"""
 if args.activate_ceph:
 
 	print "Discovering Ceph-specific information..."
@@ -125,3 +125,4 @@ if args.activate_ceph:
 yaml.safe_dump(config, f, default_flow_style=False)
 f.close()
 print "Completed!"
+"""
