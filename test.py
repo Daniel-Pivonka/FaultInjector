@@ -333,6 +333,8 @@ class Ceph(Fault):
 
         target_osd = random.choice(target_node[1])
 
+        print 'target osd', target_osd
+
         while response != 0 or target_node[0].occupied or (osds_occupied >= self.deployment.min_replication_size):
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
