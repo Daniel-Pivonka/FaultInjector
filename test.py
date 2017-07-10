@@ -364,7 +364,7 @@ class Ceph(Fault):
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Disabling auto restart of ceph-osd service':
+                if task['name'] == 'Stopping ceph-osd service':
                     task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
         with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
@@ -373,7 +373,7 @@ class Ceph(Fault):
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Restoring ceph-osd regular behavior':
+                if task['name'] == 'Restoring ceph-osd service':
                     task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
             
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
@@ -684,7 +684,7 @@ def stateful_start(timelimit):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit'
+        print 'Indefinite Time Limit: press ctrl-c to quit at any time'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
         print '{} Minute Time Limit'.format(timelimit)
@@ -723,7 +723,7 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit'
+        print 'Indefinite Time Limit: press ctrl-c to quit at any time'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
         print '{} Minute Time Limit'.format(timelimit)
