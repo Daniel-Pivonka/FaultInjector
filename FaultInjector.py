@@ -556,7 +556,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        host = target_node.ip
+        host = target_node[0].ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
