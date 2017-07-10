@@ -255,11 +255,15 @@ class Ceph(Fault):
         else:
             print 'no matching function found'
 
+
+    # check_health is no longer used, may remove in the future 
+
+    """
     def check_health(self):
-        """ Looks at a random functioning controller node
-            and checks the status of the ceph cluster returning
-            True if it's healthy
-        """
+        #   Looks at a random functioning controller node
+        #   and checks the status of the ceph cluster returning
+        #   True if it's healthy
+        
         controllers = []
         for node in self.deployment.nodes:
             if 'control' in node.type:
@@ -290,6 +294,7 @@ class Ceph(Fault):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = str(ssh_stdout.readlines())
         return False if re.search('HEALTH_OK', response, flags=0) == None else True
+    """
 
     # Write fault functions below --------------------------------------------- 
 
