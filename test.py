@@ -207,7 +207,7 @@ class Ceph(Fault):
         fault_threads = []
 
         #create threads
-        for plugin in plugins:
+        for i in range(thread_count):
             thread = threading.Thread(target=self.fault_thread, args=(deterministic_file, timelimit))
             threads.append(thread)
             fault_threads.append(thread)
@@ -434,6 +434,11 @@ class Ceph(Fault):
         end_time = datetime.datetime.now() - global_starttime
         exit_status = False # Not currently using exit status 
         target_node[0].occupied = False # Free up the node
+
+        #clean up tmp files
+        os.remove(os.path.join('playbooks/', crash_filename))
+        os.remove(os.path.join('playbooks/', restore_filename))
+        
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
 
     def mon_service_fault(self):
