@@ -346,7 +346,7 @@ class Ceph(Fault):
         target_osd = random.choice(target_node[1])
 
         #   node unreachable          target osd is being used           there are a greater than or equal number of osds down than the limit
-        while response != 0 or (not selfdeployment.osds[target_osd]) or (osds_occupied >= self.deployment.min_replication_size):
+        while response != 0 or (not self.deployment.osds[target_osd]) or (osds_occupied >= self.deployment.min_replication_size):
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(1) # Wait 20 seconds to give nodes time to recover
