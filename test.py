@@ -378,6 +378,7 @@ class Ceph(Fault):
 
         #   node unreachable          target osd is being used           there are a greater than or equal number of osds down than the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (osds_occupied >= self.deployment.min_replication_size):
+            print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(1) # Wait 20 seconds to give nodes time to recover
@@ -392,7 +393,7 @@ class Ceph(Fault):
 
         target_node[0].occupied = True # Mark node as being used 
         
-        #create tmp file for playbook
+        # create tmp file for playbook
         crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
@@ -440,19 +441,91 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', restore_filename))
         
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
-
+    """
     def mon_service_fault(self):
         print 'num_mons:', self.deployment.num_mons
 
         candidate_nodes = []
         mons_available = 0
         for node in self.deployment.nodes:
-            if self.deployment.hci:
-                if 'control' in node[0].type:
-                    candidate_nodes.append(node)
-                    if node[2]:
-                        mons_available += 1
+            if 'control' in node[0].type:
+                candidate_nodes.append(node)
+                if node[2]:
+                    mons_available += 1
+        if mons_available >= 1:
+            return
 
+        target_node = random.choice(candidate_nodes)
+        host = target_node[0].ip
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
+        
+        # node unreachable
+        while response != 0:
+            target_node = random.choice(candidate_nodes)
+            host = target_node[0].ip
+            time.sleep(1) # Wait 20 seconds to give nodes time to recover
+            print '[ceph-osd-fault] Target node/osd down, trying to find acceptable node'
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(datetime.datetime.now())) 
+            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
+
+            # check for exit signal
+            self.check_exit_signal()
+
+        # create tmp file for playbook
+        crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+        with open('playbooks/ceph-mon-fault-crash.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+            for task in config[0]['tasks']:
+                if task['name'] == 'Stopping ceph-mon service':
+                    task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
+        with open('playbooks/'+crash_filename, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+
+        with open('playbooks/ceph-osd-fault-restore.yml') as f:
+            config = yaml.load(f)
+            config[0]['hosts'] = host
+            for task in config[0]['tasks']:
+                if task['name'] == 'Restoring ceph-osd service':
+                    task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
+            
+        with open('playbooks/'+restore_filename, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
+
+        #check for exit signal
+        self.check_exit_signal()
+
+        print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
+        self.deployment.osds[target_osd] = False
+        start_time = datetime.datetime.now() - global_starttime
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+        downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
+                  str(downtime) + ' minutes before introducing OSD again' +
+                  '\n'.format(datetime.datetime.now()))
+        print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
+        time.sleep(15) #(downtime * 60)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
+        self.deployment.osds[target_osd] = True
+        end_time = datetime.datetime.now() - global_starttime
+        exit_status = False # Not currently using exit status 
+        target_node[0].occupied = False # Free up the node
+
+        #clean up tmp files
+        os.remove(os.path.join('playbooks/', crash_filename))
+        os.remove(os.path.join('playbooks/', restore_filename))
+        
+        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
+
+        target_node[0].occupied = True # Mark node as being used 
+        """
     # Deterministic fault functions below ---------------------------------------------
      
     def det_osd_service_fault(self, target_node, downtime):
