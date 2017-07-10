@@ -643,8 +643,8 @@ class Deployment:
                 # Fill hosts file with IPs
                     hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
-                self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
-                     config['deployment']['nodes'][node_id]['node_ip'], node_id)])
+                self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'],
+                                  config['deployment']['nodes'][node_id]['node_ip'], node_id)])
 
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
