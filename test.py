@@ -188,7 +188,7 @@ class Ceph(Fault):
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
         #create a list of fault functions
-        self.functions = [self.osd_service_fault]
+        self.functions = [self.osd_service_fault, self.mon_service_fault]
 
     def __repr__(self):
         return 'Ceph'
@@ -400,77 +400,8 @@ class Ceph(Fault):
         target_node[0].occupied = False # Free up the node
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
 
-        """
         def mon_service_fault(self):
-            candidate_nodes = []
-            for node in self.deployment.nodes:
-                if self.deployment.hci:
-                    if node.type == 'osd-compute':
-                        candidate_nodes.append(node)
-                else:
-                    if 'ceph' in node.type:
-                        candidate_nodes.append(node)
-
-            #check for exit signal
-            self.check_exit_signal()
-
-            target_node = random.choice(candidate_nodes)
-            host = target_node.ip
-            response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
-                                       stdout=open(os.devnull, 'w'),
-                                       stderr=open(os.devnull, 'w'))
-
-            # Count the number of downed osds
-            nodes_occupied = 0
-            for node in self.deployment.nodes:
-                if node.occupied:
-                    nodes_occupied += 1
-
-            while response != 0 or target_node.occupied or (self.deployment.min_replication_size >= nodes_occupied):
-                target_node = random.choice(candidate_nodes)
-                host = target_node.ip
-                time.sleep(20) # Wait 20 seconds to give nodes time to recover
-                print '[ceph-osd-fault] Failed to find acceptable node. Waiting 20 seconds before searching for a different node to fault'
-                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Failed to find \
-                            acceptable node. Waiting 20 seconds before searching \
-                            for a different node to fault.\n'.format(datetime.datetime.now())) 
-                response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
-                                       stdout=open(os.devnull, 'w'),
-                                       stderr=open(os.devnull, 'w'))
-
-                target_node.occupied = True # Mark node as being used 
-                #check for exit signal
-                self.check_exit_signal()
-
-            with open('playbooks/ceph-osd-fault-crash.yml') as f:
-                config = yaml.load(f)
-                config[0]['hosts'] = host
-            with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
-                yaml.dump(config, f, default_flow_style=False)
-
-            with open('playbooks/ceph-osd-fault-restore.yml') as f:
-                config = yaml.load(f)
-                config[0]['hosts'] = host
-            with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
-                yaml.dump(config, f, default_flow_style=False)
-
-            #check for exit signal
-            self.check_exit_signal()
-
-            print '[ceph-osd-fault] executing fault'
-            start_time = datetime.datetime.now() - global_starttime
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-            downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
-                      str(downtime) + ' minutes before introducing OSD again' +
-                      '\n'.format(datetime.datetime.now()))
-            time.sleep(30) #(downtime * 60)
-            subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-            end_time = datetime.datetime.now() - global_starttime
-            exit_status = False # Not currently using exit status 
-            target_node.occupied = False # Free up the node
-            return ['ceph-osd-fault', target_node.ip, start_time, end_time, downtime, exit_status] 
-    """
+            print 'num_mons:', self.deployment.num_mons
 
     # Deterministic fault functions below ---------------------------------------------
      
@@ -561,20 +492,24 @@ class Deployment:
 
             if ceph_deployment:
                 self.num_osds = 0
+                self.num_mons = 0
 
+            # The 'nodes' list contains Node instances inside of lists with which you 
+            # can append any data required for your plugins 
             for node_id in config['deployment']['nodes']:
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
-                     config['deployment']['nodes'][node_id]['node_ip'], node_id), 'PLACEHOLDER'])
+                     config['deployment']['nodes'][node_id]['node_ip'], node_id)])
 
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
                 if ceph_deployment:
-                    self.nodes[-1][-1] = config['deployment']['nodes'][node_id]['osds']
+                    self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
                 # Fill hosts file with IPs
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
                 if ceph_deployment:
+                    self.num_mons += 1 if ('control' in config['deployment']['nodes'][node_id]['node_type']) else 0
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
