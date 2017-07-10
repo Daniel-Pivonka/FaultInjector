@@ -115,7 +115,7 @@ class Node_fault(Fault):
 
         #call fault
         if args[1] == 'node-kill-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at ' + str(target[0].ip) + '\n'.format(datetime.datetime.now()))
             self.det_node_kill_fault(target, int(args[5]))
         else:
             print 'no matching function found'
