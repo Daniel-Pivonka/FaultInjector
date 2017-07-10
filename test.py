@@ -388,7 +388,13 @@ class Ceph(Fault):
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
 
-            #check for exit signal
+            # Count the number of downed osds
+            osds_occupied = 0
+            for osd in self.deployment.osds:
+                if not osd: # If osd is off
+                    osds_occupied += 1
+
+            # check for exit signal
             self.check_exit_signal()
 
         target_node[0].occupied = True # Mark node as being used 
@@ -419,16 +425,21 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
+        # Fault
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+
+        # Wait
         downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
         time.sleep(15) #(downtime * 60)
+
+        # Restore
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
@@ -436,7 +447,7 @@ class Ceph(Fault):
         exit_status = False # Not currently using exit status 
         target_node[0].occupied = False # Free up the node
 
-        #clean up tmp files
+        # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
         
