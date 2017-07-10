@@ -653,7 +653,7 @@ class Ceph(Fault):
                     exiting fault function'
             return None
 
-        target_node.[0]occupied = True # Mark node as being used 
+        target_node[0].occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
