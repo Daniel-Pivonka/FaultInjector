@@ -437,7 +437,7 @@ class Ceph(Fault):
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
-        time.sleep(15) #(downtime * 60)
+        time.sleep(100) #(downtime * 60)
 
         # Restore
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
@@ -530,7 +530,7 @@ class Ceph(Fault):
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
-        time.sleep(15) #(downtime * 60)
+        time.sleep(100) #(downtime * 60)
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
