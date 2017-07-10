@@ -570,7 +570,7 @@ class Ceph(Fault):
                     exiting fault function'
             return None
 
-        target_node.occupied = True # Mark node as being used 
+        target_node[0].occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
@@ -603,7 +603,7 @@ class Ceph(Fault):
             downtime -= 1
 
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-        target_node.occupied = False # Free up the node
+        target_node[0].occupied = False # Free up the node
         print '[det_osd_service_fault] deterministic step completed'
         return True 
 
