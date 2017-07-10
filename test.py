@@ -299,6 +299,9 @@ class Ceph(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def fault_thread(self, deterministic_file, timelimit):
+
+        print "thread started"
+
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
