@@ -454,16 +454,14 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
     
     def mon_service_fault(self):
-        print 'num_mons:', self.deployment.num_mons
-
         candidate_nodes = []
-        mons_available = 0
+        self.deployment.mons_available = 0
         for node in self.deployment.nodes:
             if 'control' in node[0].type:
                 candidate_nodes.append(node)
                 if node[2]:
                     mons_available += 1
-        if mons_available <= 1:
+        if self.deployment.mons_available <= 1:
             return
 
         target_node = random.choice(candidate_nodes)
@@ -483,12 +481,12 @@ class Ceph(Fault):
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
 
-            mons_available = 0
+            self.deployment.mons_available = 0
             for node in self.deployment.nodes:
                 if 'control' in node[0].type:
                     candidate_nodes.append(node)
                     if node[2]:
-                        mons_available += 1
+                        self.deployment.mons_available += 1
             if mons_available <= 1:
                 return
 
@@ -660,6 +658,7 @@ class Deployment:
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
+                    self.mons_available = 0 # Checks and modifies this value in the fault functions
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
