@@ -178,7 +178,7 @@ class Node_fault(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['node-kill-fault', target_node.ip, start_time, end_time, downtime, False]
+        return ['node-kill-fault', target_node[0].ip, start_time, end_time, downtime, False]
 
     def det_node_kill_fault(self, target_node, downtime):
         pass
