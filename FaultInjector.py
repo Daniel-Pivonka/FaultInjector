@@ -658,7 +658,8 @@ class Ceph(Fault):
 
         with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
-            config['hosts'] = host
+            print config[0]
+            config[0]['hosts'] = host
             if fault_type == 'osd':
                 for task in config[0]['tasks']:
                     if task['name'] == 'Stopping ceph service':
