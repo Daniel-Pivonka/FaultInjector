@@ -427,8 +427,8 @@ class Ceph(Fault):
         target_node[0].occupied = False # Free up the node
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
 
-        def mon_service_fault(self):
-            print 'num_mons:', self.deployment.num_mons
+    def mon_service_fault(self):
+        print 'num_mons:', self.deployment.num_mons
 
     # Deterministic fault functions below ---------------------------------------------
      
