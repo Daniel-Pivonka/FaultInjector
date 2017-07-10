@@ -390,8 +390,8 @@ class Ceph(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
-        print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes until restoring osd-' + str(target_osd)
-        time.sleep(30) #(downtime * 60)
+        print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
+        time.sleep(15) #(downtime * 60)
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
