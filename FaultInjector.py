@@ -680,6 +680,7 @@ def main():
 
     #create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
+    plugins.append(Node_fault(deployment))
     #plugins.append()
     node_fault = Node_fault(deployment)
 
@@ -779,7 +780,8 @@ def stateful_start(timelimit):
 
     #create thread for every plugin
     for plugin in plugins:
-        threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit)))
+        if plugin.__repr__() != 'Node_fault':
+            threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit)))
 
     #start all threads
     for thread in threads:
