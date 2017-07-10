@@ -126,7 +126,7 @@ class Node_fault(Fault):
                 if task['name'] == 'Power off server':
                     task['local_action'] = 'shell . ~/stackrc && nova stop ' + target_node.id        
 
-        with open('playbooks/'+crash_filename, 'w') as f:
+        with open('playbooks/' + crash_filename, 'w') as f:
             yaml.dump(crash_config, f, default_flow_style=False)
 
         # modify restore playbook
@@ -142,7 +142,7 @@ class Node_fault(Fault):
 
 
 
-        with open('playbooks/'+restore_filename, 'w') as f:
+        with open('playbooks/' + restore_filename, 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
 
         #check for exit signal
@@ -343,13 +343,10 @@ class Ceph(Fault):
             if not osd: # If osd is off
                 osds_occupied += 1
 
-        print 'occupied osds:', osds_occupied
-
         target_osd = random.choice(target_node[1])
 
-        print 'target osd', target_osd
-
-        while response != 0 or target_node[0].occupied or (osds_occupied >= self.deployment.min_replication_size):
+        #   node unreachable        target osd is being used        there are a greater than or equal number of osds down than the limit
+        while response != 0 or (not deployment.osds[target_osd]) or (osds_occupied >= self.deployment.min_replication_size):
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(1) # Wait 20 seconds to give nodes time to recover
@@ -385,7 +382,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        print '[ceph-osd-fault] executing fault'
+        print '[ceph-osd-fault] executing fault on osd-' + target_osd
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
@@ -393,8 +390,10 @@ class Ceph(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
+        print '[ceph-osd-fault] waiting ' + downtime + ' minutes until restoring osd-' + target_osd
         time.sleep(30) #(downtime * 60)
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         exit_status = False # Not currently using exit status 
