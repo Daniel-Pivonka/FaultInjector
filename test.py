@@ -382,7 +382,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        print '[ceph-osd-fault] executing fault on osd-' + target_osd
+        print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
@@ -390,7 +390,7 @@ class Ceph(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
-        print '[ceph-osd-fault] waiting ' + downtime + ' minutes until restoring osd-' + target_osd
+        print '[ceph-osd-fault] waiting ' + downtime + ' minutes until restoring osd-' + str(target_osd)
         time.sleep(30) #(downtime * 60)
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
@@ -680,7 +680,7 @@ def stateful_start(timelimit):
         will wait for all threads to compplete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print 'Stateful Mode Started'
+    print 'Stateful'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
