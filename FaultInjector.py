@@ -257,9 +257,12 @@ class Ceph(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
+        #target = None
+        
         #find target node
         for node in self.deployment.nodes:
-            if node[0].ip == args[2]:
+            #print node[0].ip, args[2]
+            if node[0].ip.strip() == args[2].strip():
                 target = node
 
         #wait until starttime
@@ -269,7 +272,7 @@ class Ceph(Fault):
 
         #call fault
         if args[1] == 'ceph-osd-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target[0]) + '\n'.format(datetime.datetime.now()))
             self.det_osd_service_fault(target, int(args[5]))
         else:
             print 'no matching function found'
@@ -572,7 +575,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        host = target_node.ip
+        host = target_node[0].ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
@@ -586,7 +589,7 @@ class Ceph(Fault):
                     exiting fault function'
             return None
 
-        target_node.occupied = True # Mark node as being used 
+        target_node[0].occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
@@ -619,7 +622,7 @@ class Ceph(Fault):
             downtime -= 1
 
         subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-        target_node.occupied = False # Free up the node
+        target_node[0].occupied = False # Free up the node
         print '[det_osd_service_fault] deterministic step completed'
         return True 
 
