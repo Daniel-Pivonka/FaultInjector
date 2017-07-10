@@ -2,5 +2,5 @@
   hosts: 192.168.24.6
   tasks:
   - become: true
-    name: Restoring ceph-osd regular behavior
+    name: Restoring ceph-osd service
     shell: systemctl start ceph-osd.target
