@@ -98,6 +98,25 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
 
     def deterministic(self, args):
+
+        #convert endtime to seconds
+        l = args[3].split(':')
+        secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
+
+        #find target node
+        for node in self.deployment.nodes:
+            if node[0].ip == args[2]:
+                target = node
+
+        #wait until starttime
+        while time.time() < int(global_starttime.strftime('%s')) + secs:
+            self.check_exit_signal()
+            time.sleep(1)
+
+
+
+
+        
         raise NotImplementedError
 
     # Write fault functions below --------------------------------------------- 
