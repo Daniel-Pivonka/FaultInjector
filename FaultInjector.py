@@ -656,9 +656,12 @@ class Ceph(Fault):
 
         target_node[0].occupied = True # Mark node as being used 
 
+        # create tmp file for playbook
+        crash_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
         with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
-            print config[0]
             config[0]['hosts'] = host
             if fault_type == 'osd':
                 for task in config[0]['tasks']:
@@ -669,7 +672,7 @@ class Ceph(Fault):
                     if task['name'] == 'Stopping ceph service':
                         task['shell'] = 'systemctl stop ceph-mon.target'
 
-        with open('playbooks/ceph-service-crash.yml', 'w') as f:
+        with open('playbooks/' + crash_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
@@ -686,14 +689,14 @@ class Ceph(Fault):
                 for task in config[0]['tasks']:
                     if task['name'] == 'Restoring ceph service':
                         task['shell'] = 'systemctl start ceph-mon.target'
-        with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+        with open('playbooks/' + restore_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
         self.check_exit_signal()
 
         print '[det_service_fault] executing ' + fault_type  + ' fault at ' + host
-        subprocess.call('ansible-playbook playbooks/ceph-service-crash.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting ' + str(downtime) + 
                 ' minutes before restoring\n'.format(datetime.datetime.now()))
         
@@ -703,8 +706,12 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
-        subprocess.call('ansible-playbook playbooks/ceph-service-restore.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         target_node[0].occupied = False # Free up the node
+        # clean up tmp files
+        os.remove(os.path.join('playbooks/', crash_filename))
+        os.remove(os.path.join('playbooks/', restore_filename))
+        
         print '[det_service_fault] deterministic step completed'
 
         return True 
