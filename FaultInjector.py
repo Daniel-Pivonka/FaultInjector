@@ -238,6 +238,8 @@ class Ceph(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
+        target = None
+        
         #find target node
         for node in self.deployment.nodes:
             if node[0].ip == args[2]:
@@ -250,7 +252,7 @@ class Ceph(Fault):
 
         #call fault
         if args[1] == 'ceph-osd-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target[0]) + '\n'.format(datetime.datetime.now()))
             self.det_osd_service_fault(target, int(args[5]))
         else:
             print 'no matching function found'
