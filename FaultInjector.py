@@ -240,7 +240,7 @@ class Ceph(Fault):
 
         #find target node
         for node in self.deployment.nodes:
-            if node.ip == args[2]:
+            if node[0].ip == args[2]:
                 target = node
 
         #wait until starttime
