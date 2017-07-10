@@ -207,7 +207,7 @@ class Ceph(Fault):
         fault_threads = []
 
         #create threads
-        for plugin in plugins:
+        for i in range(thread_count):
             thread = threading.Thread(target=self.fault_thread, args=(deterministic_file, timelimit))
             threads.append(thread)
             fault_threads.append(thread)
