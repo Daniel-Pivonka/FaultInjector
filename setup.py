@@ -9,7 +9,7 @@ import yaml
 
 """
 The purpose of this file is to attempt to fill the config file
-as thouroughly as possible. Note that some parameters in the config
+as thoroughly as possible. Note that some parameters in the config
 like "HCI" may not be filled in certain cases, so the config should
 be checked before running the main program
 """
