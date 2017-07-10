@@ -403,20 +403,20 @@ class Ceph(Fault):
         crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        with open('playbooks/ceph-osd-fault-crash.yml') as f:
+        with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Stopping ceph-osd service':
+                if task['name'] == 'Stopping ceph service':
                     task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
         with open('playbooks/'+crash_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        with open('playbooks/ceph-osd-fault-restore.yml') as f:
+        with open('playbooks/ceph-service-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Restoring ceph-osd service':
+                if task['name'] == 'Restoring ceph service':
                     task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
             
         with open('playbooks/'+restore_filename, 'w') as f:
