@@ -381,7 +381,7 @@ class Ceph(Fault):
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
-            time.sleep(1) # Wait 20 seconds to give nodes time to recover
+            time.sleep(1)
             print '[ceph-osd-fault] Target node/osd down, trying to find acceptable node'
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(datetime.datetime.now())) 
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
