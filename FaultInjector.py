@@ -673,7 +673,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        with open('playbooks/ceph-osd-fault-restore.yml') as f:
+        with open('playbooks/ceph-service-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             if fault_type == 'osd':
