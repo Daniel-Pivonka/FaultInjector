@@ -98,7 +98,28 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
 
     def deterministic(self, args):
-        raise NotImplementedError
+
+        #convert endtime to seconds
+        l = args[3].split(':')
+        secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
+
+        #find target node
+        for node in self.deployment.nodes:
+            if node[0].ip == args[2]:
+                target = node
+
+        #wait until starttime
+        while time.time() < int(global_starttime.strftime('%s')) + secs:
+            self.check_exit_signal()
+            time.sleep(1)
+
+        #call fault
+        if args[1] == 'node-kill-fault':
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at ' + str(target) + '\n'.format(datetime.datetime.now()))
+            self.det_node_kill_fault(target, int(args[5]))
+        else:
+            print 'no matching function found'
+
 
     # Write fault functions below --------------------------------------------- 
 
@@ -161,11 +182,13 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
                       str(downtime) + ' minutes before restoring \
                       \n'.format(datetime.datetime.now()))
-        while downtime > 0:
+
+        counter = downtime 
+        while counter > 0:
                 #check for exit signal
                 self.check_exit_signal()
                 time.sleep(5)#60)
-                downtime -= 1
+                counter -= 1
 
         # restore system
         subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
@@ -181,7 +204,66 @@ class Node_fault(Fault):
         return ['node-kill-fault', target_node[0].ip, start_time, end_time, downtime, False]
 
     def det_node_kill_fault(self, target_node, downtime):
-        pass
+        target_node[0].occupied = True
+
+        #check for exit signal
+        self.check_exit_signal()
+
+        #create tmp file for playbook
+        crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+        # modify crash playbook
+        with open('playbooks/system-crash.yml') as f:
+            crash_config = yaml.load(f)
+            crash_config[0]['hosts'] = target_node[0].ip
+            for task in crash_config[0]['tasks']:
+                if task['name'] == 'Power off server':
+                    task['local_action'] = 'shell . ~/stackrc && nova stop ' + target_node[0].id        
+
+        with open('playbooks/' + crash_filename, 'w') as f:
+            yaml.dump(crash_config, f, default_flow_style=False)
+
+        # modify restore playbook
+        with open('playbooks/system-restore.yml') as f:
+            restore_config = yaml.load(f)
+            restore_config[0]['hosts'] = target_node[0].ip
+            for task in restore_config[0]['tasks']:
+                if task['name'] == 'Power on server':
+                    task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node[0].id
+                if task['name'] == 'waiting 30 secs for server to come back':
+                    task['local_action'] = 'wait_for host='+ target_node[0].ip +' port=22 state=started delay=30 timeout=120'
+
+
+        with open('playbooks/' + restore_filename, 'w') as f:
+            yaml.dump(restore_config, f, default_flow_style=False)
+
+        #check for exit signal
+        self.check_exit_signal()
+
+        # crash system
+        subprocess.call('ansible-playbook playbooks/'+crash_filename, shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node killed\n'.format(datetime.datetime.now()))
+
+        # wait
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
+                      str(downtime) + ' minutes before restoring \
+                      \n'.format(datetime.datetime.now()))
+        while downtime > 0:
+                #check for exit signal
+                self.check_exit_signal()
+                time.sleep(60)
+                downtime -= 1
+
+        # restore system
+        subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
+
+        target_node[0].occupied = False
+
+        #clean up tmp files
+        os.remove(os.path.join('playbooks/', crash_filename))
+        os.remove(os.path.join('playbooks/', restore_filename))
 
 class Ceph(Fault):
 
@@ -238,12 +320,9 @@ class Ceph(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
-        #target = None
-        
         #find target node
         for node in self.deployment.nodes:
-            #print node[0].ip, args[2]
-            if node[0].ip.strip() == args[2].strip():
+            if node[0].ip == args[2]:
                 target = node
 
         #wait until starttime
@@ -560,7 +639,7 @@ class Ceph(Fault):
         #check for exit signal
         self.check_exit_signal()
 
-        host = target_node[0].ip
+        host = target_node.ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
@@ -574,7 +653,7 @@ class Ceph(Fault):
                     exiting fault function'
             return None
 
-        target_node[0].occupied = True # Mark node as being used 
+        target_node.occupied = True # Mark node as being used 
 
         with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
@@ -622,9 +701,15 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
+<<<<<<< HEAD
         subprocess.call('ansible-playbook playbooks/ceph-service-restore.yml', shell=True)
         target_node[0].occupied = False # Free up the node
         print '[det_service_fault] deterministic step completed'
+=======
+        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        target_node.occupied = False # Free up the node
+        print '[det_osd_service_fault] deterministic step completed'
+>>>>>>> 985764e7db112cbb571afc806ef4d2e411092845
         return True 
 
 class Node:
