@@ -254,7 +254,10 @@ class Ceph(Fault):
         #call fault
         if args[1] == 'ceph-osd-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(target[0]) + '\n'.format(datetime.datetime.now()))
-            self.det_osd_service_fault(target, int(args[5]))
+            self.det_service_fault(target, 'osd', int(args[5]), args[6])
+        elif args[1] == 'ceph-mon-fault':
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at ' + str(target[0]) + '\n'.format(datetime.datetime.now()))
+            self.det_service_fault(target, 'mon', int(args[5]), args[6])
         else:
             print 'no matching function found'
 
@@ -446,15 +449,14 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
-        end_time = datetime.datetime.now() - global_starttime
-        exit_status = False # Not currently using exit status 
+        end_time = datetime.datetime.now() - global_starttime 
         target_node[0].occupied = False # Free up the node
 
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
         
-        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
+        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, target_osd] 
     
     def mon_service_fault(self):
         candidate_nodes = []
@@ -549,8 +551,10 @@ class Ceph(Fault):
         
     # Deterministic fault functions below ---------------------------------------------
      
-    def det_osd_service_fault(self, target_node, downtime):
-        """ Kills a random osd service specified on a random ceph node or osd-compute node
+    def det_service_fault(self, target_node, fault_type, downtime, additional_info):
+        """ Called by ceph determinisic function
+            'fault type' so far is either 'osd' or 'mon'
+            'additional_info' used differently depending on the fault type
         """
 
         #check for exit signal
@@ -566,16 +570,25 @@ class Ceph(Fault):
 
         # Make sure target node is reachable 
         if response != 0:
-            print '[det_osd_service_fault] error: target node unreachable, \
+            print '[det_service_fault] error: target node unreachable, \
                     exiting fault function'
             return None
 
         target_node[0].occupied = True # Mark node as being used 
 
-        with open('playbooks/ceph-osd-fault-crash.yml') as f:
+        with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
-        with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
+            if fault_type == 'osd':
+                for task in config[0]['tasks']:
+                    if task['name'] == 'Stopping ceph service':
+                        task['shell'] = 'systemctl stop ceph-osd.' + additional_info
+            else:
+                for task in config[0]['tasks']:
+                    if task['name'] == 'Stopping ceph service':
+                        task['shell'] = 'systemctl stop ceph-mon.target'
+
+        with open('playbooks/ceph-service-crash.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
@@ -584,17 +597,24 @@ class Ceph(Fault):
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
+            if fault_type == 'osd':
+                for task in config[0]['tasks']:
+                    if task['name'] == 'Restoring ceph service':
+                        task['shell'] = 'systemctl start ceph-osd.' + additional_info
+            else:
+                for task in config[0]['tasks']:
+                    if task['name'] == 'Restoring ceph service':
+                        task['shell'] = 'systemctl start ceph-mon.target'
         with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
         self.check_exit_signal()
 
-        print '[det_ceph-osd-fault] executing fault.'
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [det_ceph-osd-fault] waiting ' + 
-                    str(downtime) + ' minutes before introducing OSD \
-                    again\n'.format(datetime.datetime.now()))
+        print '[det_service_fault] executing ' + fault_type  + ' fault at ' + host
+        subprocess.call('ansible-playbook playbooks/ceph-service-crash.yml', shell=True)
+        log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting ' + str(downtime) + 
+                ' minutes before restoring\n'.format(datetime.datetime.now()))
         
         while downtime > 0:
             #check for exit signal
@@ -602,9 +622,9 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/ceph-service-restore.yml', shell=True)
         target_node[0].occupied = False # Free up the node
-        print '[det_osd_service_fault] deterministic step completed'
+        print '[det_service_fault] deterministic step completed'
         return True 
 
 class Node:
