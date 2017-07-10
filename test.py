@@ -460,7 +460,7 @@ class Ceph(Fault):
             if 'control' in node[0].type:
                 candidate_nodes.append(node)
                 if node[2]:
-                    mons_available += 1
+                    self.deployment.mons_available += 1
         if self.deployment.mons_available <= 1:
             return
 
@@ -487,7 +487,7 @@ class Ceph(Fault):
                     candidate_nodes.append(node)
                     if node[2]:
                         self.deployment.mons_available += 1
-            if mons_available <= 1:
+            if self.deployment.mons_available <= 1:
                 return
 
             # check for exit signal
