@@ -199,7 +199,7 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        print 'Beginning Ceph stateful mode'
+        print 'Beginning Ceph Stateful Mdode'
 
 
         thread_count = self.deployment.min_replication_size + 1
@@ -618,7 +618,7 @@ class Deployment:
         """
         self.nodes = []
 
-        hosts = open('hosts', 'w')
+        hosts = open('~/hosts', 'w')
 
         with open(filename, 'r') as f:
             config = yaml.load(f)
@@ -631,13 +631,18 @@ class Deployment:
             # Check for a Ceph deployment
             ceph_deployment = 'ceph' in config
 
+            # Initalize ceph-specific fields
             if ceph_deployment:
                 self.num_osds = 0
                 self.num_mons = 0
+                self.mons_available = 0
 
             # The 'nodes' list contains Node instances inside of lists with which you 
             # can append any data required for your plugins 
             for node_id in config['deployment']['nodes']:
+                # Fill hosts file with IPs
+                    hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
+
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'], \
                      config['deployment']['nodes'][node_id]['node_ip'], node_id)])
 
@@ -649,16 +654,14 @@ class Deployment:
                     # [Node Object, List of OSDs, Controller Available (boolean)]
                     self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
                     self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] else self.nodes[-1].append(False)
-                # Fill hosts file with IPs
-                hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
-
-                if ceph_deployment:
-                    if 'control' in config['deployment']['nodes'][node_id]['node_type']:
-                        self.num_mons += 1 
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
-                    self.min_replication_size = config['ceph']['minimum_replication_size']
-                    self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
-                    self.mons_available = 0 # Checks and modifies this value in the fault functions
+                    if 'control' in config['deployment']['nodes'][node_id]['node_type']:
+                        self.num_mons += 1
+
+
+            if ceph_deployment: 
+                self.min_replication_size = config['ceph']['minimum_replication_size']
+                self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
@@ -676,7 +679,7 @@ threads = []
 stopper = threading.Event()
 
 def main():
-    deployment = Deployment('config.yaml')
+    deployment = Deployment('~/config.yaml')
 
     #create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
