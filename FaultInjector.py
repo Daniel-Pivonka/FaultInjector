@@ -701,15 +701,10 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
-<<<<<<< HEAD
         subprocess.call('ansible-playbook playbooks/ceph-service-restore.yml', shell=True)
         target_node[0].occupied = False # Free up the node
         print '[det_service_fault] deterministic step completed'
-=======
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
-        target_node.occupied = False # Free up the node
-        print '[det_osd_service_fault] deterministic step completed'
->>>>>>> 985764e7db112cbb571afc806ef4d2e411092845
+        
         return True 
 
 class Node:
