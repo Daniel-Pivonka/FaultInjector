@@ -182,11 +182,13 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + 
                       str(downtime) + ' minutes before restoring \
                       \n'.format(datetime.datetime.now()))
-        while downtime > 0:
+
+        counter = downtime 
+        while counter > 0:
                 #check for exit signal
                 self.check_exit_signal()
                 time.sleep(5)#60)
-                downtime -= 1
+                counter -= 1
 
         # restore system
         subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
