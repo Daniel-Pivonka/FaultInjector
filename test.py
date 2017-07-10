@@ -387,10 +387,11 @@ class Ceph(Fault):
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
 
-            target_node[0].occupied = True # Mark node as being used 
             #check for exit signal
             self.check_exit_signal()
 
+        target_node[0].occupied = True # Mark node as being used 
+        
         #create tmp file for playbook
         crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
@@ -420,14 +421,14 @@ class Ceph(Fault):
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/'+crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
         downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
         time.sleep(15) #(downtime * 60)
-        subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
@@ -437,6 +438,15 @@ class Ceph(Fault):
 
     def mon_service_fault(self):
         print 'num_mons:', self.deployment.num_mons
+
+        candidate_nodes = []
+        mons_available = 0
+        for node in self.deployment.nodes:
+            if self.deployment.hci:
+                if 'control' in node[0].type:
+                    candidate_nodes.append(node)
+                    if node[2]:
+                        mons_available += 1
 
     # Deterministic fault functions below ---------------------------------------------
      
@@ -539,12 +549,16 @@ class Deployment:
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
                 if ceph_deployment:
+                    # Each node in the list of nodes is now a list which holds the following:
+                    # [Node Object, List of OSDs, Controller Available (boolean)]
                     self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
+                    self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] else self.nodes[-1].append(False)
                 # Fill hosts file with IPs
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
                 if ceph_deployment:
-                    self.num_mons += 1 if ('control' in config['deployment']['nodes'][node_id]['node_type']) else 0
+                    if 'control' in config['deployment']['nodes'][node_id]['node_type']:
+                        self.num_mons += 1 
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
