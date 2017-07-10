@@ -322,7 +322,7 @@ class Ceph(Fault):
 
         #find target node
         for node in self.deployment.nodes:
-            if node[0].ip == args[2]:
+            if node[0].ip.strip() == args[2].strip():
                 target = node
 
         #wait until starttime
@@ -704,7 +704,7 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/ceph-service-restore.yml', shell=True)
         target_node[0].occupied = False # Free up the node
         print '[det_service_fault] deterministic step completed'
-        
+
         return True 
 
 class Node:
