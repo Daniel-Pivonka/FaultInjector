@@ -201,53 +201,31 @@ class Ceph(Fault):
         """
         print 'Beginning Ceph stateful mode'
 
-        osd_limit = self.deployment.min_replication_size - 1
 
-        # Infinite loop for indefinite mode
-        while timelimit is None:
-            result = random.choice(self.functions)()
-            if result is None:
-                continue
+        thread_count = self.deployment.min_replication_size + 1
 
-            # Add space if ip is short
-            if len(result[1]) == 12:
-                result[1] = result[1] + '  '
-            elif len(result[1]) == 13:
-                result[1] = result[1] + ' '
+        fault_threads = []
 
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
-                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
-                                     ' | ' + str(result[5]) + '\n')
-            deterministic_file.flush()
-            os.fsync(deterministic_file.fileno())
+        #create threads
+        for plugin in plugins:
+            thread = threading.Thread(target=self.fault_thread, args=(deterministic_file, timelimit))
+            threads.append(thread)
+            fault_threads.append(thread)
+
+        #start all threads
+        for thread in fault_threads:
+            thread.start()
+          
+        #wait for all threads to end  
+        not_done = True
+        while not_done:
+            not_done = False
+            for thread in fault_threads:
+                if thread.isAlive():
+                    not_done = True
             # check for exit signal
             self.check_exit_signal()
-
-        # Standard runtime loop
-        timeout = time.time() + 60 * timelimit
-        while time.time() < timeout:
-            # Calls a fault function and stores the results
-            result = random.choice(self.functions)() 
-            if result is None:
-                continue
-
-             # Add space if ip is short
-            if len(result[1]) == 12:
-                result[1] = result[1] + '  '
-            elif len(result[1]) == 13:
-                result[1] = result[1] + ' '
-                    
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
-                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
-                                     ' | ' + str(result[5]) + '\n')
-            deterministic_file.flush()
-            os.fsync(deterministic_file.fileno())
-            #check for exit signal
-            self.check_exit_signal()
-
-        deterministic_file.close()
+            time.sleep(1)
 
     def deterministic(self, args):
         """ func that will be set up on a thread
@@ -315,6 +293,51 @@ class Ceph(Fault):
 
     # Write fault functions below --------------------------------------------- 
 
+    def fault_thread(self, deterministic_file, timelimit):
+        # Infinite loop for indefinite mode
+        while timelimit is None:
+            result = random.choice(self.functions)()
+            if result is None:
+                continue
+
+            # Add space if ip is short
+            if len(result[1]) == 12:
+                result[1] = result[1] + '  '
+            elif len(result[1]) == 13:
+                result[1] = result[1] + ' '
+
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+            # check for exit signal
+            self.check_exit_signal()
+
+        # Standard runtime loop
+        timeout = time.time() + 60 * timelimit
+        while time.time() < timeout:
+            # Calls a fault function and stores the results
+            result = random.choice(self.functions)() 
+            if result is None:
+                continue
+
+             # Add space if ip is short
+            if len(result[1]) == 12:
+                result[1] = result[1] + '  '
+            elif len(result[1]) == 13:
+                result[1] = result[1] + ' '
+                    
+            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) + 
+                                    ' | ' + str(result[1]) + ' | ' + str(result[2]) + 
+                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) + 
+                                     ' | ' + str(result[5]) + '\n')
+            deterministic_file.flush()
+            os.fsync(deterministic_file.fileno())
+            #check for exit signal
+            self.check_exit_signal()
+
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
             or osd-compute node
@@ -360,13 +383,17 @@ class Ceph(Fault):
             #check for exit signal
             self.check_exit_signal()
 
+        #create tmp file for playbook
+        crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
                 if task['name'] == 'Stopping ceph-osd service':
                     task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
-        with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
+        with open('playbooks/'+crash_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
@@ -376,7 +403,7 @@ class Ceph(Fault):
                 if task['name'] == 'Restoring ceph-osd service':
                     task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
             
-        with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+        with open('playbooks/'+restore_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
@@ -385,14 +412,14 @@ class Ceph(Fault):
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/'+crash_filename, shell=True)
         downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
         time.sleep(15) #(downtime * 60)
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
@@ -513,7 +540,6 @@ class Deployment:
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     self.min_replication_size = config['ceph']['minimum_replication_size']
                     self.osds = [True for osd in range(self.num_osds)] # Set all osds to 'on' aka True
-
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
