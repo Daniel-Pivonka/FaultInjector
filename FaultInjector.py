@@ -105,10 +105,10 @@ class Node_fault(Fault):
     def node_kill_fault(self):
         #chose node to fault
         target_node = random.choice(self.deployment.nodes)
-        while target_node.occupied:
+        while target_node[0].occupied:
             target_node = random.choice(self.deployment.nodes)
 
-        target_node.occupied = True
+        target_node[0].occupied = True
 
 
         #check for exit signal
@@ -121,10 +121,10 @@ class Node_fault(Fault):
         # modify crash playbook
         with open('playbooks/system-crash.yml') as f:
             crash_config = yaml.load(f)
-            crash_config[0]['hosts'] = target_node.ip
+            crash_config[0]['hosts'] = target_node[0].ip
             for task in crash_config[0]['tasks']:
                 if task['name'] == 'Power off server':
-                    task['local_action'] = 'shell . ~/stackrc && nova stop ' + target_node.id        
+                    task['local_action'] = 'shell . ~/stackrc && nova stop ' + target_node[0].id        
 
         with open('playbooks/' + crash_filename, 'w') as f:
             yaml.dump(crash_config, f, default_flow_style=False)
@@ -132,12 +132,12 @@ class Node_fault(Fault):
         # modify restore playbook
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
-            restore_config[0]['hosts'] = target_node.ip
+            restore_config[0]['hosts'] = target_node[0].ip
             for task in restore_config[0]['tasks']:
                 if task['name'] == 'Power on server':
-                    task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node.id
+                    task['local_action'] = 'shell . ~/stackrc && nova start ' + target_node[0].id
                 if task['name'] == 'waiting 30 secs for server to come back':
-                    task['local_action'] = 'wait_for host='+ target_node.ip +' port=22 state=started delay=30 timeout=120'
+                    task['local_action'] = 'wait_for host='+ target_node[0].ip +' port=22 state=started delay=30 timeout=120'
 
 
 
@@ -172,13 +172,13 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
-        target_node.occupied = False
+        target_node[0].occupied = False
 
         #clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['node-kill-fault', target_node.ip, start_time, end_time, downtime, False]
+        return ['node-kill-fault', target_node[0].ip, start_time, end_time, downtime, False]
 
     def det_node_kill_fault(self, target_node, downtime):
         pass
