@@ -641,7 +641,7 @@ class Deployment:
             # can append any data required for your plugins 
             for node_id in config['deployment']['nodes']:
                 # Fill hosts file with IPs
-                    hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
+                hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'],
                                   config['deployment']['nodes'][node_id]['node_ip'], node_id)])
