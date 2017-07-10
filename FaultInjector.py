@@ -105,7 +105,7 @@ class Node_fault(Fault):
 
         #find target node
         for node in self.deployment.nodes:
-            if node[0].ip == args[2]:
+            if node[0].ip.strip() == args[2].strip():
                 target = node
 
         #wait until starttime
