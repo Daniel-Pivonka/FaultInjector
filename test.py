@@ -383,13 +383,17 @@ class Ceph(Fault):
             #check for exit signal
             self.check_exit_signal()
 
+        #create tmp file for playbook
+        crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+        restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
         with open('playbooks/ceph-osd-fault-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
                 if task['name'] == 'Stopping ceph-osd service':
                     task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
-        with open('playbooks/ceph-osd-fault-crash.yml', 'w') as f:
+        with open('playbooks/'+crash_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         with open('playbooks/ceph-osd-fault-restore.yml') as f:
@@ -399,7 +403,7 @@ class Ceph(Fault):
                 if task['name'] == 'Restoring ceph-osd service':
                     task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
             
-        with open('playbooks/ceph-osd-fault-restore.yml', 'w') as f:
+        with open('playbooks/'+restore_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
         #check for exit signal
@@ -408,14 +412,14 @@ class Ceph(Fault):
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-crash.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/'+crash_filename, shell=True)
         downtime = random.randint(15, 45) # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' + 
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
         time.sleep(15) #(downtime * 60)
-        subprocess.call('ansible-playbook playbooks/ceph-osd-fault-restore.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/'+restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
