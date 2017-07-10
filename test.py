@@ -452,7 +452,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', restore_filename))
         
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
-    """
+    
     def mon_service_fault(self):
         print 'num_mons:', self.deployment.num_mons
 
@@ -490,26 +490,26 @@ class Ceph(Fault):
         crash_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        with open('playbooks/ceph-mon-fault-crash.yml') as f:
+        with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Stopping ceph-mon service':
-                    task['shell'] = 'systemctl stop ceph-osd@' + str(target_osd)
-        with open('playbooks/'+crash_filename, 'w') as f:
+                if task['name'] == 'Stopping ceph service':
+                    task['shell'] = 'systemctl stop ceph-mon.target'
+        with open('playbooks/' + crash_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        with open('playbooks/ceph-osd-fault-restore.yml') as f:
+        with open('playbooks/ceph-service-restore.yml') as f:
             config = yaml.load(f)
             config[0]['hosts'] = host
             for task in config[0]['tasks']:
-                if task['name'] == 'Restoring ceph-osd service':
-                    task['shell'] = 'systemctl start ceph-osd@' + str(target_osd)
+                if task['name'] == 'Restoring ceph service':
+                    task['shell'] = 'systemctl start ceph-mon.target'
             
-        with open('playbooks/'+restore_filename, 'w') as f:
+        with open('playbooks/' + restore_filename, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
 
-        #check for exit signal
+        # check for exit signal
         self.check_exit_signal()
 
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
@@ -536,7 +536,7 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, exit_status] 
 
         target_node[0].occupied = True # Mark node as being used 
-        """
+        
     # Deterministic fault functions below ---------------------------------------------
      
     def det_osd_service_fault(self, target_node, downtime):
