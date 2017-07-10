@@ -618,7 +618,7 @@ class Deployment:
         """
         self.nodes = []
 
-        hosts = open('~/hosts', 'w')
+        hosts = open('hosts', 'w')
 
         with open(filename, 'r') as f:
             config = yaml.load(f)
@@ -645,6 +645,7 @@ class Deployment:
 
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'],
                         config['deployment']['nodes'][node_id]['node_ip'], node_id)])
+
 
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
@@ -679,7 +680,7 @@ threads = []
 stopper = threading.Event()
 
 def main():
-    deployment = Deployment('~/config.yaml')
+    deployment = Deployment('config.yaml')
 
     #create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
