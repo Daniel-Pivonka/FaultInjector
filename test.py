@@ -680,7 +680,7 @@ def stateful_start(timelimit):
         will wait for all threads to compplete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print 'stateful'
+    print 'Stateful Mode Started'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
