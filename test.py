@@ -188,7 +188,7 @@ class Ceph(Fault):
     def __init__(self, deployment):
         Fault.__init__(self, deployment)
         #create a list of fault functions
-        self.functions = [self.osd_service_fault]#, self.mon_service_fault]
+        self.functions = [self.osd_service_fault, self.mon_service_fault]
 
     def __repr__(self):
         return 'Ceph'
