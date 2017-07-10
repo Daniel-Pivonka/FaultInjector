@@ -238,12 +238,12 @@ class Ceph(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
-        target = None
+        #target = None
         
         #find target node
         for node in self.deployment.nodes:
-            print node[0].ip, args[2]
-            if node[0].ip == args[2]:
+            #print node[0].ip, args[2]
+            if node[0].ip.strip() == args[2].strip():
                 target = node
 
         #wait until starttime
