@@ -107,6 +107,7 @@ class Node_fault(Fault):
         for node in self.deployment.nodes:
             if node[0].ip.strip() == args[2].strip():
                 target = node
+                break 
 
         #wait until starttime
         while time.time() < int(global_starttime.strftime('%s')) + secs:
@@ -657,7 +658,7 @@ class Ceph(Fault):
 
         with open('playbooks/ceph-service-crash.yml') as f:
             config = yaml.load(f)
-            config[0]['hosts'] = host
+            config['hosts'] = host
             if fault_type == 'osd':
                 for task in config[0]['tasks']:
                     if task['name'] == 'Stopping ceph service':
