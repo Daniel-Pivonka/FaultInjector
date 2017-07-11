@@ -464,15 +464,30 @@ class Ceph(Fault):
         # Pick a random osd
         target_osd = random.choice(target_node[1])
 
+        # keeps track of how many times the while loop has been executed so it can break after
+        # a set amount
+        retries = 0
+
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
+            # exit if loop has executed 3 times already
+            if retries > 3:
+                return
+
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
-            print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
+            if osds_occupied >= self.deployment.min_replication_size - 1:
+                print 'osd limit reached'
+                log.write(
+                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'.format(
+                        datetime.datetime.now()))
+            else:
+                print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
                 0].ip) + ', trying to find acceptable node'
-            log.write(
-                '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(
-                    datetime.datetime.now()))
+                log.write(
+                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find acceptable node\n'.format(
+                        datetime.datetime.now()))
+            retries += 1
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(1)
@@ -617,7 +632,7 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
-        print '[ceph-mon-fault] executing fault on a contoller node'
+        print '[ceph-mon-fault] executing fault on a controller node'
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
