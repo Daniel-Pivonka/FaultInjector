@@ -396,6 +396,8 @@ class Ceph(Fault):
             if result is None:
                 continue
 
+            self.print_status()
+
             # Add space if ip is short
             if len(result[1]) == 12:
                 result[1] = result[1] + '  '
@@ -419,7 +421,9 @@ class Ceph(Fault):
             if result is None:
                 continue
 
-                # Add space if ip is short
+            self.print_status()
+
+            # Add space if ip is short
             if len(result[1]) == 12:
                 result[1] = result[1] + '  '
             elif len(result[1]) == 13:
@@ -756,11 +760,11 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        print "[Current Status:]\n" \
-              "osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(
-            self.deployment.num_osds) + '\n' \
-                                        "monitors active: " + str(self.deployment.mons_available) + '/' + str(
-            self.deployment.num_mons)
+        print "---------------" \
+              "Current Status:\n" \
+              "osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '\n' \
+              "monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) +'\n' \
+              "---------------"
 
 
 class Node:
