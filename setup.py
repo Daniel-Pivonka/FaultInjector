@@ -100,7 +100,7 @@ if args.activate_ceph:
     ssh_stdout.channel.close()
     json_response = json.loads(osd_count_response)
 
-    # Initalize osds and num_osds fields
+    # Initialize osds and num_osds fields
     for node_id in config['deployment']['nodes']:
         config['deployment']['nodes'][node_id]['num_osds'] = 0
         config['deployment']['nodes'][node_id]['osds'] = []

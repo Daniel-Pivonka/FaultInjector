@@ -3,7 +3,6 @@
 import argparse
 import datetime
 import os
-import paramiko
 import random
 import re
 import signal
@@ -177,7 +176,7 @@ class Node_fault(Fault):
 
         # wait
 
-        ################# FIX ME FOR PRODUCTION ##############
+        # FIX ME FOR PRODUCTION
         downtime = random.randint(15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
 
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' +
@@ -773,8 +772,8 @@ class Deployment:
                     # Each node in the list of nodes is now a list which holds the following:
                     # [Node Object, List of OSDs, Controller Available (boolean)]
                     self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
-                    self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] else \
-                        self.nodes[-1].append(False)
+                    self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] \
+                        else self.nodes[-1].append(False)
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     if 'control' in config['deployment']['nodes'][node_id]['node_type']:
                         self.num_mons += 1
