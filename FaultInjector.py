@@ -468,8 +468,8 @@ class Ceph(Fault):
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size):
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
-            print '[ceph-osd-fault] Target osd down (osd-' + target_osd + ') at IP: ' + target_node[
-                0].ip + ', trying to find acceptable node'
+            print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
+                0].ip) + ', trying to find acceptable node'
             log.write(
                 '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(
                     datetime.datetime.now()))
