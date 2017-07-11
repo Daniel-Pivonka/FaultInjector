@@ -479,7 +479,6 @@ class Ceph(Fault):
             if retries > 3:
                 return
 
-            print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
             if osds_occupied >= self.deployment.min_replication_size - 1:
                 print 'osd limit reached'
                 log.write(
