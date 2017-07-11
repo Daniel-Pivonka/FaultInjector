@@ -390,15 +390,6 @@ class Ceph(Fault):
 
         print "Thread Started"
 
-        osds_occupied = 0
-        for osd in self.deployment.osds:
-            if not osd:  # If osd is off
-                osds_occupied += 1
-
-        print "[Current Status:]\n" \
-              "osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '\n' \
-              "monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons)
-
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -579,6 +570,7 @@ class Ceph(Fault):
                 candidate_nodes.append(node)
                 if node[2]:
                     self.deployment.mons_available += 1
+
         if self.deployment.mons_available <= 1:
             print "1 or less monitors active, not faulting..."
             return
@@ -644,6 +636,7 @@ class Ceph(Fault):
         print '[ceph-mon-fault] executing fault on a controller node'
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
+        target_node[2] = False
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
@@ -654,15 +647,15 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
+        target_node[2] = True
         end_time = datetime.datetime.now() - global_starttime
-        exit_status = False  # Not currently using exit status
         target_node[0].occupied = False  # Free up the node
 
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-mon-fault', target_node[0].ip, start_time, end_time, downtime, exit_status]
+        return ['ceph-mon-fault', target_node[0].ip, start_time, end_time, downtime, 'Mon Fault Placeholder']
 
         # Deterministic fault functions below ---------------------------------------------
 
@@ -751,6 +744,24 @@ class Ceph(Fault):
 
         return True
 
+    def print_status(self):
+        osds_occupied = 0
+        for osd in self.deployment.osds:
+            if not osd:  # If osd is off
+                osds_occupied += 1
+
+        self.deployment.mons_available = 0
+        for node in self.deployment.nodes:
+            if 'control' in node[0].type:
+                if node[2]:
+                    self.deployment.mons_available += 1
+
+        print "[Current Status:]\n" \
+              "osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(
+            self.deployment.num_osds) + '\n' \
+                                        "monitors active: " + str(self.deployment.mons_available) + '/' + str(
+            self.deployment.num_mons)
+
 
 class Node:
     def __init__(self, node_type, node_ip, node_id):
@@ -780,7 +791,7 @@ class Deployment:
             # Check for a Ceph deployment
             ceph_deployment = 'ceph' in config
 
-            # Initalize ceph-specific fields
+            # Initialize ceph-specific fields
             if ceph_deployment:
                 self.num_osds = 0
                 self.num_mons = 0
