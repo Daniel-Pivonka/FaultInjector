@@ -296,6 +296,7 @@ class Ceph(Fault):
         # start all threads
         for thread in fault_threads:
             thread.start()
+            self.check_exit_signal()
             time.sleep(60)  # Limit threads to starting one per minute
 
         # wait for all threads to end
