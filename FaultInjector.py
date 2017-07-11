@@ -100,7 +100,7 @@ class Node_fault(Fault):
 
     def deterministic(self, args):
 
-        # convert endtime to seconds
+        # convert end time to seconds
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
@@ -281,9 +281,9 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        print 'Beginning Ceph Stateful Mdode'
+        print 'Beginning Ceph Stateful Mode'
 
-        thread_count = self.deployment.min_replication_size + 1
+        thread_count = self.deployment.min_replication_size + self.deployment.num_mons - 1
 
         fault_threads = []
 
