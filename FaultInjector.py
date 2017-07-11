@@ -1029,6 +1029,8 @@ def signal_handler(signal, frame):
     node_response = subprocess.check_output(". ~/stackrc && nova list | grep powering-off | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n')
     node_response.append(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
 
+    filter(None, node_response)
+
     print node_response
 
     for node in node_response:
