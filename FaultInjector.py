@@ -908,7 +908,9 @@ def stateful_start(timelimit):
 
     for plugin in plugins:
         if plugin.__repr__() != 'Node_fault':
-            stateful_threads.append(threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit)))
+            thread = threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit))
+            stateful_threads.append(thread)
+            threads.append(thread)
 
     # start all threads
     for thread in stateful_threads:
