@@ -1026,23 +1026,18 @@ def signal_handler(signal, frame):
     for thread in threads:
         thread.join()
 
+    #get list of ($id ctlplane=$ip) of nodes that are off
     node_response = []
-
     node_response.extend(subprocess.check_output(". ~/stackrc && nova list | grep powering-off | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
     node_response.extend(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
-
     node_response = filter(None, node_response)
-
-    print node_response
 
     for node in node_response:
 
-        print node
-
+        #break ($id ctlplane=$ip) into list
         info = node.split("ctlplane=")
 
-        print info
-
+        #modify playbook to boot off node
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
             restore_config[0]['hosts'] = info[1]
@@ -1055,9 +1050,10 @@ def signal_handler(signal, frame):
         with open('playbooks/system-restore.yml', 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
 
+        #boot node
         subprocess.call('ansible-playbook playbooks/system-restore.yml', shell=True)
 
-
+    #restart all nodes
     subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
     # clean up tmp files
