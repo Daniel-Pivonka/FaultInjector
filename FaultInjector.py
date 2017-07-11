@@ -867,7 +867,7 @@ def deterministic_start(filepath):
     # start all threads
     for thread in threads:
         thread.start()
-
+        time.sleep(60) # Limit threads to starting one per minute
     # wait for all threads to end
     not_done = True
     while not_done:
