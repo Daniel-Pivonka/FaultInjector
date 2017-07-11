@@ -1026,16 +1026,23 @@ def signal_handler(deployment, signal, frame):
     for thread in threads:
         thread.join()
 
-    for node in deployment.nodes:
+    node_response = subprocess.check_output(". ~/stackrc && nova list | grep powering-off | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n')
+    node_response.append(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
+
+
+
+    for node in node_response:
+
+        info = node.split("ctlplane=")
+
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
-            restore_config[0]['hosts'] = node[0].ip
+            restore_config[0]['hosts'] = info[1]
             for task in restore_config[0]['tasks']:
                 if task['name'] == 'Power on server':
-                    task['local_action'] = 'shell . ~/stackrc && nova start ' + node[0].id
+                    task['local_action'] = 'shell . ~/stackrc && nova start ' + info[0]
                 if task['name'] == 'waiting 30 secs for server to come back':
-                    task['local_action'] = 'wait_for host=' + node[
-                        0].ip + ' port=22 state=started delay=30 timeout=120'
+                    task['local_action'] = 'wait_for host=' + info[1] + ' port=22 state=started delay=30 timeout=120'
 
         with open('playbooks/system-restore.yml', 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
