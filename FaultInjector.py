@@ -466,7 +466,7 @@ class Ceph(Fault):
 
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
-                    osds_occupied >= self.deployment.min_replication_size):
+                    osds_occupied >= self.deployment.min_replication_size - 1):
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
             print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
                 0].ip) + ', trying to find acceptable node'
@@ -556,6 +556,7 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
         if self.deployment.mons_available <= 1:
+            print "1 or less monitors active, not faulting..."
             return
 
         target_node = random.choice(candidate_nodes)
