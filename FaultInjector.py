@@ -1026,7 +1026,9 @@ def signal_handler(signal, frame):
     for thread in threads:
         thread.join()
 
-    node_response = subprocess.check_output(". ~/stackrc && nova list | grep powering-off | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n')
+    node_response = []
+
+    node_response.append(subprocess.check_output(". ~/stackrc && nova list | grep powering-off | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
     node_response.append(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
 
     node_response = filter(None, node_response)
