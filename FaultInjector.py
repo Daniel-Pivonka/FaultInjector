@@ -344,7 +344,6 @@ class Ceph(Fault):
             print 'no matching function found'
 
     # check_health is no longer used, may remove in the future
-
     """
     def check_health(self):
         #   Looks at a random functioning controller node
@@ -522,12 +521,12 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
 
         # Wait
-        downtime = random.randint(15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5)#15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' +
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
-        time.sleep(100)  # (downtime * 60)
+        time.sleep(downtime * 60)
 
         # Restore
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
@@ -615,12 +614,12 @@ class Ceph(Fault):
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
-        downtime = random.randint(15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5)#15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
-        time.sleep(100)  # (downtime * 60)
+        time.sleep(downtime * 60)
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
