@@ -388,7 +388,16 @@ class Ceph(Fault):
 
     def fault_thread(self, deterministic_file, timelimit):
 
-        print "thread started"
+        print "Thread Started"
+
+        osds_occupied = 0
+        for osd in self.deployment.osds:
+            if not osd:  # If osd is off
+                osds_occupied += 1
+
+        print "[Current Status:]\n" \
+              "osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) \
+              "monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons)
 
         # Infinite loop for indefinite mode
         while timelimit is None:
@@ -483,7 +492,7 @@ class Ceph(Fault):
                         datetime.datetime.now()))
             else:
                 print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
-                0].ip) + ', trying to find acceptable node'
+                                                                                                         0].ip) + ', trying to find acceptable node'
                 log.write(
                     '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find acceptable node\n'.format(
                         datetime.datetime.now()))
@@ -542,7 +551,7 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
 
         # Wait
-        downtime = random.randint(1, 5)#15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' +
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
@@ -636,7 +645,7 @@ class Ceph(Fault):
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
-        downtime = random.randint(1, 5)#15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
