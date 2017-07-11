@@ -12,7 +12,7 @@ import threading
 import time
 import yaml
 import string
-from functools import partial
+
 
 
 class Fault:
@@ -855,7 +855,7 @@ def main():
     node_fault = Node_fault(deployment)
 
     # signal handler to restore everything to normal
-    signal.signal(signal.SIGINT, partial(signal_handler, deployment))
+    signal.signal(signal.SIGINT, signal_handler)
 
     # start injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
@@ -1015,7 +1015,7 @@ def stateless_start(timelimit, node_fault, numfaults):
     deterministic_file.close()
 
 
-def signal_handler(deployment, signal, frame):
+def signal_handler(signal, frame):
     print '\nExit signal received.\nPlease wait while your environment is restored.\n ' \
           'Must allow all fault threads to finish.\n This may take some time...'
 
