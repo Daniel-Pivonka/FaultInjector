@@ -1033,7 +1033,11 @@ def signal_handler(signal, frame):
 
     for node in node_response:
 
+        print node
+
         info = node.split("ctlplane=")
+
+        print info
 
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
