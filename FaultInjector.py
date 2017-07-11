@@ -105,21 +105,22 @@ class Node_fault(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
-        # find target node
+        # find target node (if it exists)
+        target = None
         for node in self.deployment.nodes:
             if node[0].ip.strip() == args[2].strip():
                 target = node
                 break
 
-                # wait until starttime
+        # wait until start time
         while time.time() < int(global_starttime.strftime('%s')) + secs:
             self.check_exit_signal()
             time.sleep(1)
 
         # call fault
         if args[1] == 'node-kill-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at ' + str(
-                target[0].ip) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at {0}{1}'.format(
+                str(target[0].ip), '\n'.format(datetime.datetime.now())))
             self.det_node_kill_fault(target, int(args[5]))
         else:
             print 'no matching function found'
@@ -319,12 +320,14 @@ class Ceph(Fault):
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
-        # find target node
+        # find target node (if it exists)
+        target = None
         for node in self.deployment.nodes:
             if node[0].ip.strip() == args[2].strip():
                 target = node
+                break
 
-        # wait until starttime
+        # wait until start time
         while time.time() < int(global_starttime.strftime('%s')) + secs:
             self.check_exit_signal()
             time.sleep(1)
@@ -461,9 +464,9 @@ class Ceph(Fault):
 
         target_osd = random.choice(target_node[1])
 
-        #   node unreachable          target osd is being used           there are a greater than or equal number of osds down than the limit
+        # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
-            osds_occupied >= self.deployment.min_replication_size):
+                    osds_occupied >= self.deployment.min_replication_size):
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
@@ -771,7 +774,7 @@ class Deployment:
                     # [Node Object, List of OSDs, Controller Available (boolean)]
                     self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
                     self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] else \
-                    self.nodes[-1].append(False)
+                        self.nodes[-1].append(False)
                     self.num_osds += config['deployment']['nodes'][node_id]['num_osds']
                     if 'control' in config['deployment']['nodes'][node_id]['node_type']:
                         self.num_mons += 1
