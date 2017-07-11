@@ -441,11 +441,10 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             if self.deployment.hci:
-                if node[0].type == 'osd-compute':
+                if 'osd' in node[0].type:
                     candidate_nodes.append(node)
-            else:
-                if 'ceph' in node[0].type:
-                    candidate_nodes.append(node)
+            elif 'ceph' in node[0].type:
+                candidate_nodes.append(node)
 
         # check for exit signal
         self.check_exit_signal()
@@ -462,19 +461,21 @@ class Ceph(Fault):
             if not osd:  # If osd is off
                 osds_occupied += 1
 
+        # Pick a random osd
         target_osd = random.choice(target_node[1])
 
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size):
             print response, not self.deployment.osds[target_osd], osds_occupied >= self.deployment.min_replication_size
-            target_node = random.choice(candidate_nodes)
-            host = target_node[0].ip
-            time.sleep(1)
-            print '[ceph-osd-fault] Target node/osd down, trying to find acceptable node'
+            print '[ceph-osd-fault] Target osd down (osd-' + target_osd + ') at IP: ' + target_node[
+                0].ip + ', trying to find acceptable node'
             log.write(
                 '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target node/osd down, trying to find acceptable node\n'.format(
                     datetime.datetime.now()))
+            target_node = random.choice(candidate_nodes)
+            host = target_node[0].ip
+            time.sleep(1)
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                        stdout=open(os.devnull, 'w'),
                                        stderr=open(os.devnull, 'w'))
@@ -484,6 +485,9 @@ class Ceph(Fault):
             for osd in self.deployment.osds:
                 if not osd:  # If osd is off
                     osds_occupied += 1
+
+            # Pick a random osd
+            target_osd = random.choice(target_node[1])
 
             # check for exit signal
             self.check_exit_signal()
