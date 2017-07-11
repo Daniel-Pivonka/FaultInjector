@@ -12,6 +12,7 @@ import threading
 import time
 import yaml
 import string
+from functools import partial
 
 
 class Fault:
@@ -854,7 +855,7 @@ def main():
     node_fault = Node_fault(deployment)
 
     # signal handler to restore everything to normal
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, partial(signal_handler, deployment))
 
     # start injector
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Started\n'.format(datetime.datetime.now()))
@@ -1014,7 +1015,7 @@ def stateless_start(timelimit, node_fault, numfaults):
     deterministic_file.close()
 
 
-def signal_handler(signal, frame):
+def signal_handler(deployment, signal, frame):
     print '\nExit signal received.\nPlease wait while your environment is restored.\n ' \
           'Must allow all fault threads to finish.\n This may take some time...'
 
@@ -1024,6 +1025,23 @@ def signal_handler(signal, frame):
 
     for thread in threads:
         thread.join()
+
+    for node in deployment.nodes:
+        with open('playbooks/system-restore.yml') as f:
+            restore_config = yaml.load(f)
+            restore_config[0]['hosts'] = node[0].ip
+            for task in restore_config[0]['tasks']:
+                if task['name'] == 'Power on server':
+                    task['local_action'] = 'shell . ~/stackrc && nova start ' + node[0].id
+                if task['name'] == 'waiting 30 secs for server to come back':
+                    task['local_action'] = 'wait_for host=' + node[
+                        0].ip + ' port=22 state=started delay=30 timeout=120'
+
+        with open('playbooks/system-restore.yml', 'w') as f:
+            yaml.dump(restore_config, f, default_flow_style=False)
+
+        subprocess.call('ansible-playbook playbooks/system-restore.yml', shell=True)
+
 
     subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
