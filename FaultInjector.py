@@ -1044,7 +1044,9 @@ def signal_handler(signal, frame):
         node_response = filter(None, node_response)
 
     #get powered off nodes
-    node_response.extend(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
+    node_response.extend(
+        subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True,
+                                stderr=subprocess.STDOUT).split('\n'))
     node_response = filter(None, node_response)
 
     for node in node_response:
