@@ -1027,7 +1027,7 @@ def signal_handler(signal, frame):
     stopper.set()
 
     for thread in threads:
-        if thread.isAlive:
+        if thread.isAlive():
             thread.join()
 
     #get list of ($id ctlplane=$ip) of nodes that are off
