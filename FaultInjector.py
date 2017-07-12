@@ -1034,16 +1034,21 @@ def signal_handler(signal, frame):
         ". ~/stackrc && nova list | grep powering-off || true", shell=True,
         stderr=subprocess.STDOUT).split('\n')
 
+    print node_response
+
     #wait for no node to be powering off
     while len(node_response) > 0:
         time.sleep(30)
         node_response = subprocess.check_output(
             ". ~/stackrc && nova list | grep powering-off || true", shell=True,
             stderr=subprocess.STDOUT).split('\n')
+        print node_response
 
     #get powered off nodes
     node_response.extend(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
     node_response = filter(None, node_response)
+
+    print node_response
 
     for node in node_response:
 
