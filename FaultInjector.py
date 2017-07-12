@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import math
 import os
 import random
 import re
@@ -575,8 +576,9 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        if self.deployment.mons_available <= 1:
-            print "1 or less monitors active, not faulting..."
+        if self.deployment.mons_available <= self.deployment.max_mon_faults:
+            print str(self.deployment.mons_available) + ' monitors available, ' + \
+            str(self.deployment.num_mons - self.deployment.max_mon_faults) + ' monitors needed. Cannot fault another.'
             return
 
         target_node = random.choice(candidate_nodes)
@@ -827,6 +829,7 @@ class Deployment:
             if ceph_deployment:
                 self.min_replication_size = config['ceph']['minimum_replication_size']
                 self.osds = [True for osd in range(self.num_osds)]  # Set all osds to 'on' aka True
+                self.max_mon_faults = math.ceil(self.num_mons / 2)
 
 
 # global var for start time of program
