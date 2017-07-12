@@ -1016,8 +1016,8 @@ def stateless_start(timelimit, node_fault, numfaults):
 
 
 def signal_handler(signal, frame):
-    print '\n\n\n\nExit signal received.\nPlease wait while your environment is restored.\n ' \
-          'Must allow all fault threads to finish.\n This may take some time...\n\n\n\n'
+    print '\n\n\n\nExit signal received.\nPlease wait while your environment is restored.\n' \
+          'Must allow all fault threads to finish.\nThis may take some time...\n\n\n\n'
 
     log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
