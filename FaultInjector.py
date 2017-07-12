@@ -1016,8 +1016,8 @@ def stateless_start(timelimit, node_fault, numfaults):
 
 
 def signal_handler(signal, frame):
-    print '\nExit signal received.\nPlease wait while your environment is restored.\n ' \
-          'Must allow all fault threads to finish.\n This may take some time...'
+    print '\n\n\n\nExit signal received.\nPlease wait while your environment is restored.\n ' \
+          'Must allow all fault threads to finish.\n This may take some time...\n\n\n\n'
 
     log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
 
@@ -1035,8 +1035,6 @@ def signal_handler(signal, frame):
         stderr=subprocess.STDOUT).split('\n')
     node_response = filter(None, node_response)
 
-    print node_response
-
     #wait for no node to be powering off
     while len(node_response) > 0:
         time.sleep(30)
@@ -1044,13 +1042,10 @@ def signal_handler(signal, frame):
             ". ~/stackrc && nova list | grep powering-off || true", shell=True,
             stderr=subprocess.STDOUT).split('\n')
         node_response = filter(None, node_response)
-        print node_response
 
     #get powered off nodes
     node_response.extend(subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True, stderr=subprocess.STDOUT).split('\n'))
     node_response = filter(None, node_response)
-
-    print node_response
 
     for node in node_response:
 
