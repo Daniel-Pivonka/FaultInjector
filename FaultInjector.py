@@ -183,7 +183,7 @@ class Node_fault(Fault):
         # wait to recover
         # FIX ME FOR PRODUCTION
         downtime = random.randint(1, 5) #15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
-
+        print '[node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring'
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring\n'
                   .format(datetime.datetime.now()))
 
@@ -196,7 +196,9 @@ class Node_fault(Fault):
 
         # restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] node restored\n'.format(datetime.datetime.now()))
+        print 'node-kill-fault] restoring ' + target_node[0].type + ' node at ' + target_node[0].ip
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + 'node restored at ' +
+                  target_node[0].ip + '\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
@@ -1100,7 +1102,7 @@ def signal_handler(signal, frame):
         subprocess.call('ansible-playbook playbooks/system-restore.yml', shell=True)
 
     # restart all nodes
-    subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
+    subprocess.call('ansible-playbook playbooks/restart-nodes.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     # clean up tmp files
     for f in os.listdir('playbooks/'):
