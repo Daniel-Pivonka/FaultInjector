@@ -761,12 +761,12 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        print "+----------------------+\n" \
+        print "\n+----------------------+\n" \
               "|Current Status:       |\n" \
               "|----------------------|\n" \
               "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '      |\n' \
               "|monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) +'  |\n' \
-              "+----------------------+"
+              "+----------------------+\n"
 
 
 class Node:
