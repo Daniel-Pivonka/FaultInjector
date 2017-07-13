@@ -766,7 +766,7 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         print '[det_service_fault] executing ' + fault_type + ' fault at ' + host
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting ' + str(downtime) +
                   ' minutes before restoring\n'.format(datetime.datetime.now()))
 
@@ -776,7 +776,7 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         target_node[0].occupied = False  # Free up the node
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
@@ -1114,7 +1114,7 @@ def signal_handler(signal, frame):
             yaml.dump(restore_config, f, default_flow_style=False)
 
         # boot node
-        subprocess.call('ansible-playbook playbooks/system-restore.yml', shell=True)
+        subprocess.call('ansible-playbook playbooks/system-restore.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     # restart all nodes
     subprocess.call('ansible-playbook playbooks/restart-nodes.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
