@@ -849,7 +849,7 @@ stopper = threading.Event()
 
 def main():
 
-    print '\n+--------------------+\n|Fault Injector Start|\n+--------------------+'
+    print '\n+--------------------+\n|Fault Injector Start|\n+--------------------+\n'
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
@@ -936,7 +936,7 @@ def stateful_start(timelimit):
         will wait for all threads to compplete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print 'Stateful Mode Selected\n'
+    print 'Stateful Mode Selected'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
@@ -988,7 +988,7 @@ def stateless_start(timelimit, node_fault, numfaults):
         print 'Indefinite Time Limit: press ctrl-c to quit at any time'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit'.format(timelimit)
+        print '{} Minute Time Limit\n'.format(timelimit)
 
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
