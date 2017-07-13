@@ -274,14 +274,13 @@ class Node_fault(Fault):
         row = "{:12}{:16}{:6}"  # build formatter string
 
 
-        print "\n+-----------------------------------------+"
+        print "\n+---------------------------------+"
         print "| Node Status"
-        print "|Type---------Address-----------Faulted---+"
+        print "|Type--------Address--------Faulted-+"
         for node in self.deployment.nodes:
             line = [node[0].type, node[0].ip, node[0].occupied]
-            print '|' + row.format(line[0], line[1], line[2])
-            print '|' + node[0].type + '  ' + node[0].ip + '  ' + str(node[0].occupied)
-        print '+------------------------------------------+\n'
+            print '|' + row.format(line[0], line[1], line[2]) + '---|'
+        print '+------------------------------------+\n'
 
 
 
