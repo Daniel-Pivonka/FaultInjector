@@ -64,9 +64,6 @@ class Node_fault(Fault):
         return 'Node_fault'
 
     def stateless(self, deterministic_file, timelimit):
-        log.write(
-            '{:%Y-%m-%d %H:%M:%S} [stateless-mode] beginning node stateless mode\n'.format(datetime.datetime.now()))
-        print 'Beginning Node Fault Stateless Mode...\n'
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -130,7 +127,7 @@ class Node_fault(Fault):
 
     # Write fault functions below ---------------------------------------------
 
-    def node_kill_fault(self):
+    def node_kill_fault(self, numfaults):
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
@@ -1003,11 +1000,11 @@ def stateful_start(timelimit):
 
 def stateless_start(timelimit, node_fault, numfaults):
     """ func that will read from stateless config
-        will run Node_fault statless mode on main thread
-        will pass the timelimit (could be infiniety)
+        will run Node_fault stateless mode on main thread
+        will pass the time limit (could be infinity)
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
-    print 'Stateless Mode Selected'
+    print 'Beginning Node Stateless Mode'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
@@ -1023,6 +1020,8 @@ def stateless_start(timelimit, node_fault, numfaults):
         os.makedirs(dir_path)
     deterministic_filename = dir_path + str(global_starttime).replace(' ', '_') + '-run.txt'
     deterministic_file = open(deterministic_filename, 'w')
+
+    stateless_threads = []
 
     # create thread for number of faults
     while numfaults > 0:
