@@ -15,7 +15,6 @@ import yaml
 import string
 
 
-
 class Fault:
     """ Template class to make your own fault
     add an instance of your fault to the list of plugins in main
@@ -483,8 +482,8 @@ class Ceph(Fault):
                     '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'.format(
                         datetime.datetime.now()))
             else:
-                print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
-                                                                                                         0].ip) + ', trying to find acceptable node'
+                print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + \
+                      str(target_node[0].ip) + ', trying to find acceptable node'
                 log.write(
                     '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find an alternate osd...\n'.format(
                         datetime.datetime.now()))
@@ -540,7 +539,8 @@ class Ceph(Fault):
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True)
 
         # Wait
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
@@ -551,9 +551,11 @@ class Ceph(Fault):
         time.sleep(downtime * 60)
 
         # Restore
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=True)
         print '[ceph-osd-fault] restoring osd-' + str(target_osd)
-        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-' + str(target_osd) + '\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-' + str(target_osd) + '\n'.format(
+            datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         target_node[0].occupied = False  # Free up the node
@@ -575,8 +577,8 @@ class Ceph(Fault):
 
         if self.deployment.mons_available <= (self.deployment.num_mons - self.deployment.max_mon_faults):
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] ' + str(self.deployment.mons_available) +
-            ' monitors available, ' + str(self.deployment.num_mons - self.deployment.max_mon_faults) +
-            ' monitors needed. Cannot fault another.''\n'.format(datetime.datetime.now()))
+                      ' monitors available, ' + str(self.deployment.num_mons - self.deployment.max_mon_faults) +
+                      ' monitors needed. Cannot fault another.''\n'.format(datetime.datetime.now()))
             return
 
         target_node = random.choice(candidate_nodes)
@@ -641,14 +643,16 @@ class Ceph(Fault):
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         target_node[2] = False
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True)
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
         time.sleep(downtime * 60)
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=True)
         print '[ceph-mon-fault] restoring monitor'
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
@@ -764,9 +768,11 @@ class Ceph(Fault):
         print "\n+----------------------+\n" \
               "|Current Status:       |\n" \
               "|----------------------|\n" \
-              "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '      |\n' \
-              "|monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) +'  |\n' \
-              "+----------------------+\n"
+              "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(
+            self.deployment.num_osds) + '      |\n' \
+                                        "|monitors active: " + str(self.deployment.mons_available) + '/' + str(
+            self.deployment.num_mons) + '  |\n' \
+                                        "+----------------------+\n"
 
 
 class Node:
@@ -848,7 +854,6 @@ stopper = threading.Event()
 
 
 def main():
-
     print '\n+----------------------+\n| Fault Injector Start |\n+----------------------+\n'
     deployment = Deployment('config.yaml')
 
@@ -1032,16 +1037,16 @@ def signal_handler(signal, frame):
         if thread.isAlive():
             thread.join()
 
-    #get list of ($id ctlplane=$ip) of nodes that are off
+    # get list of ($id ctlplane=$ip) of nodes that are off
     node_response = []
 
-    #get nodes that are powering off
+    # get nodes that are powering off
     node_response = subprocess.check_output(
         ". ~/stackrc && nova list | grep powering-off || true", shell=True,
         stderr=subprocess.STDOUT).split('\n')
     node_response = filter(None, node_response)
 
-    #wait for no node to be powering off
+    # wait for no node to be powering off
     while len(node_response) > 0:
         time.sleep(30)
         node_response = subprocess.check_output(
@@ -1049,7 +1054,7 @@ def signal_handler(signal, frame):
             stderr=subprocess.STDOUT).split('\n')
         node_response = filter(None, node_response)
 
-    #get powered off nodes
+    # get powered off nodes
     node_response.extend(
         subprocess.check_output(". ~/stackrc && nova list | grep SHUTOFF | awk '{ print $2 $12 }' || true", shell=True,
                                 stderr=subprocess.STDOUT).split('\n'))
@@ -1057,10 +1062,10 @@ def signal_handler(signal, frame):
 
     for node in node_response:
 
-        #break ($id ctlplane=$ip) into list
+        # break ($id ctlplane=$ip) into list
         info = node.split("ctlplane=")
 
-        #modify playbook to boot off node
+        # modify playbook to boot off node
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
             restore_config[0]['hosts'] = info[1]
@@ -1073,10 +1078,10 @@ def signal_handler(signal, frame):
         with open('playbooks/system-restore.yml', 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
 
-        #boot node
+        # boot node
         subprocess.call('ansible-playbook playbooks/system-restore.yml', shell=True)
 
-    #restart all nodes
+    # restart all nodes
     subprocess.call('ansible-playbook playbooks/restart-nodes.yml', shell=True)
 
     # clean up tmp files
