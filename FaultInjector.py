@@ -64,6 +64,8 @@ class Node_fault(Fault):
         return 'Node_fault'
 
     def stateless(self, deterministic_file, timelimit):
+        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] begining node stateless mode\n'.format(datetime.datetime.now()))
+        print 'Beginning Node Fault Stateless Mode...\n'
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -768,8 +770,8 @@ class Ceph(Fault):
         print '\n+----------------------+\n' \
               '|Current Status:       |\n' \
               '|----------------------|\n' \
-              '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + \
-              '      |\n |monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
+              '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '      |' + \
+              '\n' + '|monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
               '  |\n+----------------------+\n'
 
 
@@ -894,7 +896,7 @@ def main():
         print 'No Mode Chosen'
 
     # end injector
-    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+\n'
+    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+'
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
     log.close()
 
@@ -947,7 +949,7 @@ def stateful_start(timelimit):
         print 'Indefinite Time Limit: press ctrl-c to quit at any time'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit'.format(timelimit)
+        print '{} Minute Time Limit: press ctrl-c to quit at any time'.format(timelimit)
 
         # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
@@ -986,13 +988,14 @@ def stateless_start(timelimit, node_fault, numfaults):
         will pass the timelimit (could be infiniety)
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
+    print 'Stateless Mode Selected'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
         print 'Indefinite Time Limit: press ctrl-c to quit at any time'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit\n'.format(timelimit)
+        print '{} Minute Time Limit: press ctrl-c to quit at any time'.format(timelimit)
 
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
@@ -1087,7 +1090,8 @@ def signal_handler(signal, frame):
         if re.search('tmp_.*', f):
             os.remove(os.path.join('playbooks/', f))
 
-    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+'
+    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
     log.close()
 
     sys.exit(0)
