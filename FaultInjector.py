@@ -275,11 +275,11 @@ class Node_fault(Fault):
 
         print "\n+--------------------------------------+"
         print "| Node Status                          |\n|                                      |"
-        print "|Type---------Address---------Faulted--+\n"
+        print "|-Type---------Address---------Faulted-+\n|                                      |"
         for node in self.deployment.nodes:
             line = [node[0].type, node[0].ip, str(node[0].occupied)]
             print '| ' + row.format(line[0], line[1], line[2]) + '  |'
-        print '+------------------------------------+\n'
+        print '+--------------------------------------+\n'
 
 
 
@@ -884,7 +884,16 @@ stopper = threading.Event()
 
 
 def main():
-    print '\n+----------------------+\n| Fault Injector Start |\n+----------------------+\n'
+
+    fault_injector_title = """
+    ______            ____     ____        _           __            
+   / ____/___ ___  __/ / /_   /  _/___    (_)__  _____/ /_____  _____
+  / /_  / __ `/ / / / / __/   / // __ \  / / _ \/ ___/ __/ __ \/ ___/
+ / __/ / /_/ / /_/ / / /_   _/ // / / / / /  __/ /__/ /_/ /_/ / /    
+/_/    \__,_/\__,_/_/\__/  /___/_/ /_/_/ /\___/\___/\__/\____/_/     
+                                    /___/    
+    """
+    print fault_injector_title
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
