@@ -283,7 +283,7 @@ class Ceph(Fault):
             will take a timelimit or run indefinetly till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
-        print 'Beginning Ceph Stateful Mode'
+        print 'Beginning Ceph Stateful Mode...\n'
 
         thread_count = self.deployment.min_replication_size + self.deployment.num_mons - 1
 
@@ -389,9 +389,6 @@ class Ceph(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def fault_thread(self, deterministic_file, timelimit):
-
-        print "Thread Started"
-
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -490,7 +487,7 @@ class Ceph(Fault):
                 print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + str(target_node[
                                                                                                          0].ip) + ', trying to find acceptable node'
                 log.write(
-                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find acceptable node\n'.format(
+                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find an alternate osd...\n'.format(
                         datetime.datetime.now()))
             retries += 1
             target_node = random.choice(candidate_nodes)
@@ -556,7 +553,8 @@ class Ceph(Fault):
 
         # Restore
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
+        print '[ceph-osd-fault] restoring osd-' + str(target_osd)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-' + str(target_osd) + '\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         target_node[0].occupied = False  # Free up the node
@@ -639,7 +637,7 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
-        print '[ceph-mon-fault] executing fault on a controller node'
+        print '[ceph-mon-fault] executing fault on a ceph monitor'
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         target_node[2] = False
@@ -651,6 +649,7 @@ class Ceph(Fault):
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
         time.sleep(downtime * 60)
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        print '[ceph-mon-fault] restoring monitor'
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
         target_node[2] = True
@@ -762,12 +761,12 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        print "+----------------------\n" \
-              "|Current Status:\n" \
-              "|----------------------\n" \
-              "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '\n' \
-              "|monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) +'\n' \
-              "+----------------------"
+        print "+----------------------+\n" \
+              "|Current Status:       |\n" \
+              "|----------------------|\n" \
+              "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '      |\n' \
+              "|monitors active: " + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) +'  |\n' \
+              "+----------------------+"
 
 
 class Node:
@@ -849,6 +848,8 @@ stopper = threading.Event()
 
 
 def main():
+
+    print 'Fault Injector Start\n--------------------'
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
@@ -935,7 +936,7 @@ def stateful_start(timelimit):
         will wait for all threads to compplete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
-    print 'Stateful'
+    print 'Stateful Mode Selected\n'
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
