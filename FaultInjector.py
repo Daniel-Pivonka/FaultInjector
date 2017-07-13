@@ -193,12 +193,13 @@ class Node_fault(Fault):
 
         # restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        print 'node-kill-fault] restoring ' + target_node[0].type + ' node at ' + target_node[0].ip
+        print '[node-kill-fault] restoring ' + target_node[0].type + ' node at ' + target_node[0].ip
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + 'node restored at ' +
                   target_node[0].ip + '\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
+        self.print_status()
 
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
@@ -267,6 +268,13 @@ class Node_fault(Fault):
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
+
+    def print_status(self):
+        print "+-Type---------Address-----------Faulted---+"
+        for node in self.deployment.nodes:
+            print '|' + node[0].type + '  ' + node[0].ip + '  ' + str(node[0].occupied)
+        print '+------------------------------------------+'
+
 
 
 class Ceph(Fault):
@@ -962,10 +970,10 @@ def stateful_start(timelimit):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit: press ctrl-c to quit at any time'
+        print 'Indefinite Time Limit: press ctrl-c to quit at any time\n'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit: press ctrl-c to quit at any time'.format(timelimit)
+        print '{} Minute Time Limit: press ctrl-c to quit at any time\n'.format(timelimit)
 
         # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
@@ -1008,10 +1016,10 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit: press ctrl-c to quit at any time'
+        print 'Indefinite Time Limit: press ctrl-c to quit at any time\n'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit: press ctrl-c to quit at any time'.format(timelimit)
+        print '{} Minute Time Limit: press ctrl-c to quit at any time\n'.format(timelimit)
 
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
