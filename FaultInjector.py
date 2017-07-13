@@ -479,7 +479,6 @@ class Ceph(Fault):
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
-                print 'osd limit reached'
                 log.write(
                     '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'.format(
                         datetime.datetime.now()))
@@ -575,8 +574,9 @@ class Ceph(Fault):
                     self.deployment.mons_available += 1
 
         if self.deployment.mons_available <= (self.deployment.num_mons - self.deployment.max_mon_faults):
-            print str(self.deployment.mons_available) + ' monitors available, ' + \
-            str(self.deployment.num_mons - self.deployment.max_mon_faults) + ' monitors needed. Cannot fault another.'
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] ' + str(self.deployment.mons_available) +
+            ' monitors available, ' + str(self.deployment.num_mons - self.deployment.max_mon_faults) +
+            ' monitors needed. Cannot fault another.''\n'.format(datetime.datetime.now()))
             return
 
         target_node = random.choice(candidate_nodes)
@@ -849,7 +849,7 @@ stopper = threading.Event()
 
 def main():
 
-    print 'Fault Injector Start\n--------------------'
+    print '\n+--------------------+\n|Fault Injector Start|\n+--------------------+'
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
