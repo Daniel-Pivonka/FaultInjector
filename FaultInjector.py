@@ -65,7 +65,7 @@ class Node_fault(Fault):
 
     def stateless(self, deterministic_file, timelimit):
         log.write(
-            '{:%Y-%m-%d %H:%M:%S} [stateless-mode] begining node stateless mode\n'.format(datetime.datetime.now()))
+            '{:%Y-%m-%d %H:%M:%S} [stateless-mode] beginning node stateless mode\n'.format(datetime.datetime.now()))
         print 'Beginning Node Fault Stateless Mode...\n'
         # Infinite loop for indefinite mode
         while timelimit is None:
@@ -175,7 +175,7 @@ class Node_fault(Fault):
 
         # crash system
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         print '[node-kill-fault] ' + target_node[0].type + ' node killed at ' + target_node[0].ip
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + ' node killed at ' +
                   target_node[0].ip + '\n'.format(datetime.datetime.now()))
@@ -195,7 +195,7 @@ class Node_fault(Fault):
             counter -= 1
 
         # restore system
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
@@ -913,7 +913,7 @@ def main():
         print 'No Mode Chosen'
 
     # end injector
-    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+'
+    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+\n'
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
     log.close()
 
@@ -1107,7 +1107,7 @@ def signal_handler(signal, frame):
         if re.search('tmp_.*', f):
             os.remove(os.path.join('playbooks/', f))
 
-    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+'
+    print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+\n'
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
     log.close()
 
