@@ -765,14 +765,12 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        print "\n+----------------------+\n" \
-              "|Current Status:       |\n" \
-              "|----------------------|\n" \
-              "|osds active: " + str(self.deployment.num_osds - osds_occupied) + '/' + str(
-            self.deployment.num_osds) + '      |\n' \
-                                        "|monitors active: " + str(self.deployment.mons_available) + '/' + str(
-            self.deployment.num_mons) + '  |\n' \
-                                        "+----------------------+\n"
+        print '\n+----------------------+\n' \
+              '|Current Status:       |\n' \
+              '|----------------------|\n' \
+              '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + \
+              '      |\n |monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
+              '  |\n+----------------------+\n''
 
 
 class Node:
@@ -1042,7 +1040,7 @@ def signal_handler(signal, frame):
 
     # get nodes that are powering off
     node_response = subprocess.check_output(
-        ". ~/stackrc && nova list | grep powering-off || true", shell=True,
+        '. ~/stackrc && nova list | grep powering-off || true', shell=True,
         stderr=subprocess.STDOUT).split('\n')
     node_response = filter(None, node_response)
 
@@ -1050,7 +1048,7 @@ def signal_handler(signal, frame):
     while len(node_response) > 0:
         time.sleep(30)
         node_response = subprocess.check_output(
-            ". ~/stackrc && nova list | grep powering-off || true", shell=True,
+            '. ~/stackrc && nova list | grep powering-off || true', shell=True,
             stderr=subprocess.STDOUT).split('\n')
         node_response = filter(None, node_response)
 
@@ -1063,7 +1061,7 @@ def signal_handler(signal, frame):
     for node in node_response:
 
         # break ($id ctlplane=$ip) into list
-        info = node.split("ctlplane=")
+        info = node.split('ctlplane=')
 
         # modify playbook to boot off node
         with open('playbooks/system-restore.yml') as f:
