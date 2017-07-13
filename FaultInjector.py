@@ -544,7 +544,7 @@ class Ceph(Fault):
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
         # Wait
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
@@ -555,7 +555,7 @@ class Ceph(Fault):
         time.sleep(downtime * 60)
 
         # Restore
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd\n'.format(datetime.datetime.now()))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
@@ -643,14 +643,14 @@ class Ceph(Fault):
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         target_node[2] = False
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
         time.sleep(downtime * 60)
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
         self.deployment.mons_available += 1
         target_node[2] = True
