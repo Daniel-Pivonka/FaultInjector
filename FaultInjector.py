@@ -64,7 +64,8 @@ class Node_fault(Fault):
         return 'Node_fault'
 
     def stateless(self, deterministic_file, timelimit):
-        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] begining node stateless mode\n'.format(datetime.datetime.now()))
+        log.write(
+            '{:%Y-%m-%d %H:%M:%S} [stateless-mode] begining node stateless mode\n'.format(datetime.datetime.now()))
         print 'Beginning Node Fault Stateless Mode...\n'
         # Infinite loop for indefinite mode
         while timelimit is None:
@@ -175,27 +176,27 @@ class Node_fault(Fault):
         # crash system
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node killed\n'.format(datetime.datetime.now()))
+        print '[node-kill-fault] ' + target_node[0].type + ' node killed at ' + target_node[0].ip
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + ' node killed at ' +
+                  target_node[0].ip + '\n'.format(datetime.datetime.now()))
 
-        # wait
-
+        # wait to recover
         # FIX ME FOR PRODUCTION
-        downtime = random.randint(15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5) #15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
 
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' +
-                  str(downtime) + ' minutes before restoring \
-                      \n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring\n'
+                  .format(datetime.datetime.now()))
 
         counter = downtime
         while counter > 0:
             # check for exit signal
             self.check_exit_signal()
-            time.sleep(5)  # 60)
+            time.sleep(60)
             counter -= 1
 
         # restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] node restored\n'.format(datetime.datetime.now()))
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
@@ -537,22 +538,27 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
-        # Fault
+        # execute fault
         print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
 
-        # Wait
+        # wait to recover
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' +
                   str(downtime) + ' minutes before introducing OSD again' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
-        time.sleep(downtime * 60)
+        counter = downtime
+        while counter > 0:
+            # check for exit signal
+            self.check_exit_signal()
+            time.sleep(60)
+            counter -= 1
 
-        # Restore
+        # restore service
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
         print '[ceph-osd-fault] restoring osd-' + str(target_osd)
@@ -641,18 +647,28 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
+        # execute fault
         print '[ceph-mon-fault] executing fault on a ceph monitor'
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         target_node[2] = False
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
+
+        # wait to recover
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
                   str(downtime) + ' minutes before introducing monitor back' +
                   '\n'.format(datetime.datetime.now()))
         print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
-        time.sleep(downtime * 60)
+        counter = downtime
+        while counter > 0:
+            # check for exit signal
+            self.check_exit_signal()
+            time.sleep(60)
+            counter -= 1
+
+        # restore service
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
         print '[ceph-mon-fault] restoring monitor'
@@ -770,7 +786,8 @@ class Ceph(Fault):
         print '\n+----------------------+\n' \
               '|Current Status:       |\n' \
               '|----------------------|\n' \
-              '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + '      |' + \
+              '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(
+            self.deployment.num_osds) + '      |' + \
               '\n' + '|monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
               '  |\n+----------------------+\n'
 
