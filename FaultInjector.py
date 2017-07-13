@@ -437,16 +437,9 @@ class Ceph(Fault):
 
             self.print_status()
 
-            # Add space if ip is short
-            if len(result[1]) == 12:
-                result[1] = result[1] + '  '
-            elif len(result[1]) == 13:
-                result[1] = result[1] + ' '
+            row = "{:15}{:20}{:16}{:15}{:15}{:4}{:6}"  # build formatter string
 
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) +
-                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) +
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) +
-                                     ' | ' + str(result[5]) + '\n')
+            deterministic_file.write(row.format(self.repr(), result[0], result[1], result[2], result[3], result[4], result[5]))
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
