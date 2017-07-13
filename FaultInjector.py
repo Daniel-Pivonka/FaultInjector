@@ -127,7 +127,7 @@ class Node_fault(Fault):
 
     # Write fault functions below ---------------------------------------------
 
-    def node_kill_fault(self, numfaults):
+    def node_kill_fault(self):
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
