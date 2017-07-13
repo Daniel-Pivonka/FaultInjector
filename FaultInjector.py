@@ -439,7 +439,7 @@ class Ceph(Fault):
 
             row = "{:15}{:20}{:16}{:15}{:15}{:4}{:6}"  # build formatter string
 
-            deterministic_file.write(row.format(self.repr(), result[0], result[1], result[2], result[3], result[4], result[5]))
+            deterministic_file.write(row.format(self.__repr__(), result[0], result[1], result[2], result[3], result[4], result[5]))
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
