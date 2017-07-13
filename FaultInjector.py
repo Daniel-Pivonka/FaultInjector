@@ -849,7 +849,7 @@ stopper = threading.Event()
 
 def main():
 
-    print '\n+--------------------+\n|Fault Injector Start|\n+--------------------+\n'
+    print '\n+----------------------+\n| Fault Injector Start |\n+----------------------+\n'
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
@@ -891,7 +891,8 @@ def main():
         print 'No Mode Chosen'
 
     # end injector
-    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Stopped\n'.format(datetime.datetime.now()))
+    print '\n+----------------------+\n| Fault Injector Finished |\n+----------------------+\n'
+    log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
     log.close()
 
 
