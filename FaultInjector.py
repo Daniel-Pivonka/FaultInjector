@@ -770,7 +770,7 @@ class Ceph(Fault):
               '|----------------------|\n' \
               '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(self.deployment.num_osds) + \
               '      |\n |monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
-              '  |\n+----------------------+\n''
+              '  |\n+----------------------+\n'
 
 
 class Node:
