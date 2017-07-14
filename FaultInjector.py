@@ -353,12 +353,12 @@ class Ceph(Fault):
 
         # call fault
         if args[1] == 'ceph-osd-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at ' + str(
-                target[0]) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at {}\n'
+                      .format(datetime.datetime.now(), str(target[0])))
             self.det_service_fault(target, 'osd', int(args[5]), args[6])
         elif args[1] == 'ceph-mon-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at ' + str(
-                target[0]) + '\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at {}\n'
+                      .format(datetime.datetime.now(), str(target[0])))
             self.det_service_fault(target, 'mon', int(args[5]), args[6])
         else:
             print 'no matching function found'
@@ -555,9 +555,8 @@ class Ceph(Fault):
 
         # wait to recover
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
-        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting ' +
-                  str(downtime) + ' minutes before introducing OSD again' +
-                  '\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting {} minutes before introducing OSD again\n'
+                  .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
         counter = downtime
         while counter > 0:
@@ -570,8 +569,8 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
         print '[ceph-osd-fault] restoring osd-' + str(target_osd)
-        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-' + str(target_osd) + '\n'.format(
-            datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-{}\n'
+                  .format(datetime.datetime.now(), str(target_osd)))
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         target_node[0].occupied = False  # Free up the node
@@ -592,9 +591,9 @@ class Ceph(Fault):
                     self.deployment.mons_available += 1
 
         if self.deployment.mons_available <= (self.deployment.num_mons - self.deployment.max_mon_faults):
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] ' + str(self.deployment.mons_available) +
-                      ' monitors available, ' + str(self.deployment.num_mons - self.deployment.max_mon_faults) +
-                      ' monitors needed. Cannot fault another.''\n'.format(datetime.datetime.now()))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
+                      'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
+                                          str(self.deployment.num_mons - self.deployment.max_mon_faults)))
             return
 
         target_node = random.choice(candidate_nodes)
@@ -665,10 +664,9 @@ class Ceph(Fault):
 
         # wait to recover
         downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
-        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting ' +
-                  str(downtime) + ' minutes before introducing monitor back' +
-                  '\n'.format(datetime.datetime.now()))
-        print '[ceph-mon-fault] waiting ' + str(downtime) + ' minutes before restoring monitor'
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting {} minutes before introducing monitor back\n'
+                  .format(datetime.datetime.now(), str(downtime)))
+        print '[ceph-mon-fault] waiting {} minutes before restoring monitor'.format(str(downtime))
         counter = downtime
         while counter > 0:
             # check for exit signal
@@ -761,8 +759,8 @@ class Ceph(Fault):
         print '[det-service-fault] executing ' + fault_type + ' fault at ' + host
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
-        log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting ' + str(downtime) +
-                  ' minutes before restoring\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting {} minutes before restoring\n'
+                  .format(datetime.datetime.now(), str(downtime)))
 
         while downtime > 0:
             # check for exit signal
@@ -951,10 +949,9 @@ def deterministic_start(filepath):
     with open(filepath[0]) as f:
         # read line by line
         for line in f:
-            # break into list
+            # break into list and strip off filler characters
             words = line.split('|')
             words = [word.replace(' ', '').replace('\n', '') for word in words]
-            print words
             # find matching plugin
             for plugin in plugins:
                 if plugin.__repr__() == words[0].strip(' '):
