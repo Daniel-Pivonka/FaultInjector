@@ -128,6 +128,10 @@ class Node_fault(Fault):
     # Write fault functions below ---------------------------------------------
 
     def node_kill_fault(self, max_wait_time):
+        # If there are 0 minutes left
+        if max_wait_time <= 0:
+            return
+
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
@@ -586,6 +590,10 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), str(target_osd)]
 
     def mon_service_fault(self, max_wait_time):
+        # If there are 0 minutes left
+        if max_wait_time <= 0:
+            return
+
         candidate_nodes = []
         self.deployment.mons_available = 0
         for node in self.deployment.nodes:
