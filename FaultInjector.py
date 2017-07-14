@@ -437,7 +437,7 @@ class Ceph(Fault):
 
             self.print_status()
 
-            row = "{:15}{:20}{:18}{:18}{:18}{:15}{:15}"  # build formatter string
+            row = "{:15}{:20}{:18}{:18}{:5}{:5}{:5}"  # build formatter string
 
             deterministic_file.write(row.format(self.__repr__(), result[0], result[1], result[2],
                                                 result[3], result[4], result[5]) + '\n')
@@ -983,10 +983,10 @@ def stateful_start(timelimit):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit: press ctrl-c to quit at any time\n'
+        print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Timelimit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit: press ctrl-c to quit at any time\n'.format(timelimit)
+        print '{} Minute Time Limit: Press ctrl-c to quit at any time\n'.format(timelimit)
 
         # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
@@ -1029,10 +1029,10 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     if timelimit is None:
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
-        print 'Indefinite Time Limit: press ctrl-c to quit at any time\n'
+        print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
         log.write('{:%Y-%m-%d %H:%M:%S} {} Minute Time Limit\n'.format(datetime.datetime.now(), timelimit))
-        print '{} Minute Time Limit: press ctrl-c to quit at any time\n'.format(timelimit)
+        print '{} Minute Time Limit: Press ctrl-c to quit at any time\n'.format(timelimit)
 
     # writes a file that can feed into a deterministic run
     dir_path = os.path.join(os.path.dirname(__file__), 'deterministic-runs/')
