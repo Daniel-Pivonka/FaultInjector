@@ -353,8 +353,8 @@ class Ceph(Fault):
 
         # call fault
         if args[1] == 'ceph-osd-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at {}\n'
-                      .format(datetime.datetime.now(), str(target[0].ip)))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at {} (osd-{})\n'
+                      .format(datetime.datetime.now(), str(target[0].ip), args[6]))
             self.det_service_fault(target, 'osd', int(args[5]), args[6])
         elif args[1] == 'ceph-mon-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at {}\n'
