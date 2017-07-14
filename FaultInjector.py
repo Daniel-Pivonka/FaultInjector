@@ -950,8 +950,8 @@ def deterministic_start(filepath):
         # read line by line
         for line in f:
             # break into list
-            words = line.split('|').strip(' ')
-
+            words = line.split('|')
+            [word.strip(' ') for word in words]
             # find matching plugin
             for plugin in plugins:
                 if plugin.__repr__() == words[0].strip(' '):
