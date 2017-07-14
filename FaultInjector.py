@@ -437,7 +437,7 @@ class Ceph(Fault):
 
             self.print_status()
 
-            row = "{:15}{:20}{:18}{:18}{:18}{:20}{:12}"  # build formatter string
+            row = "{:6}{:18}{:18}{:18}{:18}{:4}{:12}"  # build formatter string
 
             deterministic_file.write(row.format(self.__repr__(), result[0], result[1], result[2],
                                                 result[3], result[4], result[5]) + '\n')
@@ -579,7 +579,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), target_osd]
+        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
         candidate_nodes = []
