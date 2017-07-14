@@ -354,11 +354,11 @@ class Ceph(Fault):
         # call fault
         if args[1] == 'ceph-osd-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at {}\n'
-                      .format(datetime.datetime.now(), str(target[0])))
+                      .format(datetime.datetime.now(), str(target[0].ip)))
             self.det_service_fault(target, 'osd', int(args[5]), args[6])
         elif args[1] == 'ceph-mon-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at {}\n'
-                      .format(datetime.datetime.now(), str(target[0])))
+                      .format(datetime.datetime.now(), str(target[0].ip)))
             self.det_service_fault(target, 'mon', int(args[5]), args[6])
         else:
             print 'no matching function found'
