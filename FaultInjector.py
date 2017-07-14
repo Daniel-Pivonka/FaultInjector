@@ -69,12 +69,11 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            log.write(
-                '{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) +
-                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) +
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) +
-                                     ' | ' + str(result[5]) + '\n')
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
+
+            row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
+            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
+                                                result[3], '|', result[4], '|', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -83,15 +82,16 @@ class Node_fault(Fault):
         # Standard runtime loop
         timeout = time.time() + 60 * timelimit
         while time.time() < timeout:
-            result = random.choice(self.functions)()
+            fault_function = random.choice(self.functions)
+            max_wait_time = int((timeout - time.time()) / 60)
+            result = fault_function(max_wait_time)
             if result is None:
                 continue
-            log.write(
-                '{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing ' + str(result) + '\n'.format(datetime.datetime.now()))
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) +
-                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) +
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) +
-                                     ' | ' + str(result[5]) + '\n')
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
+
+            row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
+            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
+                                                result[3], '|', result[4], '|', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -127,7 +127,7 @@ class Node_fault(Fault):
 
     # Write fault functions below ---------------------------------------------
 
-    def node_kill_fault(self):
+    def node_kill_fault(self, max_wait_time):
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
@@ -180,7 +180,9 @@ class Node_fault(Fault):
 
         # wait to recover
         # FIX ME FOR PRODUCTION
-        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        if max_wait_time > 5:
+            max_wait_time = 5
+        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         print '[node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring'
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring\n'
                   .format(datetime.datetime.now()))
@@ -195,9 +197,9 @@ class Node_fault(Fault):
         # restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
-        print '[node-kill-fault] restoring ' + target_node[0].type + ' node at ' + target_node[0].ip
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + 'node restored at ' +
-                  target_node[0].ip + '\n'.format(datetime.datetime.now()))
+        print '[node-kill-fault] restoring {} node at {}'.format(target_node[0].type, target_node[0].ip)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} node restored at {}\n'
+                  .format(datetime.datetime.now(), target_node[0].type, target_node[0].ip))
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
@@ -413,16 +415,10 @@ class Ceph(Fault):
 
             self.print_status()
 
-            # Add space if ip is short
-            if len(result[1]) == 12:
-                result[1] = result[1] + '  '
-            elif len(result[1]) == 13:
-                result[1] = result[1] + ' '
+            row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
 
-            deterministic_file.write(self.__repr__() + ' | ' + str(result[0]) +
-                                     ' | ' + str(result[1]) + ' | ' + str(result[2]) +
-                                     ' | ' + str(result[3]) + ' | ' + str(result[4]) +
-                                     ' | ' + str(result[5]) + '\n')
+            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
+                                                result[3], '|', result[4], '|', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -432,7 +428,9 @@ class Ceph(Fault):
         timeout = time.time() + 60 * timelimit
         while time.time() < timeout:
             # Calls a fault function and stores the results
-            result = random.choice(self.functions)()
+            fault_function = random.choice(self.functions)
+            max_wait_time = int((timeout - time.time()) / 60)
+            result = fault_function(max_wait_time)
             if result is None:
                 continue
 
@@ -447,10 +445,14 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-    def osd_service_fault(self):
+    def osd_service_fault(self, max_wait_time):
         """ Kills a random osd service specified on a random ceph node
             or osd-compute node
         """
+        # If there are 0 minutes left
+        if max_wait_time <= 0:
+            return
+
         candidate_nodes = []
         for node in self.deployment.nodes:
             if self.deployment.hci:
@@ -554,7 +556,9 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        if max_wait_time > 5:
+            max_wait_time = 5
+        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting {} minutes before introducing OSD again\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
@@ -581,7 +585,7 @@ class Ceph(Fault):
 
         return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), str(target_osd)]
 
-    def mon_service_fault(self):
+    def mon_service_fault(self, max_wait_time):
         candidate_nodes = []
         self.deployment.mons_available = 0
         for node in self.deployment.nodes:
@@ -663,7 +667,9 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        if max_wait_time > 5:
+            max_wait_time = 5
+        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting {} minutes before introducing monitor back\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-mon-fault] waiting {} minutes before restoring monitor'.format(str(downtime))
