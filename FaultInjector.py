@@ -119,11 +119,11 @@ class Node_fault(Fault):
 
         # call fault
         if args[1] == 'node-kill-fault':
-            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at {0}{1}'.format(
-                str(target[0].ip), '\n'.format(datetime.datetime.now())))
+            log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at {0}{1}\n'
+                      .format(str(target[0].ip), datetime.datetime.now()))
             self.det_node_kill_fault(target, int(args[5]))
         else:
-            print 'no matching function found'
+            print '[det-service-fault] No matching function found'
 
     # Write fault functions below ---------------------------------------------
 
@@ -172,14 +172,15 @@ class Node_fault(Fault):
 
         # crash system
         start_time = datetime.datetime.now() - global_starttime
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True)
         print '[node-kill-fault] ' + target_node[0].type + ' node killed at ' + target_node[0].ip
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + ' node killed at ' +
                   target_node[0].ip + '\n'.format(datetime.datetime.now()))
 
         # wait to recover
         # FIX ME FOR PRODUCTION
-        downtime = random.randint(1, 5) #15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, 5)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         print '[node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring'
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring\n'
                   .format(datetime.datetime.now()))
@@ -192,7 +193,8 @@ class Node_fault(Fault):
             counter -= 1
 
         # restore system
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=True)
         print '[node-kill-fault] restoring ' + target_node[0].type + ' node at ' + target_node[0].ip
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + 'node restored at ' +
                   target_node[0].ip + '\n'.format(datetime.datetime.now()))
@@ -280,7 +282,6 @@ class Node_fault(Fault):
             line = [node[0].type, node[0].ip, str(node[0].occupied)]
             print '| ' + row.format(line[0], line[1], line[2]) + '  |'
         print '+--------------------------------------+\n'
-
 
 
 class Ceph(Fault):
@@ -712,7 +713,7 @@ class Ceph(Fault):
 
         # Make sure target node is reachable 
         if response != 0:
-            print '[det_service_fault] error: target node unreachable, \
+            print '[det-service-fault] error: target node unreachable, \
                     exiting fault function'
             return None
 
@@ -757,8 +758,9 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
-        print '[det_service_fault] executing ' + fault_type + ' fault at ' + host
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        print '[det-service-fault] executing ' + fault_type + ' fault at ' + host
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting ' + str(downtime) +
                   ' minutes before restoring\n'.format(datetime.datetime.now()))
 
@@ -768,13 +770,14 @@ class Ceph(Fault):
             time.sleep(60)
             downtime -= 1
 
-        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=True)
         target_node[0].occupied = False  # Free up the node
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        print '[det_service_fault] deterministic step completed'
+        print '[det-service-fault] deterministic step completed'
 
         return True
 
@@ -878,7 +881,6 @@ stopper = threading.Event()
 
 
 def main():
-
     fault_injector_title = """
  _________________________________________________________________________
 |                                                                         |
@@ -1120,10 +1122,12 @@ def signal_handler(signal, frame):
             yaml.dump(restore_config, f, default_flow_style=False)
 
         # boot node
-        subprocess.call('ansible-playbook playbooks/system-restore.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.call('ansible-playbook playbooks/system-restore.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True)
 
     # restart all nodes
-    subprocess.call('ansible-playbook playbooks/restart-nodes.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    subprocess.call('ansible-playbook playbooks/restart-nodes.yml', stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    shell=True)
 
     # clean up tmp files
     for f in os.listdir('playbooks/'):
