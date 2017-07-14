@@ -579,7 +579,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, downtime, target_osd]
+        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), target_osd]
 
     def mon_service_fault(self):
         candidate_nodes = []
@@ -689,7 +689,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-mon-fault', target_node[0].ip, start_time, end_time, downtime, 'Placeholder']
+        return ['ceph-mon-fault', target_node[0].ip, start_time, end_time, str(downtime), 'Placeholder']
 
         # Deterministic fault functions below ---------------------------------------------
 
