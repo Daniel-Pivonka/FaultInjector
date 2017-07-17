@@ -950,12 +950,8 @@ def main():
         if args.target is not None:
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             new_node_list = []
-            print 'nodes:'
-            print deployment.nodes
             for node in deployment.nodes:
-                print "node"
-                print node
-                if args.target[0] in node.type:
+                if args.target[0] in node[0].type:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
             if len(new_node_list) < args.numfaults[0]:
