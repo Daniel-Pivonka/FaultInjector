@@ -69,7 +69,8 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
+            log.write(
+                '{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
             deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
@@ -87,7 +88,8 @@ class Node_fault(Fault):
             result = fault_function(max_wait_time)
             if result is None:
                 continue
-            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
+            log.write(
+                '{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
             deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
@@ -178,18 +180,18 @@ class Node_fault(Fault):
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
-        print '[node-kill-fault] ' + target_node[0].type + ' node killed at ' + target_node[0].ip
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] ' + target_node[0].type + ' node killed at ' +
-                  target_node[0].ip + '\n'.format(datetime.datetime.now()))
+        print '[node-kill-fault] {} node killed at {}'.format(target_node[0].type, target_node[0].ip)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} node killed at {}\n'
+                  .format(datetime.datetime.now(), format(target_node[0].type, target_node[0].ip)))
 
         # wait to recover
         # FIX ME FOR PRODUCTION
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
-        print '[node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring'
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting ' + str(downtime) + ' minutes before restoring\n'
-                  .format(datetime.datetime.now()))
+        print '[node-kill-fault] waiting {} minutes before restoring'.format(str(downtime))
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting {} minutes before restoring\n'
+                  .format(datetime.datetime.now(), str(downtime)))
 
         counter = downtime
         while counter > 0:
@@ -302,7 +304,7 @@ class Ceph(Fault):
     def stateful(self, deterministic_file, timelimit):
         """ func that will be set up on a thread
             will write to a shared (all stateful threads will share) log for deterministic mode
-            will take a timelimit or run indefinetly till ctrl-c
+            will take a time limit or run indefinitely till ctrl-c
             will do things randomly (pick node to fault and timing)
         """
         print 'Beginning Ceph Stateful Mode...\n'
@@ -499,11 +501,10 @@ class Ceph(Fault):
                     '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'.format(
                         datetime.datetime.now()))
             else:
-                print '[ceph-osd-fault] Target osd down (osd-' + str(target_osd) + ') at IP: ' + \
-                      str(target_node[0].ip) + ', trying to find acceptable node'
-                log.write(
-                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find an alternate osd...\n'.format(
-                        datetime.datetime.now()))
+                print '[ceph-osd-fault] Target osd down (osd-{}) at IP: {}, trying to find acceptable node' \
+                    .format(str(target_osd), str(target_node[0].ip))
+                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] Target osd down, trying to find an alternate osd...\n'
+                          .format(datetime.datetime.now()))
             retries += 1
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
@@ -553,7 +554,7 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         # execute fault
-        print '[ceph-osd-fault] executing fault on osd-' + str(target_osd)
+        print '[ceph-osd-fault] executing fault on osd-{}'.format(str(target_osd))
         self.deployment.osds[target_osd] = False
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -565,7 +566,7 @@ class Ceph(Fault):
         downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting {} minutes before introducing OSD again\n'
                   .format(datetime.datetime.now(), str(downtime)))
-        print '[ceph-osd-fault] waiting ' + str(downtime) + ' minutes before restoring osd-' + str(target_osd)
+        print '[ceph-osd-fault] waiting {} minutes before restoring osd-{}'.format(str(downtime), str(target_osd))
         counter = downtime
         while counter > 0:
             # check for exit signal
@@ -576,7 +577,7 @@ class Ceph(Fault):
         # restore service
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
-        print '[ceph-osd-fault] restoring osd-' + str(target_osd)
+        print '[ceph-osd-fault] restoring osd-{}'.format(str(target_osd))
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-{}\n'
                   .format(datetime.datetime.now(), str(target_osd)))
         self.deployment.osds[target_osd] = True
@@ -619,9 +620,9 @@ class Ceph(Fault):
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(1)  # Wait 20 seconds to give nodes time to recover
-            print '[ceph-mon-fault] Target node down, trying to find acceptable node'
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'.format(
-                datetime.datetime.now()))
+            print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
+                      .format(datetime.datetime.now()))
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                        stdout=open(os.devnull, 'w'),
                                        stderr=open(os.devnull, 'w'))
@@ -667,7 +668,9 @@ class Ceph(Fault):
         self.check_exit_signal()
 
         # execute fault
-        print '[ceph-mon-fault] executing fault on a ceph monitor'
+        print '[ceph-mon-fault] faulting a monitor on {}'.format(target_node[0].name)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] faulting a monitor on {}\n'
+                  .format(datetime.datetime.now(), target_node[0].name))
         self.deployment.mons_available -= 1
         start_time = datetime.datetime.now() - global_starttime
         target_node[2] = False
@@ -725,8 +728,10 @@ class Ceph(Fault):
 
         # Make sure target node is reachable 
         if response != 0:
-            print '[det-service-fault] error: target node unreachable, \
-                    exiting fault function'
+            print '[det-service-fault] error: target node unreachable at {}, exiting fault function' \
+                .format(str(target_node[0].ip))
+            log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] error: target node unreachable at {}, '
+                      'exiting fault function'.format(datetime.datetime.now(), str(target_node[0].ip)))
             return None
 
         target_node[0].occupied = True  # Mark node as being used
@@ -770,9 +775,9 @@ class Ceph(Fault):
         # check for exit signal
         self.check_exit_signal()
 
-        print '[det-service-fault] executing ' + fault_type + ' fault at ' + host
-        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        shell=True)
+        print '[det-service-fault] executing {} fault at {}'.format(fault_type, str(host))
+        subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [det-service-fault] waiting {} minutes before restoring\n'
                   .format(datetime.datetime.now(), str(downtime)))
 
@@ -790,7 +795,6 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', restore_filename))
 
         print '[det-service-fault] deterministic step completed'
-
         return True
 
     def print_status(self):
@@ -927,14 +931,15 @@ def main():
     parser.add_argument('-d', '--deterministic', help='injector will follow the \
                          list of tasks in the file specified', action='store',
                         nargs=1, dest='filepath')
-    parser.add_argument('-ex' '--exclude', help='exclude a node by name in stateless mode (for the purpose of monitoring)',
+    parser.add_argument('-ex' '--exclude',
+                        help='exclude a node by name in stateless mode (for the purpose of monitoring)',
                         type=str, nargs='?', dest='exclude')
     parser.add_argument('-sf', '--stateful', help='injector will run in stateful \
                         random mode', required=False, action='store_true')
     parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
                         mode with specified number of faults', required=False,
                         type=int, nargs=1, dest='numfaults')
-    parser.add_argument('-tg', '--target', help='a specific node/service that will be the target of faults',
+    parser.add_argument('-tg', '--target', help='a specific node that will be the target of faults',
                         required=False, type=str, nargs='?', default=None, dest='target')
     parser.add_argument('-t', '--timelimit', help='timelimit for injector to run \
                          (mins)', required=False, type=int, metavar='\b')
@@ -950,8 +955,8 @@ def main():
             sys.exit('Stateful mode does not support the targeting of a specific service, exiting...')
         else:
             stateful_start(args.timelimit)
-    elif args.numfaults: # User chose stateless and provided numfaults
-        if args.exclude is not None: # User provided a node name to exclude
+    elif args.numfaults:  # User chose stateless and provided numfaults
+        if args.exclude is not None:  # User provided a node name to exclude
             log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude))
             print 'Excluding {} from faults\n'.format(args.exclude)
             new_node_list = []
@@ -959,7 +964,7 @@ def main():
                 if node[0].name != args.exclude:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
-        if args.target is not None: # User provided a target
+        if args.target is not None:  # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including {} in the type\n'
                       .format(datetime.datetime.now(), args.target))
@@ -1111,10 +1116,10 @@ def stateless_start(timelimit, node_fault, numfaults):
 
 
 def signal_handler(signal, frame):
-    print '\n\n\n\nExit signal received.\nPlease wait while your environment is restored.\n' \
-          'Must allow all fault threads to finish.\nThis may take some time...\n\n\n\n'
+    print '\n----------------\n\nExit signal received.\nPlease wait while your environment is restored.\n' \
+          'Must allow all fault threads to finish.\nThis may take some time...\n\n----------------\n'
 
-    log.write('{:%Y-%m-%d %H:%M:%S} Signal handler\n'.format(datetime.datetime.now()))
+    log.write('{:%Y-%m-%d %H:%M:%S} Exit signal received\n'.format(datetime.datetime.now()))
 
     stopper.set()
 
