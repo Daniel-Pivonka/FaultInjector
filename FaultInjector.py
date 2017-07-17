@@ -72,8 +72,8 @@ class Node_fault(Fault):
                 continue
             log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
-            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
-                                                result[3], '|', result[4], '|', result[5]) + '\n')
+            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -90,8 +90,8 @@ class Node_fault(Fault):
             log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
-            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
-                                                result[3], '|', result[4], '|', result[5]) + '\n')
+            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -178,9 +178,9 @@ class Node_fault(Fault):
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
-        print '[node-kill-fault] {} node killed at {}'.format(target_node[0].type, target_node[0].ip)
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} node killed at {}\n'
-                  .format(datetime.datetime.now(), target_node[0].type, target_node[0].ip))
+        print '[node-kill-fault] {} killed at {}'.format(target_node[0].name, target_node[0].ip)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} killed at {}\n'
+                  .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
         # wait to recover
         # FIX ME FOR PRODUCTION
@@ -213,7 +213,7 @@ class Node_fault(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['node-kill-fault', target_node[0].ip, start_time, end_time, downtime, False]
+        return ['node-kill-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(False)]
 
     def det_node_kill_fault(self, target_node, downtime):
         target_node[0].occupied = True
@@ -423,8 +423,8 @@ class Ceph(Fault):
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
 
-            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
-                                                result[3], '|', result[4], '|', result[5]) + '\n')
+            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2],
+                                                ' | ', result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -444,8 +444,8 @@ class Ceph(Fault):
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
 
-            deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
-                                                result[3], '|', result[4], '|', result[5]) + '\n')
+            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -587,7 +587,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-osd-fault', target_node[0].ip, start_time, end_time, str(downtime), str(target_osd)]
+        return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self, max_wait_time):
         # If there are 0 minutes left
@@ -704,7 +704,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-mon-fault', target_node[0].ip, start_time, end_time, str(downtime), 'Placeholder']
+        return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), 'Placeholder']
 
         # Deterministic fault functions below ---------------------------------------------
 
