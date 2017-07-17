@@ -954,6 +954,7 @@ def main():
                 if args.target[0] in node[0].type:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
+            print new_node_list
             if len(new_node_list) < args.numfaults[0]:
                 sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
 
