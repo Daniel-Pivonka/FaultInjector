@@ -930,6 +930,8 @@ def main():
     parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
                         mode with specified number of faults', required=False,
                         type=int, nargs=1, dest='numfaults')
+    parser.add_argument('-tg', '--target', help='a specific node/service that will be the target of faults',
+                        required=False, type=str, nargs='?', default=None, dest='target')
     parser.add_argument('-t', '--timelimit', help='timelimit for injector to run \
                          (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
@@ -940,9 +942,23 @@ def main():
             print 'Time Limit not applicable in deterministic mode'
         deterministic_start(args.filepath)
     elif args.stateful:
-        stateful_start(args.timelimit)
-    elif args.numfaults:
+        if args.target is not None:
+            sys.exit('Stateful mode does not support the targeting of a specific service, exiting...')
+        else:
+            stateful_start(args.timelimit)
+    elif args.numfaults: # User chose stateless and provided numfaults
+        if args.target is not None:
+            # Construct and replace deployment's node list to only include those targeted by the -tg flag
+            new_node_list = []
+            for node in deployment.nodes:
+                if args.target in node.ip:
+                    new_node_list.append(node)
+            deployment.nodes = new_node_list
+            if len(new_node_list) < args.numfaults[0]:
+                sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
+
         stateless_start(args.timelimit, node_fault, args.numfaults[0])
+
     else:
         print 'No Mode Chosen'
 
@@ -985,7 +1001,7 @@ def deterministic_start(filepath):
         time.sleep(1)
 
 
-def stateful_start(timelimit):
+def stateful_start(timelimit, target=None):
     """ func that will create a thread for every plugin
         will create a deterministci file that will be passed to every thread
         will pass all threads the timelimit (could be infiniety)
