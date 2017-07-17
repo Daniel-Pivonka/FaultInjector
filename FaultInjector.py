@@ -704,7 +704,7 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), 'Placeholder']
+        return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), '-']
 
         # Deterministic fault functions below ---------------------------------------------
 
