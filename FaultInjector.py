@@ -127,7 +127,7 @@ class Node_fault(Fault):
 
     # Write fault functions below ---------------------------------------------
 
-    def node_kill_fault(self, max_wait_time):
+    def node_kill_fault(self, max_wait_time=sys.maxint):
         # If there are 0 minutes left
         if max_wait_time <= 0:
             return
