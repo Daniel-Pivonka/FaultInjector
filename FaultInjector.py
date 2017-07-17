@@ -7,12 +7,12 @@ import os
 import random
 import re
 import signal
+import string
 import subprocess
 import sys
 import threading
 import time
 import yaml
-import string
 
 
 class Fault:
@@ -70,7 +70,7 @@ class Node_fault(Fault):
             result = fault_function()
             if result is None:
                 continue
-            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(fault_function)))
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
             deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
                                                 result[3], '|', result[4], '|', result[5]) + '\n')
@@ -87,7 +87,7 @@ class Node_fault(Fault):
             result = fault_function(max_wait_time)
             if result is None:
                 continue
-            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(fault_function)))
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
             deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
@@ -495,9 +495,8 @@ class Ceph(Fault):
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
-                log.write(
-                    '{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'.format(
-                        datetime.datetime.now()))
+                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'
+                          .format(datetime.datetime.now()))
             else:
                 print '[ceph-osd-fault] Target osd down (osd-{}) at IP: {}, trying to find acceptable node' \
                     .format(str(target_osd), str(target_node[0].ip))
