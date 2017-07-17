@@ -985,7 +985,6 @@ def main():
     # end injector
     print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+\n'
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
-    log.write('----------------------------------------\n')
     log.close()
 
 
@@ -1184,7 +1183,6 @@ def signal_handler(signal, frame):
 
     print '\n+-------------------------+\n| Fault Injector Finished |\n+-------------------------+\n'
     log.write('{:%Y-%m-%d %H:%M:%S} Fault Injector Finished\n'.format(datetime.datetime.now()))
-    log.write('----------------------------------------\n')
     log.close()
 
     sys.exit(0)
