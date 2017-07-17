@@ -97,7 +97,7 @@ class Node_fault(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] time out reached\n'.format(datetime.datetime.now()))
+        log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] thread time out reached\n'.format(datetime.datetime.now()))
 
     def deterministic(self, args):
 
@@ -279,15 +279,17 @@ class Node_fault(Fault):
 
     def print_status(self):
 
-        row = "{:13}{:16}{:6}"  # build formatter string
+        row = "{:16}{:13}{:16}{:6}"  # build formatter string
 
-        print "\n+--------------------------------------+"
-        print "| Node Status                          |\n|                                      |"
-        print "|-Type---------Address---------Faulted-+\n|                                      |"
+        print "\n+------------------------------------------------------+"
+        print "| Node Status                                          |"
+        print "|                                                      |"
+        print "|Name-------------Type---------Address---------Faulted-+"
+        print "|                                                      |"
         for node in self.deployment.nodes:
-            line = [node[0].type, node[0].ip, str(node[0].occupied)]
-            print '| ' + row.format(line[0], line[1], line[2]) + '  |'
-        print '+--------------------------------------+\n'
+            line = [node[0].name, node[0].type, node[0].ip, str(node[0].occupied)]
+            print '| ' + row.format(line[0], line[1], line[2], line[3]) + '  |'
+        print '+------------------------------------------------------+\n'
 
 
 class Ceph(Fault):
