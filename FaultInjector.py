@@ -284,7 +284,7 @@ class Node_fault(Fault):
         print "\n+------------------------------------------------------+"
         print "| Node Status                                          |"
         print "|                                                      |"
-        print "|Name-------------Type---------Address---------Faulted-+"
+        print "|-Name------------Type---------Address---------Faulted-+"
         print "|                                                      |"
         for node in self.deployment.nodes:
             line = [node[0].name, node[0].type, node[0].ip, str(node[0].occupied)]
