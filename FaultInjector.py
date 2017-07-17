@@ -815,10 +815,11 @@ class Ceph(Fault):
 
 
 class Node:
-    def __init__(self, node_type, node_ip, node_id):
+    def __init__(self, node_type, node_ip, node_id, node_name):
         self.type = node_type
         self.ip = node_ip
         self.id = node_id
+        self.name = node_name
         self.occupied = False
 
 
@@ -855,14 +856,15 @@ class Deployment:
                 hosts.write((config['deployment']['nodes'][node_id]['node_ip']) + '\n')
 
                 self.nodes.append([Node(config['deployment']['nodes'][node_id]['node_type'],
-                                        config['deployment']['nodes'][node_id]['node_ip'], node_id)])
+                                        config['deployment']['nodes'][node_id]['node_ip'], node_id,
+                                        config['deployment']['nodes'][node_id]['node_name'])])
 
                 self.hci = config['deployment']['hci']
                 self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
                 if ceph_deployment:
                     # Each node in the list of nodes is now a list which holds the following:
-                    # [Node Object, List of OSDs, Controller Available (boolean)]
+                    # [Node Object, List of OSDs, Controller Available (bool)]
                     self.nodes[-1].append(config['deployment']['nodes'][node_id]['osds'])
                     self.nodes[-1].append(True) if 'control' in config['deployment']['nodes'][node_id]['node_type'] \
                         else self.nodes[-1].append(False)
@@ -925,6 +927,8 @@ def main():
     parser.add_argument('-d', '--deterministic', help='injector will follow the \
                          list of tasks in the file specified', action='store',
                         nargs=1, dest='filepath')
+    parser.add_argument('-ex' '--exclude', help='exclude a node by name in stateless mode (for the purpose of monitoring)',
+                        type=str, nargs='?', dest='exclude')
     parser.add_argument('-sf', '--stateful', help='injector will run in stateful \
                         random mode', required=False, action='store_true')
     parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
@@ -947,16 +951,20 @@ def main():
         else:
             stateful_start(args.timelimit)
     elif args.numfaults: # User chose stateless and provided numfaults
-        if args.target is not None:
+        if args.exclude is not None: # User provided a node name to exlude
+            new_node_list = []
+            for node in deployment.nodes:
+                if node[0].name != args.exclude:
+                    new_node_list.append(node)
+            print len(new_node_list)
+            deployment.nodes = new_node_list
+        if args.target is not None: # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             new_node_list = []
             for node in deployment.nodes:
                 if args.target in node[0].type:
-                    print 'append to new node list'
                     new_node_list.append(node)
             deployment.nodes = new_node_list
-            print len(new_node_list)
-            print len(deployment.nodes)
             if len(new_node_list) < args.numfaults[0]:
                 sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
 
