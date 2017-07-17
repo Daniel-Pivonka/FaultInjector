@@ -182,7 +182,7 @@ class Node_fault(Fault):
                         shell=True)
         print '[node-kill-fault] {} node killed at {}'.format(target_node[0].type, target_node[0].ip)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} node killed at {}\n'
-                  .format(datetime.datetime.now(), format(target_node[0].type, target_node[0].ip)))
+                  .format(datetime.datetime.now(), target_node[0].type, target_node[0].ip))
 
         # wait to recover
         # FIX ME FOR PRODUCTION
@@ -966,9 +966,9 @@ def main():
             deployment.nodes = new_node_list
         if args.target is not None:  # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
-            log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including {} in the type\n'
+            log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including "{}" in the type\n'
                       .format(datetime.datetime.now(), args.target))
-            print 'Targeting nodes including {} in the type\n'.format(args.target)
+            print 'Targeting nodes including "{}" in the type\n'.format(args.target)
             new_node_list = []
             for node in deployment.nodes:
                 if args.target in node[0].type:
