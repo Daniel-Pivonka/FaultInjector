@@ -69,9 +69,7 @@ class Node_fault(Fault):
             result = random.choice(self.functions)()
             if result is None:
                 continue
-            log.write(
-                '{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
-
+            log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing {}\n'.format(datetime.datetime.now(), str(result)))
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
             deterministic_file.write(row.format(self.__repr__(), '|', result[0], '|', result[1], '|', result[2], '|',
                                                 result[3], '|', result[4], '|', result[5]) + '\n')
