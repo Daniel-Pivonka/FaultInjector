@@ -951,7 +951,7 @@ def main():
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             new_node_list = []
             for node in deployment.nodes:
-                if args.target in node.ip:
+                if args.target[0] in node.type:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
             if len(new_node_list) < args.numfaults[0]:
