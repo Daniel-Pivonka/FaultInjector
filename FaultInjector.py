@@ -951,15 +951,19 @@ def main():
         else:
             stateful_start(args.timelimit)
     elif args.numfaults: # User chose stateless and provided numfaults
-        if args.exclude is not None: # User provided a node name to exlude
+        if args.exclude is not None: # User provided a node name to exclude
+            log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude))
+            print 'Excluding {} from faults\n'.format(args.exclude)
             new_node_list = []
             for node in deployment.nodes:
                 if node[0].name != args.exclude:
                     new_node_list.append(node)
-            print len(new_node_list)
             deployment.nodes = new_node_list
         if args.target is not None: # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
+            log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including {} in the type\n'
+                      .format(datetime.datetime.now(), args.target))
+            print 'Targeting nodes including {} in the type\n'.format(args.target)
             new_node_list = []
             for node in deployment.nodes:
                 if args.target in node[0].type:
