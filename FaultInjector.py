@@ -938,7 +938,7 @@ def main():
     parser.add_argument('-ex' '--exclude',
                         help='exclude a node by name in stateless mode (for the purpose of monitoring)',
                         type=str, nargs='?', dest='exclude')
-    parser.add_argument('-tg', '--target', help='a specific node that will be the target of faults',
+    parser.add_argument('-tg', '--target', help='specific a node type that will be the target of stateless faults',
                         required=False, type=str, nargs='?', default=None, dest='target')
 
     parser.add_argument('-d', '--deterministic', help='injector will follow the \
