@@ -928,19 +928,23 @@ def main():
 
     # create argument parser
     parser = argparse.ArgumentParser(description='Fault Injector')
-    parser.add_argument('-d', '--deterministic', help='injector will follow the \
-                         list of tasks in the file specified', action='store',
-                        nargs=1, dest='filepath')
+
+    parser.add_argument('-sf', '--stateful', help='injector will run in stateful \
+                            random mode', required=False, action='store_true')
+
+    parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
+                            mode with specified number of faults', required=False,
+                        type=int, nargs=1, dest='numfaults')
     parser.add_argument('-ex' '--exclude',
                         help='exclude a node by name in stateless mode (for the purpose of monitoring)',
                         type=str, nargs='?', dest='exclude')
-    parser.add_argument('-sf', '--stateful', help='injector will run in stateful \
-                        random mode', required=False, action='store_true')
-    parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
-                        mode with specified number of faults', required=False,
-                        type=int, nargs=1, dest='numfaults')
     parser.add_argument('-tg', '--target', help='a specific node that will be the target of faults',
                         required=False, type=str, nargs='?', default=None, dest='target')
+
+    parser.add_argument('-d', '--deterministic', help='injector will follow the \
+                         list of tasks in the file specified', action='store',
+                        nargs=1, dest='filepath')
+
     parser.add_argument('-t', '--timelimit', help='timelimit for injector to run \
                          (mins)', required=False, type=int, metavar='\b')
     args = parser.parse_args()
