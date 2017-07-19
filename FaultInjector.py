@@ -946,7 +946,7 @@ def main():
                         nargs=1, dest='filepath')
 
     parser.add_argument('-t', '--timelimit', help='timelimit for injector to run \
-                         (mins)', required=False, type=int, metavar='\b')
+                         (mins)', required=False, type=int)
     args = parser.parse_args()
 
     # check mode
