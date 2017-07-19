@@ -935,7 +935,7 @@ def main():
     parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
                             mode with specified number of faults', required=False,
                         type=int, nargs=1, dest='numfaults')
-    parser.add_argument('-ex' '--exclude',
+    parser.add_argument('-ex', '--exclude',
                         help='exclude a node by name in stateless mode (for the purpose of monitoring)',
                         type=str, nargs=1, dest='exclude')
     parser.add_argument('-tg', '--target', help='specific a node type that will be the target of stateless faults',
