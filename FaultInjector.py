@@ -436,6 +436,7 @@ class Ceph(Fault):
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
             max_wait_time = int((timeout - time.time()) / 60)
+            print 'max wait time', max_wait_time
             result = fault_function(max_wait_time)
             if result is None:
                 continue
@@ -488,6 +489,7 @@ class Ceph(Fault):
         # keeps track of how many times the while loop has been executed so it can break after
         # a set amount
         retries = 0
+        wrote_to_log = False
 
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
@@ -496,9 +498,10 @@ class Ceph(Fault):
             if retries > 3:
                 return
 
-            if osds_occupied >= self.deployment.min_replication_size - 1:
-                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'
+            if (osds_occupied >= self.deployment.min_replication_size - 1) and not wrote_to_log:
+                    log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'
                           .format(datetime.datetime.now()))
+                    wrote_to_log = True
             else:
                 print '[ceph-osd-fault] Target osd down (osd-{}) at IP: {}, trying to find acceptable node' \
                     .format(str(target_osd), str(target_node[0].ip))
@@ -603,9 +606,9 @@ class Ceph(Fault):
                     self.deployment.mons_available += 1
 
         if self.deployment.mons_available <= (self.deployment.num_mons - self.deployment.max_mon_faults):
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
-                      'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
-                                          str(self.deployment.num_mons - self.deployment.max_mon_faults)))
+            #log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
+             #         'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
+              #                            str(self.deployment.num_mons - self.deployment.max_mon_faults)))
             return
 
         target_node = random.choice(candidate_nodes)
@@ -618,7 +621,7 @@ class Ceph(Fault):
         while response != 0:
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
-            time.sleep(1)  # Wait 20 seconds to give nodes time to recover
+            time.sleep(1)  # Wait 5 seconds to give nodes time to recover
             print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
                       .format(datetime.datetime.now()))
