@@ -436,7 +436,6 @@ class Ceph(Fault):
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
             max_wait_time = int((timeout - time.time()) / 60)
-            print 'max wait time', max_wait_time
             result = fault_function(max_wait_time)
             if result is None:
                 continue
