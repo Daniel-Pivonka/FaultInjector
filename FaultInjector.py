@@ -451,7 +451,7 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-    def osd_service_fault(self, max_wait_time):
+    def osd_service_fault(self, max_wait_time=sys.maxint):
         """ Kills a random osd service specified on a random ceph node
             or osd-compute node
         """
@@ -589,7 +589,7 @@ class Ceph(Fault):
 
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
-    def mon_service_fault(self, max_wait_time):
+    def mon_service_fault(self, max_wait_time=sys.maxint):
         # If there are 0 minutes left
         if max_wait_time <= 0:
             return
