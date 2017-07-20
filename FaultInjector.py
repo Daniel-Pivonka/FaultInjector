@@ -130,6 +130,7 @@ class Node_fault(Fault):
     def node_kill_fault(self, max_wait_time=sys.maxint):
         # If there are 0 minutes left
         if max_wait_time <= 0:
+            time.sleep(1)
             return
 
         # chose node to fault
@@ -457,6 +458,7 @@ class Ceph(Fault):
         """
         # If there are 0 minutes left
         if max_wait_time <= 0:
+            time.sleep(1)
             return
 
         candidate_nodes = []
@@ -594,6 +596,7 @@ class Ceph(Fault):
     def mon_service_fault(self, max_wait_time=sys.maxint):
         # If there are 0 minutes left
         if max_wait_time <= 0:
+            time.sleep(1)
             return
 
         candidate_nodes = []
