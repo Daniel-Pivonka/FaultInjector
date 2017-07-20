@@ -499,7 +499,8 @@ class Ceph(Fault):
             if retries > 3:
                 return
 
-            if (osds_occupied >= self.deployment.min_replication_size - 1) and not wrote_to_log:
+            if osds_occupied >= self.deployment.min_replication_size - 1:
+                if not wrote_to_log:
                     log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'
                           .format(datetime.datetime.now()))
                     wrote_to_log = True
