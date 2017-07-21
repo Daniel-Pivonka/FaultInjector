@@ -708,7 +708,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        max_wait_time = math.ceil((timeout - time.time()) / 60))
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
