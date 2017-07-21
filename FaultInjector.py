@@ -466,6 +466,7 @@ class Ceph(Fault):
         """
         # If there are <60 seconds left
         if timeout - time.time() <= 60:
+            print 'no time left osd'
             time.sleep(5)
             return
 
@@ -577,6 +578,7 @@ class Ceph(Fault):
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
+            print 'osd return no time'
             return
         if max_wait_time > 5:
             max_wait_time = 5
@@ -608,6 +610,11 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
+
+        if timeout - time.time() <= 60:
+            print 'no time left mon'
+            time.sleep(5)
+            return
 
         candidate_nodes = []
         self.deployment.mons_available = 0
@@ -706,6 +713,7 @@ class Ceph(Fault):
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
+            print 'mon return no time'
             return
         if max_wait_time > 5:
             max_wait_time = 5
