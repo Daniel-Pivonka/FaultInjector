@@ -189,7 +189,7 @@ class Node_fault(Fault):
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
-        if max_wait_time >= 0:
+        if max_wait_time <= 0:
             time.sleep(5)
             return
         if max_wait_time > 5:
@@ -575,7 +575,7 @@ class Ceph(Fault):
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
-        if max_wait_time >= 0:
+        if max_wait_time <= 0:
             time.sleep(5)
             return
         if max_wait_time > 5:
@@ -704,7 +704,7 @@ class Ceph(Fault):
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
-        if max_wait_time >= 0:
+        if max_wait_time <= 0:
             time.sleep(5)
             return
         if max_wait_time > 5:
