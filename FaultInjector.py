@@ -28,10 +28,10 @@ class Fault:
     def __repr__(self):
         raise NotImplementedError
 
-    def stateless(self, deterministic_file, timelimit):
+    def stateless(self, deterministic_file):
         raise NotImplementedError
 
-    def stateful(self, deterministic_file, timelimit):
+    def stateful(self, deterministic_file):
         raise NotImplementedError
 
     def deterministic(self, args):
@@ -63,9 +63,9 @@ class Node_fault(Fault):
     def __repr__(self):
         return 'Node_fault'
 
-    def stateless(self, deterministic_file, timelimit):
+    def stateless(self, deterministic_file):
         # Infinite loop for indefinite mode
-        while timelimit is None:
+        while timeout is None:
             fault_function = random.choice(self.functions)
             result = fault_function()
             if result is None:
@@ -308,7 +308,7 @@ class Ceph(Fault):
     def __repr__(self):
         return 'Ceph'
 
-    def stateful(self, deterministic_file, timelimit):
+    def stateful(self, deterministic_file):
         """ func that will be set up on a thread
             will write to a shared (all stateful threads will share) log for deterministic mode
             will take a time limit or run indefinitely till ctrl-c
@@ -322,7 +322,7 @@ class Ceph(Fault):
 
         # create threads
         for i in range(thread_count):
-            thread = threading.Thread(target=self.fault_thread, args=(deterministic_file, timelimit))
+            thread = threading.Thread(target=self.fault_thread, args=(deterministic_file))
             threads.append(thread)
             fault_threads.append(thread)
 
@@ -419,9 +419,9 @@ class Ceph(Fault):
 
     # Write fault functions below --------------------------------------------- 
 
-    def fault_thread(self, deterministic_file, timelimit):
+    def fault_thread(self, deterministic_file):
         # Infinite loop for indefinite mode
-        while timelimit is None:
+        while timeout is None:
             result = random.choice(self.functions)()
             if result is None:
                 continue
@@ -914,6 +914,9 @@ class Deployment:
 # global timeout
 timeout = None
 
+# global timelimit
+timelimit = None
+
 # global var for start time of program
 global_starttime = datetime.datetime.now()
 
@@ -945,6 +948,7 @@ def main():
     """
     print fault_injector_title
     global timeout
+    global timelimit
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
@@ -993,6 +997,7 @@ def main():
             sys.exit('Stateful mode does not support the targeting of a specific service, exiting...')
         else:
             if args.timelimit is not None:
+                timelimit = args.timelimit
                 timeout = time.time() + (args.timelimit * 60)
             stateful_start(args.timelimit)
     elif args.numfaults:  # User chose stateless and provided numfaults
@@ -1017,6 +1022,7 @@ def main():
             if len(new_node_list) < args.numfaults[0]:
                 sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
         if args.timelimit is not None:
+            timelimit = args.timelimit
             timeout = time.time() + (args.timelimit * 60)
         stateless_start(args.timelimit, node_fault, args.numfaults[0])
 
@@ -1062,12 +1068,11 @@ def deterministic_start(filepath):
         time.sleep(1)
 
 
-def stateful_start(timelimit, target=None):
+def stateful_start(target=None):
     """ func that will create a thread for every plugin
-        will create a deterministci file that will be passed to every thread
-        will pass all threads the timelimit (could be infiniety)
+        will create a deterministic file that will be passed to every thread
         will spawn all threads
-        will wait for all threads to compplete or for ctrl-c
+        will wait for all threads to complete or for ctrl-c
     """
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
     print 'Stateful Mode Selected'
@@ -1092,7 +1097,7 @@ def stateful_start(timelimit, target=None):
 
     for plugin in plugins:
         if plugin.__repr__() != 'Node_fault':
-            thread = threading.Thread(target=plugin.stateful, args=(deterministic_file, timelimit))
+            thread = threading.Thread(target=plugin.stateful, args=(deterministic_file))
             stateful_threads.append(thread)
             threads.append(thread)
 
@@ -1110,7 +1115,7 @@ def stateful_start(timelimit, target=None):
         time.sleep(1)
 
 
-def stateless_start(timelimit, node_fault, numfaults):
+def stateless_start(node_fault, numfaults):
     """ func that will read from stateless config
         will run Node_fault stateless mode on main thread
         will pass the time limit (could be infinity)
@@ -1137,7 +1142,7 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     # create thread for number of faults
     while numfaults > 0:
-        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file, timelimit)))
+        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file)))
         numfaults -= 1
 
     # start all threads
