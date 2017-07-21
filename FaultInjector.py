@@ -72,8 +72,9 @@ class Node_fault(Fault):
                 continue
             log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
-            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
-                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
+            deterministic_file.write(
+                row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                           result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -90,8 +91,9 @@ class Node_fault(Fault):
             log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
-            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
-                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
+            deterministic_file.write(
+                row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                           result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -445,8 +447,9 @@ class Ceph(Fault):
 
             row = "{:6}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:18}{:2}{:4}{:2}{:12}"  # build formatter string
 
-            deterministic_file.write(row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
-                                                result[3], ' | ', result[4], ' | ', result[5]) + '\n')
+            deterministic_file.write(
+                row.format(self.__repr__(), ' | ', result[0], ' | ', result[1], ' | ', result[2], ' | ',
+                           result[3], ' | ', result[4], ' | ', result[5]) + '\n')
             deterministic_file.flush()
             os.fsync(deterministic_file.fileno())
             # check for exit signal
@@ -496,13 +499,13 @@ class Ceph(Fault):
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
             # exit if loop has executed 3 times already
-            if retries > 3:
+            if retries > 10:
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
                 if not wrote_to_log:
                     log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd limit reached, waiting to fault another\n'
-                          .format(datetime.datetime.now()))
+                              .format(datetime.datetime.now()))
                     wrote_to_log = True
             else:
                 print '[ceph-osd-fault] Target osd down (osd-{}) at IP: {}, trying to find acceptable node' \
@@ -512,7 +515,7 @@ class Ceph(Fault):
             retries += 1
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
-            time.sleep(1)
+            time.sleep(5)
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                        stdout=open(os.devnull, 'w'),
                                        stderr=open(os.devnull, 'w'))
@@ -608,23 +611,29 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        if self.deployment.mons_available <= (self.deployment.num_mons - self.deployment.max_mon_faults):
-            #log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
-             #         'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
-              #                            str(self.deployment.num_mons - self.deployment.max_mon_faults)))
-            return
-
         target_node = random.choice(candidate_nodes)
         host = target_node[0].ip
         response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                    stdout=open(os.devnull, 'w'),
                                    stderr=open(os.devnull, 'w'))
 
-        # node unreachable
-        while response != 0:
+        retries = 0
+        wrote_to_log = False
+
+        # node unreachable or too few monitors available
+        while not (response == 0 and
+                       (self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
+            if retries > 10:
+                return
+            if self.deployment.mons_available <= (
+                self.deployment.num_mons - self.deployment.max_mon_faults) and not wrote_to_log:
+                log.write(
+                    '{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
+                    'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
+                                        str(self.deployment.num_mons - self.deployment.max_mon_faults)))
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
-            time.sleep(1)  # Wait 5 seconds to give nodes time to recover
+            time.sleep(5)  # Wait 5 seconds to give nodes time to recover
             print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
                       .format(datetime.datetime.now()))
