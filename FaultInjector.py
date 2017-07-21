@@ -420,6 +420,8 @@ class Ceph(Fault):
 
     def fault_thread(self, deterministic_file, timelimit):
         print 'thread started'
+        print 'time.time()', time.time()
+        print 'timeout', timeout
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -916,7 +918,7 @@ class Deployment:
                 self.min_replication_size = config['ceph']['minimum_replication_size']
                 self.osds = [True for osd in range(self.num_osds)]  # Set all osds to 'on' aka True
                 self.max_mon_faults = int(math.ceil(self.num_mons / 2))
-# global time limit
+# global timeout
 timeout = None
 
 # global var for start time of program
