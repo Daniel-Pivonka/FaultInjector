@@ -442,6 +442,7 @@ class Ceph(Fault):
         global timeout
         timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
+            print 'TIME', timeout - time.time()
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
             result = fault_function()
