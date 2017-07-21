@@ -918,6 +918,7 @@ class Deployment:
                 self.min_replication_size = config['ceph']['minimum_replication_size']
                 self.osds = [True for osd in range(self.num_osds)]  # Set all osds to 'on' aka True
                 self.max_mon_faults = int(math.ceil(self.num_mons / 2))
+
 # global timeout
 timeout = None
 
@@ -951,6 +952,7 @@ def main():
 
     """
     print fault_injector_title
+    global timeout
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
