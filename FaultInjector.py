@@ -187,7 +187,7 @@ class Node_fault(Fault):
                   .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
         # wait to recover
-        max_wait_time = time.time() - timeout / 60
+        max_wait_time = timeout - time.time() / 60
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -569,7 +569,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        max_wait_time = time.time() - timeout / 60
+        max_wait_time = timeout - time.time() / 60
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -699,7 +699,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        max_wait_time = time.time() - timeout / 60
+        max_wait_time = timeout - time.time() / 60
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
