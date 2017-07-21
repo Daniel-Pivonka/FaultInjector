@@ -539,6 +539,14 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
+        # Determine wait time
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+        # print "max_wait_time:", max_wait_time
+        if max_wait_time <= 0:
+            time.sleep(5)
+            # print 'mon return no time'
+            return
+
         target_node[0].occupied = True  # Mark node as being used
 
         # create tmp file for playbook
@@ -574,13 +582,6 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
 
-        # wait to recover
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        #print "max_wait_time:", max_wait_time
-        if max_wait_time <= 0:
-            time.sleep(5)
-            #print 'osd return no time'
-            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -671,6 +672,14 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
+        # Determine wait time
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+        # print "max_wait_time:", max_wait_time
+        if max_wait_time <= 0:
+            time.sleep(5)
+            # print 'mon return no time'
+            return
+
         target_node[0].occupied = True
 
         # create tmp file for playbook
@@ -709,13 +718,6 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
 
-        # wait to recover
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        #print "max_wait_time:", max_wait_time
-        if max_wait_time <= 0:
-            time.sleep(5)
-            #print 'mon return no time'
-            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
