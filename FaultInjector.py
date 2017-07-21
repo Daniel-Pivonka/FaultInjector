@@ -421,6 +421,7 @@ class Ceph(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def fault_thread(self, deterministic_file, timelimit):
+        print 'thread started'
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -440,6 +441,7 @@ class Ceph(Fault):
 
         # Standard runtime loop
         global timeout
+
         timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
             print 'TIME', timeout - time.time()
@@ -460,6 +462,7 @@ class Ceph(Fault):
             os.fsync(deterministic_file.fileno())
             # check for exit signal
             self.check_exit_signal()
+        print 'thread ended'
 
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
