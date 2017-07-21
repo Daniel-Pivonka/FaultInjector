@@ -81,8 +81,6 @@ class Node_fault(Fault):
             self.check_exit_signal()
 
         # Standard runtime loop
-        global timeout
-        timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
             fault_function = random.choice(self.functions)
             result = fault_function()
@@ -440,9 +438,6 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Standard runtime loop
-        global timeout
-
-        timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
             print 'TIME', timeout - time.time()
             # Calls a fault function and stores the results
@@ -921,7 +916,8 @@ class Deployment:
                 self.min_replication_size = config['ceph']['minimum_replication_size']
                 self.osds = [True for osd in range(self.num_osds)]  # Set all osds to 'on' aka True
                 self.max_mon_faults = int(math.ceil(self.num_mons / 2))
-
+# global time limit
+timeout = None
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
@@ -1000,6 +996,8 @@ def main():
         if args.target is not None:
             sys.exit('Stateful mode does not support the targeting of a specific service, exiting...')
         else:
+            if args.timelimit is not None:
+                timeout = time.time() + (args.timelimit * 60)
             stateful_start(args.timelimit)
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
@@ -1022,7 +1020,8 @@ def main():
             deployment.nodes = new_node_list
             if len(new_node_list) < args.numfaults[0]:
                 sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
-
+        if args.timelimit is not None:
+            timeout = time.time() + (args.timelimit * 60)
         stateless_start(args.timelimit, node_fault, args.numfaults[0])
 
     else:
