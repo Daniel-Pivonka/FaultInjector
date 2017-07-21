@@ -176,6 +176,12 @@ class Node_fault(Fault):
         # check for exit signal
         self.check_exit_signal()
 
+        # Determine wait time
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+        if max_wait_time <= 0:
+            time.sleep(5)
+            return
+
         # crash system
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -185,11 +191,6 @@ class Node_fault(Fault):
                   .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
         # wait to recover
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        print "max_wait_time:", max_wait_time
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -419,9 +420,6 @@ class Ceph(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def fault_thread(self, deterministic_file, timelimit):
-        #print 'thread started'
-        #print 'time.time()', time.time()
-        #print 'timeout', timeout
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -441,7 +439,6 @@ class Ceph(Fault):
 
         # Standard runtime loop
         while time.time() < timeout:
-            #print 'TIME', timeout - time.time()
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
             result = fault_function()
@@ -459,7 +456,6 @@ class Ceph(Fault):
             os.fsync(deterministic_file.fileno())
             # check for exit signal
             self.check_exit_signal()
-        #print 'thread ended'
 
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
@@ -467,7 +463,6 @@ class Ceph(Fault):
         """
         # If there are <60 seconds left
         if timeout - time.time() <= 60:
-            #print 'no time left osd'
             time.sleep(5)
             return
 
@@ -541,10 +536,8 @@ class Ceph(Fault):
 
         # Determine wait time
         max_wait_time = math.ceil((timeout - time.time()) / 60)
-        # print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
-            # print 'mon return no time'
             return
 
         target_node[0].occupied = True  # Mark node as being used
@@ -614,7 +607,6 @@ class Ceph(Fault):
     def mon_service_fault(self):
 
         if timeout - time.time() <= 60:
-            #print 'no time left mon'
             time.sleep(5)
             return
 
@@ -674,10 +666,8 @@ class Ceph(Fault):
 
         # Determine wait time
         max_wait_time = math.ceil((timeout - time.time()) / 60)
-        # print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
-            # print 'mon return no time'
             return
 
         target_node[0].occupied = True
