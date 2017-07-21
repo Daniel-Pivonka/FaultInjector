@@ -132,7 +132,7 @@ class Node_fault(Fault):
     def node_kill_fault(self):
 
         # If there are <60 seconds left
-        if time.time() - timeout <= 60:
+        if timeout - time.time() <= 60:
             time.sleep(5)
             return
 
@@ -187,11 +187,10 @@ class Node_fault(Fault):
                   .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
         # wait to recover
-        # FIX ME FOR PRODUCTION
         max_wait_time = time.time() - timeout / 60
         if max_wait_time > 5:
             max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, max_wait_time)
         print '[node-kill-fault] waiting {} minutes before restoring'.format(str(downtime))
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting {} minutes before restoring\n'
                   .format(datetime.datetime.now(), str(downtime)))
@@ -462,7 +461,7 @@ class Ceph(Fault):
             or osd-compute node
         """
         # If there are <60 seconds left
-        if time.time() - timeout <= 60:
+        if timeout - time.time() <= 60:
             time.sleep(5)
             return
 
@@ -603,7 +602,7 @@ class Ceph(Fault):
     def mon_service_fault(self):
 
         # If there are <60 seconds left
-        if time.time() - timeout <= 60:
+        if timeout - time.time() <= 60:
             time.sleep(5)
             return
 
@@ -703,7 +702,7 @@ class Ceph(Fault):
         max_wait_time = time.time() - timeout / 60
         if max_wait_time > 5:
             max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, max_wait_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting {} minutes before introducing monitor back\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-mon-fault] waiting {} minutes before restoring monitor'.format(str(downtime))
