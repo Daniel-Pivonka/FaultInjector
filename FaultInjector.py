@@ -999,7 +999,7 @@ def main():
             if args.timelimit is not None:
                 timelimit = args.timelimit
                 timeout = time.time() + (args.timelimit * 60)
-            stateful_start(args.timelimit)
+            stateful_start()
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
             log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
@@ -1024,7 +1024,7 @@ def main():
         if args.timelimit is not None:
             timelimit = args.timelimit
             timeout = time.time() + (args.timelimit * 60)
-        stateless_start(args.timelimit, node_fault, args.numfaults[0])
+        stateless_start(node_fault, args.numfaults[0])
 
     else:
         print 'No Mode Chosen'
