@@ -82,7 +82,7 @@ class Node_fault(Fault):
 
         # Standard runtime loop
         global timeout
-        timeout = time.time() + 60 * timelimit
+        timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
             fault_function = random.choice(self.functions)
             result = fault_function()
@@ -440,7 +440,7 @@ class Ceph(Fault):
 
         # Standard runtime loop
         global timeout
-        timeout = time.time() + 60 * timelimit
+        timeout = time.time() + (60 * timelimit)
         while time.time() < timeout:
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
