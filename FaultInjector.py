@@ -188,6 +188,10 @@ class Node_fault(Fault):
 
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
+        print "max_wait_time:", max_wait_time
+        if max_wait_time >= 0:
+            time.sleep(5)
+            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -570,6 +574,10 @@ class Ceph(Fault):
 
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
+        print "max_wait_time:", max_wait_time
+        if max_wait_time >= 0:
+            time.sleep(5)
+            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
@@ -600,11 +608,6 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
-
-        # If there are <60 seconds left
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
 
         candidate_nodes = []
         self.deployment.mons_available = 0
@@ -700,6 +703,10 @@ class Ceph(Fault):
 
         # wait to recover
         max_wait_time = int((timeout - time.time()) / 60)
+        print "max_wait_time:", max_wait_time
+        if max_wait_time >= 0:
+            time.sleep(5)
+            return
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)
