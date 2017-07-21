@@ -1142,7 +1142,7 @@ def stateless_start(node_fault, numfaults):
 
     # create thread for number of faults
     while numfaults > 0:
-        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file)))
+        threads.append(threading.Thread(target=node_fault.stateless, args=deterministic_file))
         numfaults -= 1
 
     # start all threads
