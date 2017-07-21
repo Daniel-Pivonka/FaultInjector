@@ -322,7 +322,7 @@ class Ceph(Fault):
 
         # create threads
         for i in range(thread_count):
-            thread = threading.Thread(target=self.fault_thread, args=(deterministic_file))
+            thread = threading.Thread(target=self.fault_thread, args=deterministic_file)
             threads.append(thread)
             fault_threads.append(thread)
 
@@ -1053,7 +1053,7 @@ def deterministic_start(filepath):
             for plugin in plugins:
                 if plugin.__repr__() == words[0].strip(' '):
                     # create thread
-                    threads.append(threading.Thread(target=plugin.deterministic, args=(words,)))
+                    threads.append(threading.Thread(target=plugin.deterministic, args=words))
 
     # start all threads
     for thread in threads:
@@ -1097,7 +1097,7 @@ def stateful_start(target=None):
 
     for plugin in plugins:
         if plugin.__repr__() != 'Node_fault':
-            thread = threading.Thread(target=plugin.stateful, args=(deterministic_file))
+            thread = threading.Thread(target=plugin.stateful, args=deterministic_file)
             stateful_threads.append(thread)
             threads.append(thread)
 
