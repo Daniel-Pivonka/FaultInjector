@@ -81,11 +81,11 @@ class Node_fault(Fault):
             self.check_exit_signal()
 
         # Standard runtime loop
+        global timeout
         timeout = time.time() + 60 * timelimit
         while time.time() < timeout:
             fault_function = random.choice(self.functions)
-            max_wait_time = int((timeout - time.time()) / 60)
-            result = fault_function(max_wait_time)
+            result = fault_function()
             if result is None:
                 continue
             log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] executing a node fault\n'.format(datetime.datetime.now()))
@@ -129,10 +129,11 @@ class Node_fault(Fault):
 
     # Write fault functions below ---------------------------------------------
 
-    def node_kill_fault(self, max_wait_time=sys.maxint):
-        # If there are 0 minutes left
-        if max_wait_time <= 0:
-            time.sleep(1)
+    def node_kill_fault(self):
+
+        # If there are <60 seconds left
+        if time.time() - timeout <= 60:
+            time.sleep(5)
             return
 
         # chose node to fault
@@ -187,6 +188,7 @@ class Node_fault(Fault):
 
         # wait to recover
         # FIX ME FOR PRODUCTION
+        max_wait_time = time.time() - timeout / 60
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
@@ -434,12 +436,12 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Standard runtime loop
+        global timeout
         timeout = time.time() + 60 * timelimit
         while time.time() < timeout:
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
-            max_wait_time = int((timeout - time.time()) / 60)
-            result = fault_function(max_wait_time)
+            result = fault_function()
             if result is None:
                 continue
 
@@ -455,13 +457,13 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-    def osd_service_fault(self, max_wait_time=sys.maxint):
+    def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
             or osd-compute node
         """
-        # If there are 0 minutes left
-        if max_wait_time <= 0:
-            time.sleep(1)
+        # If there are <60 seconds left
+        if time.time() - timeout <= 60:
+            time.sleep(5)
             return
 
         candidate_nodes = []
@@ -568,9 +570,10 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
+        max_wait_time = time.time() - timeout / 60
         if max_wait_time > 5:
             max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
+        downtime = random.randint(1, max_wait_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting {} minutes before introducing OSD again\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-osd-fault] waiting {} minutes before restoring osd-{}'.format(str(downtime), str(target_osd))
@@ -597,10 +600,11 @@ class Ceph(Fault):
 
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
-    def mon_service_fault(self, max_wait_time=sys.maxint):
-        # If there are 0 minutes left
-        if max_wait_time <= 0:
-            time.sleep(1)
+    def mon_service_fault(self):
+
+        # If there are <60 seconds left
+        if time.time() - timeout <= 60:
+            time.sleep(5)
             return
 
         candidate_nodes = []
@@ -696,6 +700,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
+        max_wait_time = time.time() - timeout / 60
         if max_wait_time > 5:
             max_wait_time = 5
         downtime = random.randint(1, max_wait_time)  # 15, 45)  # Picks a random integer such that: 15 <= downtime <= 45
