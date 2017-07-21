@@ -976,11 +976,11 @@ def main():
             stateful_start(args.timelimit)
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
-            log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude))
-            print 'Excluding {} from faults\n'.format(args.exclude)
+            log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
+            print 'Excluding {} from faults\n'.format(args.exclude[0])
             new_node_list = []
             for node in deployment.nodes:
-                if node[0].name != args.exclude:
+                if node[0].name != args.exclude[0]:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
         if args.target is not None:  # User provided a target
