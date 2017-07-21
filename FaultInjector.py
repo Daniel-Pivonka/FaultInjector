@@ -187,7 +187,7 @@ class Node_fault(Fault):
                   .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
         # wait to recover
-        max_wait_time = int((timeout - time.time()) / 60)
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
@@ -578,7 +578,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        max_wait_time = int((timeout - time.time()) / 60)
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
@@ -713,7 +713,7 @@ class Ceph(Fault):
                         shell=True)
 
         # wait to recover
-        max_wait_time = int((timeout - time.time()) / 60)
+        max_wait_time = math.ceil((timeout - time.time()) / 60))
         print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
