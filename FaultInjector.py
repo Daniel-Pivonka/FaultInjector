@@ -623,20 +623,24 @@ class Ceph(Fault):
         # node unreachable or too few monitors available
         while not (response == 0 and
                        (self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
+
             if retries > 10:
                 return
-            if self.deployment.mons_available <= (
+            elif self.deployment.mons_available <= (
                 self.deployment.num_mons - self.deployment.max_mon_faults) and not wrote_to_log:
                 log.write(
                     '{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
                     'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
                                         str(self.deployment.num_mons - self.deployment.max_mon_faults)))
+            else:
+                print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
+                log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
+                          .format(datetime.datetime.now()))
+
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(5)  # Wait 5 seconds to give nodes time to recover
-            print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
-            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
-                      .format(datetime.datetime.now()))
+
             response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
                                        stdout=open(os.devnull, 'w'),
                                        stderr=open(os.devnull, 'w'))
