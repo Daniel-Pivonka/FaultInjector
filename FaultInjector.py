@@ -419,9 +419,9 @@ class Ceph(Fault):
     # Write fault functions below --------------------------------------------- 
 
     def fault_thread(self, deterministic_file, timelimit):
-        print 'thread started'
-        print 'time.time()', time.time()
-        print 'timeout', timeout
+        #print 'thread started'
+        #print 'time.time()', time.time()
+        #print 'timeout', timeout
         # Infinite loop for indefinite mode
         while timelimit is None:
             result = random.choice(self.functions)()
@@ -441,7 +441,7 @@ class Ceph(Fault):
 
         # Standard runtime loop
         while time.time() < timeout:
-            print 'TIME', timeout - time.time()
+            #print 'TIME', timeout - time.time()
             # Calls a fault function and stores the results
             fault_function = random.choice(self.functions)
             result = fault_function()
@@ -459,7 +459,7 @@ class Ceph(Fault):
             os.fsync(deterministic_file.fileno())
             # check for exit signal
             self.check_exit_signal()
-        print 'thread ended'
+        #print 'thread ended'
 
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random ceph node
@@ -467,7 +467,7 @@ class Ceph(Fault):
         """
         # If there are <60 seconds left
         if timeout - time.time() <= 60:
-            print 'no time left osd'
+            #print 'no time left osd'
             time.sleep(5)
             return
 
@@ -576,10 +576,10 @@ class Ceph(Fault):
 
         # wait to recover
         max_wait_time = math.ceil((timeout - time.time()) / 60)
-        print "max_wait_time:", max_wait_time
+        #print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
-            print 'osd return no time'
+            #print 'osd return no time'
             return
         if max_wait_time > 5:
             max_wait_time = 5
@@ -613,7 +613,7 @@ class Ceph(Fault):
     def mon_service_fault(self):
 
         if timeout - time.time() <= 60:
-            print 'no time left mon'
+            #print 'no time left mon'
             time.sleep(5)
             return
 
@@ -711,10 +711,10 @@ class Ceph(Fault):
 
         # wait to recover
         max_wait_time = math.ceil((timeout - time.time()) / 60)
-        print "max_wait_time:", max_wait_time
+        #print "max_wait_time:", max_wait_time
         if max_wait_time <= 0:
             time.sleep(5)
-            print 'mon return no time'
+            #print 'mon return no time'
             return
         if max_wait_time > 5:
             max_wait_time = 5
