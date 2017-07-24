@@ -130,9 +130,10 @@ class Node_fault(Fault):
     def node_kill_fault(self):
 
         # If there are <60 seconds left
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            if timeout - time.time() <= 60:
+                time.sleep(5)
+                return
 
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
