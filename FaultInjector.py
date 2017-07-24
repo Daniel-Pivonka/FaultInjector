@@ -178,10 +178,13 @@ class Node_fault(Fault):
         self.check_exit_signal()
 
         # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            max_wait_time = math.ceil((timeout - time.time()) / 60)
+            if max_wait_time <= 0:
+                time.sleep(5)
+                return
+        else:
+            max_wait_time = 5
 
         # crash system
         start_time = datetime.datetime.now() - global_starttime
@@ -537,10 +540,13 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            max_wait_time = math.ceil((timeout - time.time()) / 60)
+            if max_wait_time <= 0:
+                time.sleep(5)
+                return
+        else:
+            max_wait_time = 5
 
         target_node[0].occupied = True  # Mark node as being used
 
@@ -668,10 +674,13 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            max_wait_time = math.ceil((timeout - time.time()) / 60)
+            if max_wait_time <= 0:
+                time.sleep(5)
+                return
+        else:
+            max_wait_time = 5
 
         target_node[0].occupied = True
 
@@ -931,7 +940,6 @@ threads = []
 
 # global exit signal for threads
 stopper = threading.Event()
-
 
 def main():
     fault_injector_title = """
