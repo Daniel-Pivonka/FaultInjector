@@ -63,9 +63,9 @@ class Node_fault(Fault):
     def __repr__(self):
         return 'Node_fault'
 
-    def stateless(self, deterministic_file, timelimit):
+    def stateless(self, deterministic_file):
         # Infinite loop for indefinite mode
-        while timelimit is None:
+        while timeout is None:
             fault_function = random.choice(self.functions)
             result = fault_function()
             if result is None:
@@ -1137,7 +1137,7 @@ def stateless_start(timelimit, node_fault, numfaults):
 
     # create thread for number of faults
     while numfaults > 0:
-        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file, timelimit)))
+        threads.append(threading.Thread(target=node_fault.stateless, args=(deterministic_file)))
         numfaults -= 1
 
     # start all threads
