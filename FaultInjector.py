@@ -463,9 +463,10 @@ class Ceph(Fault):
             or osd-compute node
         """
         # If there are <60 seconds left
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            if timeout - time.time() <= 60:
+                time.sleep(5)
+                return
 
         candidate_nodes = []
         for node in self.deployment.nodes:
@@ -607,9 +608,10 @@ class Ceph(Fault):
 
     def mon_service_fault(self):
 
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        if timeout is not None:
+            if timeout - time.time() <= 60:
+                time.sleep(5)
+                return
 
         candidate_nodes = []
         self.deployment.mons_available = 0
