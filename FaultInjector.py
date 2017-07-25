@@ -177,10 +177,12 @@ class Node_fault(Fault):
 
         # Determine wait time
         max_wait_time = math.ceil((timeout - time.time()) / 60)
+
         if max_wait_time <= 0:
             time.sleep(5)
             return
-        else:
+
+        if max_wait_time > 5:
             max_wait_time = 5
 
         # crash system
@@ -977,8 +979,8 @@ def main():
                             mode with specified number of faults', required=False,
                         type=int, nargs=1, dest='numfaults')
     parser.add_argument('-ex', '--exclude',
-                        help='exclude a node by name in stateless mode (for the purpose of monitoring)',
-                        type=str, nargs=1, dest='exclude')
+                        help='exclude node(s) by name in stateless mode (for the purpose of monitoring)',
+                        type=str, nargs='+', dest='exclude')
     parser.add_argument('-tg', '--target', help='specific a node type that will be the target of stateless faults',
                         required=False, type=str, nargs=1, default=None, dest='target')
 
@@ -1010,6 +1012,9 @@ def main():
         if args.exclude is not None:  # User provided a node name to exclude
             log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
             print 'Excluding {} from faults\n'.format(args.exclude[0])
+            print args.exclude
+            print type(args.exclude)
+            sys.exit('done testing')
             new_node_list = []
             for node in deployment.nodes:
                 if node[0].name != args.exclude[0]:
