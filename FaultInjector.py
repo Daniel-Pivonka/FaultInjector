@@ -1017,12 +1017,14 @@ def main():
             print type(args.exclude)
             new_node_list = []
             for node in deployment.nodes:
+                exclude = False
                 for excluded_node in args.exclude:
-                    if node[0].name != excluded_node:
-                        new_node_list.append(node)
-                        print 'not excluding', node[0].name
-                    else:
+                    if node[0].name == excluded_node:\
                         print 'excluding', node[0].name
+                        exclude = True
+                        break
+                if not exclude:
+                    new_node_list.append(node)
             deployment.nodes = new_node_list
             print len(deployment.nodes)
             sys.exit('done testing')
