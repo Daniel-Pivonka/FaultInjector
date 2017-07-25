@@ -108,15 +108,15 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 - Stateless mode requires a parameter for the number faults desired to be active at once
 - Specify it with the following syntax `./FaultInjector.py -sl [number of faults]`
 
-	###### Additional Parameters Include
+	##### Additional Parameters Include
 
  	- **Time Limit** `./FaultInjector.py -sl [number of faults] -t [time limit]`
 
- 	- **Target Node** (a node type that will be faulted alone) `./FaultInjector.py -sl [number of faults] -tg [node name]`
+ 	- **Target Node** (the target node type for faults) `./FaultInjector.py -sl [number of faults] -tg [node name]`
 		- The script looks for `[node name]` in the stored types of all the nodes in the config.yaml file
 		- Example: an input of `[control]` will flag all controller nodes
 
- 	- **Exclusions** (a node that will be excluded from faults): `./FaultInjector.py -sl [number of faults] -ex [node name]`
+ 	- **Exclusions** (exclude node(s) from faults): `./FaultInjector.py -sl [number of faults] -ex [node name]`
 		- The script looks for the exact `[node name]` in the stored names of all the nodes in the config.yaml file
 
 		- Specify multiple nodes with `./FaultInjector.py -sl [number of faults] -ex [node1 node2 node3...]`
