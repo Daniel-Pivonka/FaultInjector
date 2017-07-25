@@ -12,8 +12,6 @@ Collects all the necessary information for the fault injector to run fully by fi
 
 
 ## FaultInjector.py
-
-  -h, --help            show this help message and exit
   
   -sf, --stateful       injector will run in stateful random mode
   
