@@ -1019,7 +1019,7 @@ def main():
             for node in deployment.nodes:
                 exclude = False
                 for excluded_node in args.exclude:
-                    if node[0].name == excluded_node:\
+                    if node[0].name == excluded_node:
                         print 'excluding', node[0].name
                         exclude = True
                         break
