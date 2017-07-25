@@ -42,6 +42,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 ##### Node Kill
 - Connects to a node and executes `echo c > /proc/sysrq-trigger` followed by `nova stop [node id]`
 	- These commands cause the kernel to crash and then ensures the node won’t restart on its own.
+	- Note that these have only been tested on VM deployments
 - After the desired amount of time passes, the node is recovered with `nova start [node id]`
 
 ---
