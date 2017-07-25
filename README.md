@@ -1,15 +1,15 @@
-#Fault Injector
+# Fault Injector
 
 A tool to inject faults into a deployed cloud environment
 
 
 
-#setup.py
+# setup.py
 
   -c, --ceph  setup will look for ceph fields in the deployment
 
 
-#FaultInjector.py
+# FaultInjector.py
 
   -h, --help            show this help message and exit
   
