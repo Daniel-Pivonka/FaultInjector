@@ -1014,12 +1014,14 @@ def main():
             print 'Excluding {} from faults\n'.format(args.exclude[0])
             print args.exclude
             print type(args.exclude)
-            sys.exit('done testing')
             new_node_list = []
             for node in deployment.nodes:
-                if node[0].name != args.exclude[0]:
-                    new_node_list.append(node)
+                for excluded_node in args.exclude:
+                    if node[0].name != excluded_node:
+                        new_node_list.append(node)
+                        print 'excluding', node[0].name
             deployment.nodes = new_node_list
+            sys.exit('done testing')
         if args.target is not None:  # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including "{}" in the type\n'
