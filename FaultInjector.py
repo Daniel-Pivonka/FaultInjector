@@ -1012,22 +1012,19 @@ def main():
         if args.exclude is not None:  # User provided a node name to exclude
             log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
             print 'Excluding {} from faults\n'.format(args.exclude[0])
-            print len(deployment.nodes)
-            print args.exclude
-            print type(args.exclude)
+            # Iterate through the deployment's node list and exclude any nodes specified in the passed in
+            # exclusion nodes
             new_node_list = []
             for node in deployment.nodes:
                 exclude = False
                 for excluded_node in args.exclude:
                     if node[0].name == excluded_node:
-                        print 'excluding', node[0].name
                         exclude = True
                         break
                 if not exclude:
                     new_node_list.append(node)
             deployment.nodes = new_node_list
-            print len(deployment.nodes)
-            sys.exit('done testing')
+
         if args.target is not None:  # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
             log.write('{:%Y-%m-%d %H:%M:%S} Targeting nodes including "{}" in the type\n'
