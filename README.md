@@ -4,14 +4,14 @@ A tool to inject faults into a deployed cloud environment
 
 
 
-# setup.py
+## setup.py
 
 Collects all the necessary information for the fault injector to run fully by filling out the config.yaml file
 
   -c, --ceph  setup will look for ceph fields in the deployment
 
 
-# FaultInjector.py
+## FaultInjector.py
 
   -h, --help            show this help message and exit
   
@@ -36,15 +36,15 @@ Collects all the necessary information for the fault injector to run fully by fi
   -t TIMELIMIT, --timelimit TIMELIMIT
                         timelimit for injector to run (mins)
                         
-## Classes
+### Classes
 
-### Node Fault:
+#### Node Fault:
 
 	Node KIll
 Connects to a node and executes echo c > /proc/sysrq-trigger followed by a nova stop [node id] command which crashes the kernel and then ensures the node won’t restart on its own
 After the desired amount of time passes, the node is recovered through the  nova start [node id] command
 
-### Ceph Fault:
+#### Ceph Fault:
 	
 	OSD Fault
 Connects to the Ceph cluster via a Controller, Ceph, or in the case of an HCI deployment, an OSD-Compute node and executes systemctl stop ceph-osd.[target osd number] to stop the OSD
@@ -62,7 +62,7 @@ systemctl start ceph-mon.target
 
 
 
-## Modes
+### Modes
 
 	Stateless:
 Spawn a number of threads equal to the number of faults specified in the flag given at runtime
