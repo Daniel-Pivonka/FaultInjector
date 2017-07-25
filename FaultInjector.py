@@ -1019,6 +1019,8 @@ def main():
                 for excluded_node in args.exclude:
                     if node[0].name != excluded_node:
                         new_node_list.append(node)
+                        print 'not excluding', node[0].name
+                    else:
                         print 'excluding', node[0].name
             deployment.nodes = new_node_list
             sys.exit('done testing')
