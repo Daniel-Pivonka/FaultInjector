@@ -537,10 +537,12 @@ class Ceph(Fault):
 
         # Determine wait time
         max_wait_time = math.ceil((timeout - time.time()) / 60)
+
         if max_wait_time <= 0:
             time.sleep(5)
             return
-        else:
+
+        if max_wait_time > 5:
             max_wait_time = 5
 
         target_node[0].occupied = True  # Mark node as being used
@@ -669,10 +671,12 @@ class Ceph(Fault):
 
         # Determine wait time
         max_wait_time = math.ceil((timeout - time.time()) / 60)
+
         if max_wait_time <= 0:
             time.sleep(5)
             return
-        else:
+
+        if max_wait_time > 5:
             max_wait_time = 5
 
         target_node[0].occupied = True
