@@ -65,7 +65,7 @@ class Node_fault(Fault):
 
     def stateless(self, deterministic_file):
         # Infinite loop for indefinite mode
-        while timeout is None:
+        while timeout == sys.maxsize:
             fault_function = random.choice(self.functions)
             result = fault_function()
             if result is None:
@@ -128,12 +128,10 @@ class Node_fault(Fault):
     # Write fault functions below ---------------------------------------------
 
     def node_kill_fault(self):
-
         # If there are <60 seconds left
-        if timeout is not None:
-            if timeout - time.time() <= 60:
-                time.sleep(5)
-                return
+        if timeout - time.time() <= 60:
+            time.sleep(5)
+            return
 
         # chose node to fault
         target_node = random.choice(self.deployment.nodes)
@@ -178,11 +176,10 @@ class Node_fault(Fault):
         self.check_exit_signal()
 
         # Determine wait time
-        if timeout is not None:
-            max_wait_time = math.ceil((timeout - time.time()) / 60)
-            if max_wait_time <= 0:
-                time.sleep(5)
-                return
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+        if max_wait_time <= 0:
+            time.sleep(5)
+            return
         else:
             max_wait_time = 5
 
@@ -425,7 +422,7 @@ class Ceph(Fault):
 
     def fault_thread(self, deterministic_file):
         # Infinite loop for indefinite mode
-        while timelimit is None:
+        while timelimit == sys.maxsize:
             result = random.choice(self.functions)()
             if result is None:
                 continue
@@ -466,10 +463,9 @@ class Ceph(Fault):
             or osd-compute node
         """
         # If there are <60 seconds left
-        if timeout is not None:
-            if timeout - time.time() <= 60:
-                time.sleep(5)
-                return
+        if timeout - time.time() <= 60:
+            time.sleep(5)
+            return
 
         candidate_nodes = []
         for node in self.deployment.nodes:
@@ -540,12 +536,13 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Determine wait time
-        if timeout is not None:
-            max_wait_time = math.ceil((timeout - time.time()) / 60)
-            if max_wait_time <= 0:
-                time.sleep(5)
-                return
-        else:
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+
+        if max_wait_time <= 0:
+            time.sleep(5)
+            return
+
+        if max_wait_time > 5:
             max_wait_time = 5
 
         target_node[0].occupied = True  # Mark node as being used
@@ -613,11 +610,10 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
-
-        if timeout is not None:
-            if timeout - time.time() <= 60:
-                time.sleep(5)
-                return
+        # If there is less than a minute left, do not execute any more faults
+        if timeout - time.time() <= 60:
+            time.sleep(5)
+            return
 
         candidate_nodes = []
         self.deployment.mons_available = 0
@@ -674,12 +670,13 @@ class Ceph(Fault):
             self.check_exit_signal()
 
         # Determine wait time
-        if timeout is not None:
-            max_wait_time = math.ceil((timeout - time.time()) / 60)
-            if max_wait_time <= 0:
-                time.sleep(5)
-                return
-        else:
+        max_wait_time = math.ceil((timeout - time.time()) / 60)
+
+        if max_wait_time <= 0:
+            time.sleep(5)
+            return
+
+        if max_wait_time > 5:
             max_wait_time = 5
 
         target_node[0].occupied = True
@@ -923,8 +920,6 @@ class Deployment:
                 self.osds = [True for osd in range(self.num_osds)]  # Set all osds to 'on' aka True
                 self.max_mon_faults = int(math.ceil(self.num_mons / 2))
 
-# global timeout
-timeout = None
 
 # global var for start time of program
 global_starttime = datetime.datetime.now()
@@ -996,6 +991,9 @@ def main():
     args = parser.parse_args()
 
     # check mode
+    if args.timelimit is None:
+        timelimit = sys.maxsize
+        timeout = sys.maxsize
     if args.filepath:
         if args.timelimit:
             print 'Time Limit not applicable in deterministic mode'
@@ -1006,8 +1004,8 @@ def main():
         else:
             if args.timelimit is not None:
                 timelimit = args.timelimit
-                timeout = time.time() + (args.timelimit * 60)
-            stateful_start(args.timelimit)
+                timeout = time.time() + (timelimit * 60)
+            stateful_start()
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
             log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
@@ -1031,7 +1029,7 @@ def main():
                 sys.exit('Not enough nodes fit the target provided by the -tg flag, exiting...')
         if args.timelimit is not None:
             timelimit = args.timelimit
-            timeout = time.time() + (args.timelimit * 60)
+            timeout = time.time() + (timelimit * 60)
         stateless_start(node_fault, args.numfaults[0])
 
     else:
@@ -1085,7 +1083,7 @@ def stateful_start(target=None):
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
     print 'Stateful Mode Selected'
 
-    if timelimit is None:
+    if timelimit == sys.maxsize: # No time limit provided by the user
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
         print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
@@ -1131,7 +1129,7 @@ def stateless_start(node_fault, numfaults):
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
     print 'Beginning Node Stateless Mode'
 
-    if timelimit is None:
+    if timelimit == sys.maxsize: # No time limit provided by user
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
         print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
