@@ -16,8 +16,8 @@ import yaml
 
 
 class Fault:
-    """ Template class to make your own fault
-    add an instance of your fault to the list of plugins in main
+    """ Template class to make custom fault class
+        To use, add an instance of your fault class to the list of plugins found in main()
     """
 
     def __init__(self, deployment):
@@ -100,7 +100,6 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [stateless-mode] thread time out reached\n'.format(datetime.datetime.now()))
 
     def deterministic(self, args):
-
         # convert end time to seconds
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
@@ -125,9 +124,15 @@ class Node_fault(Fault):
         else:
             print '[det-service-fault] No matching function found'
 
-    # Write fault functions below ---------------------------------------------
+    # Fault functions below ---------------------------------------------
 
     def node_kill_fault(self):
+        """ Called by the stateless function and picks a node out of
+            the deployment's list of nodes and faults it.
+
+            Returns a list used to construct the deterministic file
+        """
+
         # If there are <60 seconds left
         if timeout - time.time() <= 60:
             time.sleep(5)
@@ -226,7 +231,25 @@ class Node_fault(Fault):
         return ['node-kill-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(False)]
 
     def det_node_kill_fault(self, target_node, downtime):
+        """ Deterministic version of node_kill_fault() which is called by the
+            deterministic function. Uses the information in the file to execute a fault
+            on a given node. Does not return anything.
+
+        """
         target_node[0].occupied = True
+
+        host = target_node[0].ip
+        response = subprocess.call(['ping', '-c', '5', '-W', '3', host],
+                                   stdout=open(os.devnull, 'w'),
+                                   stderr=open(os.devnull, 'w'))
+
+        # Make sure target node is reachable
+        if response != 0:
+            print '[det_node_kill_fault] error: target node unreachable at {}, exiting fault function' \
+                .format(str(target_node[0].ip))
+            log.write('{:%Y-%m-%d %H:%M:%S} [det_node_kill_fault] error: target node unreachable at {}, '
+                      'exiting fault function'.format(datetime.datetime.now(), str(target_node[0].ip)))
+            return None
 
         # check for exit signal
         self.check_exit_signal()
@@ -288,7 +311,9 @@ class Node_fault(Fault):
         os.remove(os.path.join('playbooks/', restore_filename))
 
     def print_status(self):
-
+        """ Function used to print out the current status of the deployment.
+            Currently only called when a fault concludes successfully.
+        """
         row = "{:16}{:13}{:16}{:6}"  # build formatter string
 
         print "\n+------------------------------------------------------+"
@@ -312,18 +337,17 @@ class Ceph(Fault):
         return 'Ceph'
 
     def stateful(self, deterministic_file):
-        """ func that will be set up on a thread
-            will write to a shared (all stateful threads will share) log for deterministic mode
-            will take a time limit or run indefinitely till ctrl-c
-            will do things randomly (pick node to fault and timing)
+        """ Gets executed on its own thread
+            Records actions to the script-wide log in addition to the deterministic file
+            Either runs for a given time limit or indefinitely depending on flags passed in
+            Randomly picks from services (currently osd and mon) on available nodes
         """
         print 'Beginning Ceph Stateful Mode...\n'
 
         thread_count = self.deployment.min_replication_size + self.deployment.num_mons - 1
 
+        # create threads and append them to the global thread list and fault thread list
         fault_threads = []
-
-        # create threads
         for i in range(thread_count):
             thread = threading.Thread(target=self.fault_thread, args=(deterministic_file,))
             threads.append(thread)
@@ -333,9 +357,9 @@ class Ceph(Fault):
         for thread in fault_threads:
             thread.start()
             self.check_exit_signal()
-            time.sleep(3)  # Limit threads to starting one per minute
+            time.sleep(3)  # Space out threads by 3 seconds
 
-        # wait for all threads to end
+        # checks every second if all threads have concluded before ending the function
         not_done = True
         while not_done:
             not_done = False
@@ -347,13 +371,13 @@ class Ceph(Fault):
             time.sleep(1)
 
     def deterministic(self, args):
-        """ func that will be set up on a thread
-            will take a start time, end time and waiting times (time between fault and restore)
-            will take specific node/osd to fault (ip or uuid)
-            will run until completion
+        """ Gets executed on its own thread
+            Gets arguments from a line in the deterministic file
+            Handles the parsing of the arguments so they're usable in
+            the deterministic fault functions
         """
 
-        # convert endtime to seconds
+        # convert end time to seconds
         l = args[3].split(':')
         secs = int(l[0]) * 3600 + int(l[1]) * 60 + int(float(l[2]))
 
@@ -420,9 +444,13 @@ class Ceph(Fault):
         return False if re.search('HEALTH_OK', response, flags=0) == None else True
     """
 
-    # Write fault functions below --------------------------------------------- 
+    # Fault functions below ---------------------------------------------
 
     def fault_thread(self, deterministic_file):
+        """ Function that is run on each thread
+            Handles calling appropriate service fault functions and writing to the deterministic file
+        """
+
         # Infinite loop for indefinite mode
         while timelimit == sys.maxsize:
             result = random.choice(self.functions)()
@@ -461,14 +489,15 @@ class Ceph(Fault):
             self.check_exit_signal()
 
     def osd_service_fault(self):
-        """ Kills a random osd service specified on a random ceph node
+        """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        # If there are <60 seconds left
+        # If there is less than a minute left, do not execute any more faults
         if timeout - time.time() <= 60:
             time.sleep(5)
             return
 
+        # Look for either osd-compute or ceph nodes
         candidate_nodes = []
         for node in self.deployment.nodes:
             if self.deployment.hci:
@@ -612,11 +641,14 @@ class Ceph(Fault):
         return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
+        """ Kills a random monitor service specified on a random (active) controller node
+        """
         # If there is less than a minute left, do not execute any more faults
         if timeout - time.time() <= 60:
             time.sleep(5)
             return
 
+        # Look for controller nodes
         candidate_nodes = []
         self.deployment.mons_available = 0
         for node in self.deployment.nodes:
@@ -635,22 +667,25 @@ class Ceph(Fault):
         wrote_to_log = False
 
         # node unreachable or too few monitors available
-        while not (response == 0 and
-                       (self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
-
-            if retries > 10:
+        while not (response == 0 and (
+                    self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
+            # Stop trying to find a new node after 10 failed attempts in a row
+            if retries > 9:
                 return
+            # If there are not enough monitors available, record appropriate message
             elif self.deployment.mons_available <= (
-                self.deployment.num_mons - self.deployment.max_mon_faults) and not wrote_to_log:
+                        self.deployment.num_mons - self.deployment.max_mon_faults) and not wrote_to_log:
                 log.write(
                     '{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
                     'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
                                         str(self.deployment.num_mons - self.deployment.max_mon_faults)))
+            # If neither of the previous cases are true, the target node is down
             else:
                 print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
                 log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] Target node down, trying to find acceptable node\n'
                           .format(datetime.datetime.now()))
 
+            # Try again with another random node
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(5)  # Wait 5 seconds to give nodes time to recover
@@ -683,7 +718,7 @@ class Ceph(Fault):
 
         target_node[0].occupied = True
 
-        # create tmp file for playbook
+        # create temporary file for playbook
         crash_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
@@ -748,10 +783,10 @@ class Ceph(Fault):
 
         return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), '-']
 
-        # Deterministic fault functions below ---------------------------------------------
+    # Deterministic fault functions below ---------------------------------------------
 
     def det_service_fault(self, target_node, fault_type, downtime, additional_info):
-        """ Called by ceph determinisic function
+        """ Called by ceph deterministic function
             'fault type' so far is either 'osd' or 'mon'
             'additional_info' used differently depending on the fault type
         """
@@ -839,6 +874,9 @@ class Ceph(Fault):
         return True
 
     def print_status(self):
+        """ Function used to print out the current status of the deployment.
+            Currently only called when a fault concludes successfully.
+        """
         osds_occupied = 0
         for osd in self.deployment.osds:
             if not osd:  # If osd is off
@@ -938,6 +976,7 @@ threads = []
 # global exit signal for threads
 stopper = threading.Event()
 
+
 def main():
     fault_injector_title = """
  _________________________________________________________________________
@@ -1010,7 +1049,8 @@ def main():
             stateful_start()
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
-            log.write('{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
+            log.write(
+                '{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
             print 'Excluding {} from faults\n'.format(args.exclude[0])
             # Iterate through the deployment's node list and exclude any nodes specified in the passed in
             # exclusion nodes
@@ -1093,7 +1133,7 @@ def stateful_start(target=None):
     log.write('{:%Y-%m-%d %H:%M:%S} Stateful Mode Started\n'.format(datetime.datetime.now()))
     print 'Stateful Mode Selected'
 
-    if timelimit == sys.maxsize: # No time limit provided by the user
+    if timelimit == sys.maxsize:  # No time limit provided by the user
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Timelimit\n'.format(datetime.datetime.now()))
         print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
@@ -1139,7 +1179,7 @@ def stateless_start(node_fault, numfaults):
     log.write('{:%Y-%m-%d %H:%M:%S} Stateless Mode Started\n'.format(datetime.datetime.now()))
     print 'Beginning Node Stateless Mode'
 
-    if timelimit == sys.maxsize: # No time limit provided by user
+    if timelimit == sys.maxsize:  # No time limit provided by user
         log.write('{:%Y-%m-%d %H:%M:%S} Indefinite Time Limit Enabled\n'.format(datetime.datetime.now()))
         print 'Indefinite Time Limit: Press ctrl-c to quit at any time\n'
     else:
