@@ -1023,6 +1023,7 @@ def main():
                     else:
                         print 'excluding', node[0].name
             deployment.nodes = new_node_list
+            print deployment.nodes
             sys.exit('done testing')
         if args.target is not None:  # User provided a target
             # Construct and replace deployment's node list to only include those targeted by the -tg flag
