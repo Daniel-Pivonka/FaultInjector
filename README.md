@@ -64,26 +64,26 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Stateless:
 
-- Spawn a number of threads equal to the number of faults specified in the flag given at runtime
-- Each thread runs the Node Kill fault function from within the Node Fault class
+- Spawns a number of threads equal to the number of faults specified in the flag passed in at runtime
+- Each thread runs the *Node Kill Fault* function from within the Node Fault class
 - Downtime scales with the amount of time left up to a 45 minute limit (open to suggestions with this time)
-- Writes a deterministic file
+- Writes to a deterministic file
 
 ##### Stateful:
 
-- Spawns a number of threads equal to the following:
-  *number of threads= (number of monitors / 2)  + minimum replication size across all ceph volumes*
-- Each thread selects from the available stateful functions (so far OSD and monitor faults)
+- Spawns a number of threads equal to the following:  
+  *number of threads = (number of monitors / 2)  + minimum replication size across all ceph pools*
+- Each thread selects from the available stateful fault functions (so far, OSD and monitor faults)
 - Each fault function is set to return None if it cannot execute.
 - If that happens 3 times in a row, the thread is killed and a new one is spawned
-  which has a chance to run an alternate fault function
+  which has a chance to run an alternative fault function
 - Downtime scales with the amount of time left up to a 10 minute limit (open to suggestions with this time)
-- Writes a deterministic file
+- Writes to a deterministic file
 
 ##### Deterministic:
 
-- Spawns a number of threads equal to the number of lines in the deterministic file
-- Each thread waits until its start time to begin to emulate the previous run as accurately as possible
+- Spawns a number of threads equal to the number of faults/lines in the deterministic file
+- Each thread waits until its start time to begin which emulates the previous run as accurately as possible
 
 ### Usage:
 
@@ -93,7 +93,8 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 - Run setup.py (with the -c flag if Ceph is part of the deployment)
 - Review the config.yaml file generated and look for anything missing
-    - There is a reference file under the name config_reference.yaml
+    - There is a reference file under the name config_reference.yaml which contains both Ceph  
+      and standard deployment attributes
 
 ---
 
@@ -111,7 +112,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 	##### Additional Parameters Include
 
- 	- **Time Limit** `./FaultInjector.py -sl [number of faults] -t [time limit]`
+ 	- **Time Limit** `./FaultInjector.py -sl [number of faults] -t [time limit (in minutes)]`
 
  	- **Target Node** (the target node type for faults) `./FaultInjector.py -sl [number of faults] -tg [node name]`
 		- The script looks for `[node name]` in the stored types of all the nodes in the config.yaml file
@@ -126,7 +127,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 		           exclude that node, but an input of `[compute]` or `[novacompute]` will **not** exclude any nodes.
 
 ##### Deterministic Mode
-- Deterministic mode requires a parameter for file path of the desired deterministic file
+- Deterministic mode requires the file path of the desired deterministic run to be passed in as a parameter
 - Specify it with the following syntax: `./FaultInjector.py -d [filepath]`
 
 ---
