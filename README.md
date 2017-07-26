@@ -3,14 +3,17 @@
 A fault insertion mechanism that can run concurrently with any deployed cloud environment
 with the purpose of helping to test and validate the fault resilience built into deployments
 
+### Presentation 
 
-## setup.py
+Download a PDF of the presentation made on July 21, 2017 [HERE](PresentationRev1.pdf "Fault Injector Presentation Rev 01 PDF")
+
+### setup.py
 Collects all the necessary information for FaultInjector.py to run fully by filling out the config.yaml file.
 
   -c, --ceph  setup will look for ceph fields in the deployment
 
 
-## FaultInjector.py
+### FaultInjector.py
 
   -sf, --stateful       injector will run in stateful random mode
 
