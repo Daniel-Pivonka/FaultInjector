@@ -72,7 +72,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 ##### Stateful:
 
 - Spawns a number of threads equal to the following:  
-  *number of threads = (number of monitors / 2)  + minimum replication size across all ceph pools*
+  *number of threads = ceiling(number of monitors / 2) + minimum replication size across all ceph pools*
 - Each thread selects from the available stateful fault functions (so far, OSD and monitor faults)
 - Each fault function is set to return None if it cannot execute.
 - If that happens 3 times in a row, the thread is killed and a new one is spawned
