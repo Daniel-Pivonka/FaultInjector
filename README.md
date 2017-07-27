@@ -54,12 +54,12 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### OSD Fault
 - Connects to the Ceph cluster via a Controller, Ceph, or in the case of an HCI deployment, an OSD-Compute node
-- Executes `systemctl stop ceph-osd.[target osd number]` to stop the OSD
-- Similarly, the OSD is brought back up with `systemctl start ceph-osd.[target osd number]`
+- Executes `systemctl stop ceph-osd@[target osd number]` to stop the OSD
+- Similarly, the OSD is brought back up with `systemctl start ceph-osd@[target osd number]`
 
 ##### Monitor Fault
-- Connects to a Controller node and executes `systemctl stop ceph-mon.target` to stop the monitor
-- Similarly, the monitor is brought back up with `systemctl start ceph-mon.target`
+- Connects to a Controller node and executes `systemctl stop ceph-mon@target` to stop the monitor
+- Similarly, the monitor is brought back up with `systemctl start ceph-mon@target`
 
 ---
 
