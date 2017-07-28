@@ -216,8 +216,13 @@ class Node_fault(Fault):
         print '[node-kill-fault] restoring {}'.format(target_node[0].name)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] restoring {}\n'
                   .format(datetime.datetime.now(), target_node[0].name))
+
         # Give the node time to recover
+        print '[node-kill-fault] giving node {} minutes to recover'.format(recovery_time)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-kill-fault] giving monitor {} minutes to recover\n'
+                  .format(datetime.datetime.now, recovery_time))
         time.sleep(60 * recovery_time)
+
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
@@ -632,6 +637,9 @@ class Ceph(Fault):
                   .format(datetime.datetime.now(), str(target_osd)))
 
         # Give the osd time to recover
+        print '[ceph-osd-fault] giving monitor {} minutes to recover'.format(recovery_time)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] giving monitor {} minutes to recover\n'
+                  .format(datetime.datetime.now, recovery_time))
         time.sleep(60 * recovery_time)
 
         self.deployment.osds[target_osd] = True
@@ -776,6 +784,9 @@ class Ceph(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
 
         # Give the monitor time to recover
+        print '[ceph-mon-fault] giving monitor {} minutes to recover'.format(recovery_time)
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] giving monitor {} minutes to recover\n'
+                  .format(datetime.datetime.now, recovery_time))
         time.sleep(60 * recovery_time)
 
         self.deployment.mons_available += 1
