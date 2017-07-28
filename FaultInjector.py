@@ -545,6 +545,19 @@ class Ceph(Fault):
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
+
+            # Fault and recovery time exceeds time left
+            if variability is not None:
+                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
+                    print 'time limit reached'
+                    time.sleep(10)
+                    return
+            else:
+                print fault_time + recovery_time
+                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
+                    time.sleep(10)
+                    return
+
             # exit if loop has executed 3 times already
             if retries > 10:
                 return
@@ -690,9 +703,23 @@ class Ceph(Fault):
         # node unreachable or too few monitors available
         while not (response == 0 and (
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
+
+            # Fault and recovery time exceeds time left
+            if variability is not None:
+                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
+                    print 'time limit reached'
+                    time.sleep(10)
+                    return
+            else:
+                print fault_time + recovery_time
+                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
+                    time.sleep(10)
+                    return
+
             # Stop trying to find a new node after 10 failed attempts in a row
             if retries > 9:
                 return
+
             # If there are not enough monitors available, record appropriate message
             elif self.deployment.mons_available <= (
                         self.deployment.num_mons - self.deployment.max_mon_faults) and not wrote_to_log:
@@ -700,6 +727,7 @@ class Ceph(Fault):
                     '{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] {} monitors available, {} monitors needed. Cannot fault '
                     'another.\n'.format(datetime.datetime.now(), str(self.deployment.mons_available),
                                         str(self.deployment.num_mons - self.deployment.max_mon_faults)))
+
             # If neither of the previous cases are true, the target node is down
             else:
                 print '[ceph-mon-fault] Target node down at {}, trying to find acceptable node'.format(str(host))
