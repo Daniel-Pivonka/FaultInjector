@@ -120,7 +120,7 @@ class Node_fault(Fault):
         if args[1] == 'node-kill-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing node-kill-fault at {0}{1}\n'
                       .format(str(target[0].ip), datetime.datetime.now()))
-            self.det_node_kill_fault(target, int(args[5]))
+            self.det_node_kill_fault(target, int(args[5]), int(args[6]))
         else:
             print '[det-service-fault] No matching function found'
 
@@ -133,26 +133,31 @@ class Node_fault(Fault):
             Returns a list used to construct the deterministic file
         """
 
-        # If there are <60 seconds left
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        # Fault and recovery time exceeds time left
+        if variability is not None:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+                time.sleep(10)
+                return
+        else:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+                time.sleep(10)
+                return
 
-        # chose node to fault
+        # Choose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
             target_node = random.choice(self.deployment.nodes)
 
         target_node[0].occupied = True
 
-        # check for exit signal
+        # Check for exit signal
         self.check_exit_signal()
 
-        # create tmp file for playbook
+        # Create temporary file for playbook
         crash_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
         restore_filename = 'tmp_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        # modify crash playbook
+        # Modify crash playbook
         with open('playbooks/system-crash.yml') as f:
             crash_config = yaml.load(f)
             crash_config[0]['hosts'] = target_node[0].ip
@@ -163,7 +168,7 @@ class Node_fault(Fault):
         with open('playbooks/' + crash_filename, 'w') as f:
             yaml.dump(crash_config, f, default_flow_style=False)
 
-        # modify restore playbook
+        # Modify restore playbook
         with open('playbooks/system-restore.yml') as f:
             restore_config = yaml.load(f)
             restore_config[0]['hosts'] = target_node[0].ip
@@ -177,20 +182,10 @@ class Node_fault(Fault):
         with open('playbooks/' + restore_filename, 'w') as f:
             yaml.dump(restore_config, f, default_flow_style=False)
 
-        # check for exit signal
+        # Check for exit signal
         self.check_exit_signal()
 
-        # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
-
-        if max_wait_time > 5:
-            max_wait_time = 5
-
-        # crash system
+        # Crash system
         start_time = datetime.datetime.now() - global_starttime
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
@@ -198,39 +193,43 @@ class Node_fault(Fault):
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} killed at {}\n'
                   .format(datetime.datetime.now(), target_node[0].name, target_node[0].ip))
 
-        # wait to recover
-        if max_wait_time > 5:
-            max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)
+        # Wait to recover
+        if variability is not None:
+            downtime = random.randint(fault_time, fault_time + variability)
+        else:
+            downtime = fault_time
+
         print '[node-kill-fault] waiting {} minutes before restoring'.format(str(downtime))
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] waiting {} minutes before restoring\n'
                   .format(datetime.datetime.now(), str(downtime)))
 
         counter = downtime
         while counter > 0:
-            # check for exit signal
+            # Check for exit signal
             self.check_exit_signal()
             time.sleep(60)
             counter -= 1
 
-        # restore system
+        # Restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
-        print '[node-kill-fault] restoring {} node at {}'.format(target_node[0].type, target_node[0].ip)
-        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] {} node restored at {}\n'
-                  .format(datetime.datetime.now(), target_node[0].type, target_node[0].ip))
+        print '[node-kill-fault] restoring {}'.format(target_node[0].name)
+        log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] restoring {}\n'
+                  .format(datetime.datetime.now(), target_node[0].name))
+        # Give the node time to recover
+        time.sleep(60 * recovery_time)
         end_time = datetime.datetime.now() - global_starttime
 
         target_node[0].occupied = False
         self.print_status()
 
-        # clean up tmp files
+        # Clean up temporary files
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['node-kill-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(False)]
+        return ['node-kill-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(recovery_time)]
 
-    def det_node_kill_fault(self, target_node, downtime):
+    def det_node_kill_fault(self, target_node, downtime, recovery_time):
         """ Deterministic version of node_kill_fault() which is called by the
             deterministic function. Uses the information in the file to execute a fault
             on a given node. Does not return anything.
@@ -303,6 +302,9 @@ class Node_fault(Fault):
         # restore system
         subprocess.call('ansible-playbook playbooks/' + restore_filename, shell=True)
         log.write('{:%Y-%m-%d %H:%M:%S} [node-kill-fault] Node restored\n'.format(datetime.datetime.now()))
+
+        # Give node time to recover
+        time.sleep(60 * recovery_time)
 
         target_node[0].occupied = False
 
@@ -993,6 +995,9 @@ def main():
     print fault_injector_title
     global timeout
     global timelimit
+    global fault_time
+    global recovery_time
+    global variability
     deployment = Deployment('config.yaml')
 
     # create list of all plugins and one node_fault instance
@@ -1017,9 +1022,11 @@ def main():
     parser.add_argument('-sl', '--stateless', help='injector will run in stateless \
                             mode with specified number of faults', required=False,
                         type=int, nargs=1, dest='numfaults')
+
     parser.add_argument('-ex', '--exclude',
                         help='exclude node(s) by name in stateless mode (for the purpose of monitoring)',
                         type=str, nargs='+', dest='exclude')
+
     parser.add_argument('-tg', '--target', help='specific a node type that will be the target of stateless faults',
                         required=False, type=str, nargs=1, default=None, dest='target')
 
@@ -1029,7 +1036,22 @@ def main():
 
     parser.add_argument('-t', '--timelimit', help='timelimit for injector to run \
                          (mins)', required=False, type=int)
+
+    parser.add_argument('-ft', '--fault_time', help='amount of time faults are active for \
+                             (mins)', required=False, type=int)
+
+    parser.add_argument('-rt', '--recovery_time', help='amount of time to give faults to recover \
+                             (mins)', required=False, type=int)
+
+    parser.add_argument('-v', '--variability', help='range of time that can be added to fault time and recovery time \
+                             (mins)', required=False, type=int)
+
     args = parser.parse_args()
+
+    # Time management arguments
+    fault_time = args.fault_time
+    recovery_time = args.recovery_time
+    variability = args.variability
 
     # check mode
     if args.timelimit is None:
@@ -1046,6 +1068,8 @@ def main():
             if args.timelimit is not None:
                 timelimit = args.timelimit
                 timeout = time.time() + (timelimit * 60)
+            if (fault_time is None) or (recovery_time is None):
+                sys.exit('fault time/recovery time flags are required to run stateful mode!')
             stateful_start()
     elif args.numfaults:  # User chose stateless and provided numfaults
         if args.exclude is not None:  # User provided a node name to exclude
@@ -1080,6 +1104,8 @@ def main():
         if args.timelimit is not None:
             timelimit = args.timelimit
             timeout = time.time() + (timelimit * 60)
+        if (fault_time is None) or (recovery_time is None):
+            sys.exit('fault time/recovery time flags are required to run stateful mode!')
         stateless_start(node_fault, args.numfaults[0])
 
     else:
