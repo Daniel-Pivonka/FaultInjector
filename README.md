@@ -35,6 +35,16 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
   -t TIMELIMIT, --timelimit TIMELIMIT
                         timelimit for injector to run (mins)
+                        
+  -ft FAULT_TIME, --fault_time FAULT_TIME
+                        amount of time faults are active for (mins)
+                        
+  -rt RECOVERY_TIME, --recovery_time RECOVERY_TIME
+                        amount of time to give faults to recover (mins)
+                        
+  -v VARIABILITY, --variability VARIABILITY
+                        range of time that can be added to fault time and
+                        recovery time (mins)
 
 ### Classes:
 
