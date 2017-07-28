@@ -494,15 +494,13 @@ class Ceph(Fault):
             os.fsync(deterministic_file.fileno())
             # check for exit signal
             self.check_exit_signal()
+        print 'thread concluded -----------------------'
 
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        print "TIME LEFT:", (timeout - time.time()) / 60
-        print "TIME IT MIGHT TAKE:"
         if variability is not None:
-            print fault_time + recovery_time + variability
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 print 'time limit reached'
                 time.sleep(10)
@@ -660,10 +658,7 @@ class Ceph(Fault):
         """ Kills a random monitor service specified on a random (active) controller node
         """
         # Fault and recovery time exceeds time left
-        print "TIME LEFT:", (timeout - time.time()) / 60
-        print "TIME IT MIGHT TAKE:"
         if variability is not None:
-            print fault_time + recovery_time + variability
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 print 'time limit reached'
                 time.sleep(10)
