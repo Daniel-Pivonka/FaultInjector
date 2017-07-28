@@ -220,7 +220,7 @@ class Node_fault(Fault):
         # Give the node time to recover
         print '[node-kill-fault] giving node {} minutes to recover'.format(recovery_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-kill-fault] giving monitor {} minutes to recover\n'
-                  .format(datetime.datetime.now, recovery_time))
+                  .format(datetime.datetime.now(), recovery_time))
         time.sleep(60 * recovery_time)
 
         end_time = datetime.datetime.now() - global_starttime
@@ -650,7 +650,8 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(recovery_time), str(downtime), str(target_osd)]
+        return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(recovery_time), str(downtime),
+                str(target_osd)]
 
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
@@ -786,7 +787,7 @@ class Ceph(Fault):
         # Give the monitor time to recover
         print '[ceph-mon-fault] giving monitor {} minutes to recover'.format(recovery_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] giving monitor {} minutes to recover\n'
-                  .format(datetime.datetime.now, recovery_time))
+                  .format(datetime.datetime.now(), recovery_time))
         time.sleep(60 * recovery_time)
 
         self.deployment.mons_available += 1
