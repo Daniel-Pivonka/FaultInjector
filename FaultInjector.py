@@ -135,11 +135,11 @@ class Node_fault(Fault):
 
         # Fault and recovery time exceeds time left
         if variability is not None:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
                 return
         else:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                 time.sleep(10)
                 return
 
@@ -496,11 +496,11 @@ class Ceph(Fault):
         """
         # Fault and recovery time exceeds time left
         if variability is not None:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
                 return
         else:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                 time.sleep(10)
                 return
 
@@ -649,11 +649,11 @@ class Ceph(Fault):
         """
         # Fault and recovery time exceeds time left
         if variability is not None:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
                 return
         else:
-            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                 time.sleep(10)
                 return
 
