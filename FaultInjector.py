@@ -639,7 +639,7 @@ class Ceph(Fault):
         # Give the osd time to recover
         print '[ceph-osd-fault] giving monitor {} minutes to recover'.format(recovery_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] giving monitor {} minutes to recover\n'
-                  .format(datetime.datetime.now, recovery_time))
+                  .format(datetime.datetime.now(), recovery_time))
         time.sleep(60 * recovery_time)
 
         self.deployment.osds[target_osd] = True
