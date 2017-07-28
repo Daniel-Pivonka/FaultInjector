@@ -494,7 +494,6 @@ class Ceph(Fault):
             os.fsync(deterministic_file.fileno())
             # check for exit signal
             self.check_exit_signal()
-        print 'thread concluded -----------------------'
 
     def osd_service_fault(self):
         """ Kills a random osd service specified on a random (active) Ceph node
