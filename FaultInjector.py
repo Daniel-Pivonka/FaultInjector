@@ -502,7 +502,6 @@ class Ceph(Fault):
         """
         if variability is not None:
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                print 'time limit reached'
                 time.sleep(10)
                 return
         else:
@@ -549,11 +548,9 @@ class Ceph(Fault):
             # Fault and recovery time exceeds time left
             if variability is not None:
                 if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                    print 'time limit reached'
                     time.sleep(10)
                     return
             else:
-                print fault_time + recovery_time
                 if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                     time.sleep(10)
                     return
@@ -673,11 +670,9 @@ class Ceph(Fault):
         # Fault and recovery time exceeds time left
         if variability is not None:
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                print 'time limit reached'
                 time.sleep(10)
                 return
         else:
-            print fault_time + recovery_time
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                 time.sleep(10)
                 return
@@ -707,11 +702,9 @@ class Ceph(Fault):
             # Fault and recovery time exceeds time left
             if variability is not None:
                 if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                    print 'time limit reached'
                     time.sleep(10)
                     return
             else:
-                print fault_time + recovery_time
                 if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                     time.sleep(10)
                     return
