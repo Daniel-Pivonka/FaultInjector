@@ -399,11 +399,11 @@ class Ceph(Fault):
         if args[1] == 'ceph-osd-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing osd-service-fault at {} (osd-{})\n'
                       .format(datetime.datetime.now(), str(target[0].ip), args[6]))
-            self.det_service_fault(target, 'osd', int(args[5]), args[6])
+            self.det_service_fault(target, 'osd', int(args[5]), int(args[4]), args[6])
         elif args[1] == 'ceph-mon-fault':
             log.write('{:%Y-%m-%d %H:%M:%S} [deterministic-mode] executing mon-service-fault at {}\n'
                       .format(datetime.datetime.now(), str(target[0].ip)))
-            self.det_service_fault(target, 'mon', int(args[5]), args[6])
+            self.det_service_fault(target, 'mon', int(args[5]), int(args[4]), args[6])
         else:
             print 'no matching function found'
 
@@ -494,10 +494,15 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        # If there is less than a minute left, do not execute any more faults
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        # Fault and recovery time exceeds time left
+        if variability is not None:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+                time.sleep(10)
+                return
+        else:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+                time.sleep(10)
+                return
 
         # Look for either osd-compute or ceph nodes
         candidate_nodes = []
@@ -568,16 +573,6 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-        # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
-
-        if max_wait_time > 5:
-            max_wait_time = 5
-
         target_node[0].occupied = True  # Mark node as being used
 
         # create tmp file for playbook
@@ -613,9 +608,12 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
 
-        if max_wait_time > 5:
-            max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)
+        # Wait to recover
+        if variability is not None:
+            downtime = random.randint(fault_time, fault_time + variability)
+        else:
+            downtime = fault_time
+
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting {} minutes before introducing OSD again\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-osd-fault] waiting {} minutes before restoring osd-{}'.format(str(downtime), str(target_osd))
@@ -632,6 +630,10 @@ class Ceph(Fault):
         print '[ceph-osd-fault] restoring osd-{}'.format(str(target_osd))
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] restoring osd-{}\n'
                   .format(datetime.datetime.now(), str(target_osd)))
+
+        # Give the osd time to recover
+        time.sleep(60 * recovery_time)
+
         self.deployment.osds[target_osd] = True
         end_time = datetime.datetime.now() - global_starttime
         target_node[0].occupied = False  # Free up the node
@@ -640,15 +642,20 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), str(target_osd)]
+        return ['ceph-osd-fault', target_node[0].ip, str(start_time), str(recovery_time), str(downtime), str(target_osd)]
 
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-        # If there is less than a minute left, do not execute any more faults
-        if timeout - time.time() <= 60:
-            time.sleep(5)
-            return
+        # Fault and recovery time exceeds time left
+        if variability is not None:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time + variability):
+                time.sleep(10)
+                return
+        else:
+            if ((timeout - time.time()) * 60) <= (fault_time + recovery_time):
+                time.sleep(10)
+                return
 
         # Look for controller nodes
         candidate_nodes = []
@@ -708,16 +715,6 @@ class Ceph(Fault):
             # check for exit signal
             self.check_exit_signal()
 
-        # Determine wait time
-        max_wait_time = math.ceil((timeout - time.time()) / 60)
-
-        if max_wait_time <= 0:
-            time.sleep(5)
-            return
-
-        if max_wait_time > 5:
-            max_wait_time = 5
-
         target_node[0].occupied = True
 
         # create temporary file for playbook
@@ -756,9 +753,12 @@ class Ceph(Fault):
         subprocess.call('ansible-playbook playbooks/' + crash_filename, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         shell=True)
 
-        if max_wait_time > 5:
-            max_wait_time = 5
-        downtime = random.randint(1, max_wait_time)
+        # Wait to recover
+        if variability is not None:
+            downtime = random.randint(fault_time, fault_time + variability)
+        else:
+            downtime = fault_time
+
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] waiting {} minutes before introducing monitor back\n'
                   .format(datetime.datetime.now(), str(downtime)))
         print '[ceph-mon-fault] waiting {} minutes before restoring monitor'.format(str(downtime))
@@ -774,6 +774,10 @@ class Ceph(Fault):
                         stderr=subprocess.PIPE, shell=True)
         print '[ceph-mon-fault] restoring monitor'
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] restoring monitor\n'.format(datetime.datetime.now()))
+
+        # Give the monitor time to recover
+        time.sleep(60 * recovery_time)
+
         self.deployment.mons_available += 1
         target_node[2] = True
         end_time = datetime.datetime.now() - global_starttime
@@ -783,11 +787,11 @@ class Ceph(Fault):
         os.remove(os.path.join('playbooks/', crash_filename))
         os.remove(os.path.join('playbooks/', restore_filename))
 
-        return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(end_time), str(downtime), '-']
+        return ['ceph-mon-fault', target_node[0].ip, str(start_time), str(recovery_time), str(downtime), '-']
 
     # Deterministic fault functions below ---------------------------------------------
 
-    def det_service_fault(self, target_node, fault_type, downtime, additional_info):
+    def det_service_fault(self, target_node, fault_type, downtime, recovery_time, additional_info):
         """ Called by ceph deterministic function
             'fault type' so far is either 'osd' or 'mon'
             'additional_info' used differently depending on the fault type
@@ -867,6 +871,10 @@ class Ceph(Fault):
 
         subprocess.call('ansible-playbook playbooks/' + restore_filename, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE, shell=True)
+
+        # Give the service time to recover
+        time.sleep(60 * recovery_time)
+
         target_node[0].occupied = False  # Free up the node
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
