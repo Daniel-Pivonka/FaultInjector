@@ -657,15 +657,11 @@ class Ceph(Fault):
         """ Kills a random monitor service specified on a random (active) controller node
         """
         # Fault and recovery time exceeds time left
-        print "TIME LEFT:", (timeout - time.time()) / 60
-        print "TIME IT MIGHT TAKE:"
         if variability is not None:
-            print fault_time + recovery_time + variability
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
                 return
         else:
-            print fault_time + recovery_time
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
                 time.sleep(10)
                 return
