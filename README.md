@@ -74,7 +74,9 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 - Spawns a number of threads equal to the number of faults specified in the flag passed in at runtime
 - Each thread runs the *Node Kill Fault* function from within the Node Fault class
-- Downtime scales with the amount of time left up to a 45 minute limit (open to suggestions with this time)
+- Downtime scales according to *fault time + variability* where variability is an integer from 0 to the given 
+  variability value
+- The time it takes for a fault to recover is equal to *recovery time*
 - Writes to a deterministic file
 
 ##### Stateful:
@@ -85,7 +87,9 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 - Each fault function is set to return None if it cannot execute.
 - If that happens 3 times in a row, the thread is killed and a new one is spawned
   which has a chance to run an alternative fault function
-- Downtime scales with the amount of time left up to a 10 minute limit (open to suggestions with this time)
+- Downtime scales according to *fault time + variability* where variability is an integer from 0 to the given 
+  variability value
+- The time it takes for a fault to recover is equal to *recovery time*
 - Writes to a deterministic file
 
 ##### Deterministic:
