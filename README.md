@@ -84,7 +84,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 - Spawns a number of threads equal to the following:  
   *number of threads = ceiling(number of monitors / 2) + minimum replication size across all ceph pools*
 - Each thread selects from the available stateful fault functions (so far, OSD and monitor faults)
-- Each fault function is set to return None if it cannot execute.
+- Each fault function is set to return None if it cannot execute meaning it will not be recorded to the deterministic file
 - If that happens 3 times in a row, the thread is killed and a new one is spawned
   which has a chance to run an alternative fault function
 - Downtime scales according to *fault time + variability* where variability is an integer from 0 to the given 
