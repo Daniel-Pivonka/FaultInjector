@@ -15,36 +15,31 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ### FaultInjector.py
 
-  -sf, --stateful       injector will run in stateful random mode
+  -sf, --stateful Injector will run in stateful random mode
 
   -sl NUMFAULTS, --stateless NUMFAULTS
-                        injector will run in stateless mode with specified
-                        number of faults
+                        Injector will run in stateless mode with the specified number of faults
 
   -ex EXCLUDE, --exclude EXCLUDE
-                        exclude a node by name in stateless mode (for the
-                        purpose of monitoring)
+                        Exclude a node by name in stateless mode (ex.for the purpose of monitoring)
 
   -tg TARGET, --target TARGET
-                        specific a node type that will be the target of
-                        stateless faults
+                        Specify a node type that will be the target of stateless faults
 
   -d FILEPATH, --deterministic FILEPATH
-                        injector will follow the list of tasks in the file
-                        specified
+                        Injector will execute the list of tasks in the file specified
 
   -t TIMELIMIT, --timelimit TIMELIMIT
-                        timelimit for injector to run (mins)
+                        Time limit for the injector to run (mins)
                         
   -ft FAULT_TIME, --fault_time FAULT_TIME
-                        amount of time faults are active for (mins)
+                        The amount of time faults are active (mins)
                         
   -rt RECOVERY_TIME, --recovery_time RECOVERY_TIME
-                        amount of time to give faults to recover (mins)
+                        The amount of time faults are given to recover (mins)
                         
   -v VARIABILITY, --variability VARIABILITY
-                        range of time that can be added to fault time and
-                        recovery time (mins)
+                        A range of time that may be added to fault time (mins)
 
 ### Classes:
 
@@ -117,11 +112,15 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 - If a time limit is desired, run `./FaultInjector.py -sf [time limit (in minutes)]`
 - Otherwise, run `./FaultInjector.py -sf`
+- Other flags that must be specified are *fault time* (-ft) and *recovery time* (-rt)
+- Optionally, *variability* (-v) can be passed in 
 
 ##### Stateless Mode
 
 - Stateless mode requires a parameter for the number faults desired to be active at once
 - Specify it with the following syntax `./FaultInjector.py -sl [number of faults]`
+- Other flags that must be specified are *fault time* (-ft) and *recovery time* (-rt)
+- Optionally, *variability* (-v) can be passed in 
 
 	##### Additional Parameters Include
 
