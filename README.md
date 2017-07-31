@@ -110,10 +110,21 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Stateful Mode
 
-- If a time limit is desired, run `./FaultInjector.py -sf [time limit (in minutes)]`
+- If a time limit is desired, run `./FaultInjector.py -sf -t [time limit (in minutes)]`
 - Otherwise, run `./FaultInjector.py -sf`
 - Other flags that must be specified are *fault time* (-ft) and *recovery time* (-rt)
 - Optionally, *variability* (-v) can be passed in 
+
+	##### Additional Parameters Include
+	
+	- **Fault Time** `./FaultInjector.py -sf -ft [Fault Time]`
+	    - The amount of time faults are active for (mins)
+	
+	- **Recovery Time** `./FaultInjector.py -sf -rt [Recovery Time]`
+	    - The amount of time to give faults to recover (mins)
+	
+	- **Variability** `./FaultInjector.py -sf -v [Variability]`
+	    - The amount of time that can be added to fault time and recovery time (mins)
 
 ##### Stateless Mode
 
@@ -137,6 +148,15 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 		- Example: In a deployment with a single compute node named *novacompute-0*, an input of `[novacompute-0]` will
 		           exclude that node, but an input of `[compute]` or `[novacompute]` will **not** exclude any nodes.
+        
+    - **Fault Time** `./FaultInjector.py -sf -ft [Fault Time]`
+	    - The amount of time faults are active for (mins)
+	
+	- **Recovery Time** `./FaultInjector.py -sf -rt [Recovery Time]`
+	    - The amount of time to give faults to recover (mins)
+	
+	- **Variability** `./FaultInjector.py -sf -v [Variability]`
+	    - The amount of time that can be added to fault time and recovery time (mins)
 
 ##### Deterministic Mode
 - Deterministic mode requires the file path of the desired deterministic run to be passed in as a parameter
