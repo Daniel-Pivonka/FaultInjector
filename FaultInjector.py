@@ -517,6 +517,11 @@ class Ceph(Fault):
             elif 'ceph' in node[0].type:
                 candidate_nodes.append(node)
 
+        if len(candidate_nodes) == 0:
+            print 'hci', self.deployment.hci
+            print 'no nodes available'
+            return
+
         # check for exit signal
         self.check_exit_signal()
 
