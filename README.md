@@ -114,53 +114,53 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Stateful Mode
 
-- If a time limit is desired, run `./FaultInjector.py -sf -t [time limit (in minutes)]`
-- Otherwise, run `./FaultInjector.py -sf`
+- If a time limit is desired, run `./FaultInjector.py -sf -t [time limit] -ft [fault time] -rt [recovery time]` (all in minutes)
+- Otherwise, run `./FaultInjector.py -sf -ft [fault time] -rt [recovery time]`
 
-	##### Additional Parameters Include
+	##### Explanation of Parameters
 	
-	- **Fault Time** `./FaultInjector.py -sf -ft [Fault Time]`
+	- **Fault Time** `-ft [Fault Time]`
 	    - The amount of time faults are active (mins)
 	
-	- **Recovery Time** `./FaultInjector.py -sf -rt [Recovery Time]`
+	- **Recovery Time** `-rt [Recovery Time]`
 	    - The amount of time given to faults to recover (mins)
 	
-	- **Variability** `./FaultInjector.py -sf -v [Variability]`
+	- **Variability** `-v [Variability]`
 	    - A range of time that can be added to fault time (mins)
 
 ##### Stateless Mode
 
 - Stateless mode requires a parameter for the number faults desired to be active at once
-- Specify it with the following syntax `./FaultInjector.py -sl [number of faults]`
+- Run it with the following syntax `./FaultInjector.py -sl [number of faults] -ft [fault time] -rt [recovery time]`
 
-	##### Additional Parameters Include
+	##### Explanation of Parameters
 
- 	- **Time Limit** `./FaultInjector.py -sl [number of faults] -t [time limit (in minutes)]`
+ 	- **Time Limit** `-t [time limit (in minutes)]`
 
- 	- **Target Node** (the target node type for faults) `./FaultInjector.py -sl [number of faults] -tg [node name]`
+ 	- **Target Node** (the target node type for faults) `-tg [node name]`
 		- The script looks for `[node name]` in the stored types of all the nodes in the config.yaml file
 		- Example: an input of `[control]` will flag all controller nodes
 
- 	- **Exclusions** (exclude node(s) from faults): `./FaultInjector.py -sl [number of faults] -ex [node name]`
+ 	- **Exclusions** (exclude node(s) from faults): `-ex [node name]`
 		- The script looks for the exact `[node name]` in the stored names of all the nodes in the config.yaml file
 
-		- Specify multiple nodes with `./FaultInjector.py -sl [number of faults] -ex [node1 node2 node3...]`
+		- Specify multiple nodes with `-ex [node1 node2 node3...]`
 
 		- Example: In a deployment with a single compute node named *novacompute-0*, an input of `[novacompute-0]` will
 		           exclude that node, but an input of `[compute]` or `[novacompute]` will **not** exclude any nodes.
         
-    - **Fault Time** `./FaultInjector.py -sl [number of faults] -ft [Fault Time]`
+    - **Fault Time** `-ft [Fault Time]`
 	    - The amount of time faults are active (mins)
 	
-	- **Recovery Time** `./FaultInjector.py -sl [number of faults] -rt [Recovery Time]`
+	- **Recovery Time** `-rt [Recovery Time]`
 	    - The amount of time given to faults to recover (mins)
 	
-	- **Variability** `./FaultInjector.py -sl [number of faults] -v [Variability]`
+	- **Variability** `-v [Variability]`
 	    - A range of time that can be added to fault time (mins)
 
 ##### Deterministic Mode
 - Deterministic mode requires the file path of the desired deterministic run to be passed in as a parameter
-- Specify it with the following syntax: `./FaultInjector.py -d [filepath]`
+- Run it with the following syntax: `./FaultInjector.py -d [filepath]`
 
 ---
 
