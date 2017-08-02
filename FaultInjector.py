@@ -518,7 +518,6 @@ class Ceph(Fault):
                 candidate_nodes.append(node)
 
         if len(candidate_nodes) == 0:
-            print 'hci', self.deployment.hci
             print 'no nodes available'
             return
 
