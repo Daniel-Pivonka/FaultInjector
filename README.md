@@ -114,8 +114,9 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Stateful Mode
 
-- If a time limit is desired, run `./FaultInjector.py -sf -t [time limit] -ft [fault time] -rt [recovery time]` (all in minutes)
-- Otherwise, run `./FaultInjector.py -sf -ft [fault time] -rt [recovery time]`
+- If a time limit is desired, run `./FaultInjector.py -sf -t [Time Limit] -ft [Fault Time] -rt [Recovery Time]`  
+  (all parameters in minutes)
+- Otherwise, run `./FaultInjector.py -sf -ft [Fault time] -rt [Recovery time]`
 
 	##### Explanation of Parameters
 	
@@ -131,11 +132,11 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 ##### Stateless Mode
 
 - Stateless mode requires a parameter for the number faults desired to be active at once
-- Run it with the following syntax `./FaultInjector.py -sl [number of faults] -ft [fault time] -rt [recovery time]`
+- Run it with the following syntax `./FaultInjector.py -sl [Number of Faults] -ft [Fault Time] -rt [Recovery Time]`
 
 	##### Explanation of Parameters
 
- 	- **Time Limit** `-t [time limit (in minutes)]`
+ 	- **Time Limit** `-t [Time Limit (in minutes)]`
 
  	- **Target Node** (the target node type for faults) `-tg [node name]`
 		- The script looks for `[node name]` in the stored types of all the nodes in the config.yaml file
@@ -160,7 +161,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Deterministic Mode
 - Deterministic mode requires the file path of the desired deterministic run to be passed in as a parameter
-- Run it with the following syntax: `./FaultInjector.py -d [filepath]`
+- Run it with the following syntax: `./FaultInjector.py -d [Filepath]`
 
 ---
 
