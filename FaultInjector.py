@@ -511,8 +511,6 @@ class Ceph(Fault):
         # Look for either osd-compute or ceph nodes
         candidate_nodes = []
         for node in self.deployment.nodes:
-            print 'node type', node[0].type
-            print self.deployment.hci
             if self.deployment.hci:
                 if 'osd' in node[0].type:
                     candidate_nodes.append(node)
@@ -690,6 +688,10 @@ class Ceph(Fault):
                 candidate_nodes.append(node)
                 if node[2]:
                     self.deployment.mons_available += 1
+
+        if len(candidate_nodes) == 0:
+            print 'no nodes available'
+            return
 
         target_node = random.choice(candidate_nodes)
         host = target_node[0].ip
@@ -939,13 +941,13 @@ class Ceph(Fault):
                 if node[2]:
                     self.deployment.mons_available += 1
 
-        print '\n+----------------------+\n' \
-              '|Current Status:       |\n' \
-              '|----------------------|\n' \
+        print '\n+----------------------\n' \
+              '|Current Status:       \n' \
+              '|----------------------\n' \
               '|osds active: ' + str(self.deployment.num_osds - osds_occupied) + '/' + str(
-            self.deployment.num_osds) + '      |' + \
+            self.deployment.num_osds) + '      ' + \
               '\n' + '|monitors active: ' + str(self.deployment.mons_available) + '/' + str(self.deployment.num_mons) + \
-              '  |\n+----------------------+\n'
+              '  |\n+----------------------\n'
 
 
 class Node:
