@@ -512,6 +512,7 @@ class Ceph(Fault):
         candidate_nodes = []
         for node in self.deployment.nodes:
             print 'node type', node[0].type
+            print self.deployment.hci
             if self.deployment.hci:
                 if 'osd' in node[0].type:
                     candidate_nodes.append(node)
