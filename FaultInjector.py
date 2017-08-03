@@ -511,6 +511,7 @@ class Ceph(Fault):
         # Look for either osd-compute or ceph nodes
         candidate_nodes = []
         for node in self.deployment.nodes:
+            print 'node type', node[0].type
             if self.deployment.hci:
                 if 'osd' in node[0].type:
                     candidate_nodes.append(node)
