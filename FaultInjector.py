@@ -499,6 +499,7 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
+        print 'attempting osd fault'
         if variability is not None:
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
@@ -671,6 +672,7 @@ class Ceph(Fault):
         """ Kills a random monitor service specified on a random (active) controller node
         """
         # Fault and recovery time exceeds time left
+        print 'attempting mon fault'
         if variability is not None:
             if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
                 time.sleep(10)
