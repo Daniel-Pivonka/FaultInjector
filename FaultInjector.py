@@ -41,6 +41,16 @@ class Fault:
         if stopper.is_set():
             sys.exit(0)
 
+    def time_limit_reached(self):
+        # Check if fault and recovery time exceeds time left
+        if variability is not None:
+            time.sleep(5)
+            return ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability)
+
+        else:
+            time.sleep(5)
+            return ((timeout - time.time()) / 60) <= (fault_time + recovery_time)
+
     # Write fault functions below --------------------------------------------- 
 
     def template_fault(self):
@@ -133,20 +143,15 @@ class Node_fault(Fault):
             Returns a list used to construct the deterministic file
         """
 
-        # Fault and recovery time exceeds time left
-        if variability is not None:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                time.sleep(10)
-                return
-        else:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
-                time.sleep(10)
-                return
+        # Exit if time limit is reached
+        if self.time_timit_reached():
+            return
 
         # Choose node to fault
         target_node = random.choice(self.deployment.nodes)
         while target_node[0].occupied:
             target_node = random.choice(self.deployment.nodes)
+            time.sleep(1)
 
         target_node[0].occupied = True
 
@@ -500,14 +505,10 @@ class Ceph(Fault):
             or osd-compute node
         """
         print 'attempting osd fault'
-        if variability is not None:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                time.sleep(10)
-                return
-        else:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
-                time.sleep(10)
-                return
+
+        # Exit if time limit is reached
+        if self.time_timit_reached():
+            return
 
         # Look for either osd-compute or ceph nodes
         candidate_nodes = []
@@ -549,18 +550,8 @@ class Ceph(Fault):
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
 
-            # Fault and recovery time exceeds time left
-            if variability is not None:
-                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                    time.sleep(10)
-                    return
-            else:
-                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
-                    time.sleep(10)
-                    return
-
-            # exit if loop has executed 3 times already
-            if retries > 10:
+            # Exit if time limit is reached or loop has executed 10 times
+            if self.time_timit_reached() or retries > 9:
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
@@ -671,16 +662,10 @@ class Ceph(Fault):
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-        # Fault and recovery time exceeds time left
-        print 'attempting mon fault'
-        if variability is not None:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                time.sleep(10)
-                return
-        else:
-            if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
-                time.sleep(10)
-                return
+
+        # Exit if time limit is reached
+        if self.time_timit_reached():
+            return
 
         # Look for controller nodes
         candidate_nodes = []
@@ -708,18 +693,8 @@ class Ceph(Fault):
         while not (response == 0 and (
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
 
-            # Fault and recovery time exceeds time left
-            if variability is not None:
-                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time + variability):
-                    time.sleep(10)
-                    return
-            else:
-                if ((timeout - time.time()) / 60) <= (fault_time + recovery_time):
-                    time.sleep(10)
-                    return
-
-            # Stop trying to find a new node after 10 failed attempts in a row
-            if retries > 9:
+            # Exit if time limit is reached or loop has executed 10 times
+            if self.time_timit_reached() or retries > 9:
                 return
 
             # If there are not enough monitors available, record appropriate message
