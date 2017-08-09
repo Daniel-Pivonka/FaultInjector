@@ -357,7 +357,6 @@ class Ceph(Fault):
         print 'Beginning Ceph Stateful Mode...\n'
 
         thread_count = self.deployment.min_replication_size + int(math.ceil(self.deployment.num_mons / float(2)))
-        print thread_count
 
         # create threads and append them to the global thread list and fault thread list
         fault_threads = []
@@ -466,9 +465,7 @@ class Ceph(Fault):
 
         # Infinite loop for indefinite mode
         while timelimit == sys.maxsize:
-            print 'function started'
             result = random.choice(self.functions)()
-            print 'function finished'
             if result is None:
                 continue
 
