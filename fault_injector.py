@@ -504,7 +504,7 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-
+        print 'osd'
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
@@ -662,7 +662,7 @@ class Ceph(Fault):
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-
+        print 'mon'
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
