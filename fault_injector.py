@@ -358,6 +358,7 @@ class Ceph(Fault):
 
         print 'num mons:', self.deployment.num_mons
         thread_count = int(self.deployment.min_replication_size + math.ceil(self.deployment.num_mons / 2))
+        print thread_count
 
         # create threads and append them to the global thread list and fault thread list
         fault_threads = []
