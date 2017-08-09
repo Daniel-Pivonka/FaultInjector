@@ -465,7 +465,9 @@ class Ceph(Fault):
 
         # Infinite loop for indefinite mode
         while timelimit == sys.maxsize:
+            print 'function started'
             result = random.choice(self.functions)()
+            print 'function finished'
             if result is None:
                 continue
 
@@ -504,7 +506,7 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        print 'attempting osd fault'
+        print 'entering osd fault'
 
         # Exit if time limit is reached
         if self.time_limit_reached():
@@ -662,7 +664,7 @@ class Ceph(Fault):
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-
+        print 'entering mon fault'
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
