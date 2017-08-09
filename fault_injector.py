@@ -356,7 +356,7 @@ class Ceph(Fault):
         """
         print 'Beginning Ceph Stateful Mode...\n'
 
-        thread_count = self.deployment.min_replication_size + int(math.ceil(self.deployment.num_mons / float(2)))
+        thread_count = self.deployment.min_replication_size + int(math.ceil(self.deployment.num_mons / 2.0))
 
         # create threads and append them to the global thread list and fault thread list
         fault_threads = []
