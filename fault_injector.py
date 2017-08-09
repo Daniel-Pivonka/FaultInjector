@@ -356,8 +356,6 @@ class Ceph(Fault):
         """
         print 'Beginning Ceph Stateful Mode...\n'
 
-        print 'num mons:', self.deployment.num_mons
-        print 'min rep size:', self.deployment.min_replication_size
         thread_count = self.deployment.min_replication_size + int(math.ceil(self.deployment.num_mons / float(2)))
         print thread_count
 
@@ -509,7 +507,6 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        print 'entering osd fault'
 
         # Exit if time limit is reached
         if self.time_limit_reached():
@@ -525,7 +522,8 @@ class Ceph(Fault):
                 candidate_nodes.append(node)
 
         if len(candidate_nodes) == 0:
-            print 'no nodes available'
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] no nodes available, exiting osd-fault\n'
+                      .format(datetime.datetime.now()))
             return
 
         # check for exit signal
@@ -667,7 +665,7 @@ class Ceph(Fault):
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-        print 'entering mon fault'
+
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
@@ -682,7 +680,8 @@ class Ceph(Fault):
                     self.deployment.mons_available += 1
 
         if len(candidate_nodes) == 0:
-            print 'no nodes available'
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-mon-fault] no nodes available, exiting mon-fault\n'
+                      .format(datetime.datetime.now()))
             return
 
         target_node = random.choice(candidate_nodes)
