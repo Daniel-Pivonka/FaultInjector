@@ -550,6 +550,8 @@ class Ceph(Fault):
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
 
+            print 'osd retries at', retries
+
             # Exit if time limit is reached or loop has executed 5 times
             if self.time_limit_reached() or retries > 4:
                 return
@@ -694,6 +696,7 @@ class Ceph(Fault):
         while not (response == 0 and (
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
 
+            print 'mon retries at', retries
             # Exit if time limit is reached or loop has executed 5 times
             if self.time_limit_reached() or retries > 4:
                 return
