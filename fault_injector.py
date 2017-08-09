@@ -716,6 +716,7 @@ class Ceph(Fault):
                           .format(datetime.datetime.now()))
 
             # Try again with another random node
+            retries += 1
             target_node = random.choice(candidate_nodes)
             host = target_node[0].ip
             time.sleep(5)  # Wait 5 seconds to give nodes time to recover
