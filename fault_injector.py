@@ -550,8 +550,8 @@ class Ceph(Fault):
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
 
-            # Exit if time limit is reached or loop has executed 10 times
-            if self.time_limit_reached() or retries > 9:
+            # Exit if time limit is reached or loop has executed 5 times
+            if self.time_limit_reached() or retries > 4:
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
@@ -694,8 +694,8 @@ class Ceph(Fault):
         while not (response == 0 and (
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
 
-            # Exit if time limit is reached or loop has executed 10 times
-            if self.time_limit_reached() or retries > 9:
+            # Exit if time limit is reached or loop has executed 5 times
+            if self.time_limit_reached() or retries > 4:
                 return
 
             # If there are not enough monitors available, record appropriate message
