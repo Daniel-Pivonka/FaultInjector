@@ -144,7 +144,7 @@ class Node_fault(Fault):
         """
 
         # Exit if time limit is reached
-        if self.time_timit_reached():
+        if self.time_limit_reached():
             return
 
         # Choose node to fault
@@ -507,7 +507,7 @@ class Ceph(Fault):
         print 'attempting osd fault'
 
         # Exit if time limit is reached
-        if self.time_timit_reached():
+        if self.time_limit_reached():
             return
 
         # Look for either osd-compute or ceph nodes
@@ -551,7 +551,7 @@ class Ceph(Fault):
                     osds_occupied >= self.deployment.min_replication_size - 1):
 
             # Exit if time limit is reached or loop has executed 10 times
-            if self.time_timit_reached() or retries > 9:
+            if self.time_limit_reached() or retries > 9:
                 return
 
             if osds_occupied >= self.deployment.min_replication_size - 1:
@@ -664,7 +664,7 @@ class Ceph(Fault):
         """
 
         # Exit if time limit is reached
-        if self.time_timit_reached():
+        if self.time_limit_reached():
             return
 
         # Look for controller nodes
@@ -694,7 +694,7 @@ class Ceph(Fault):
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
 
             # Exit if time limit is reached or loop has executed 10 times
-            if self.time_timit_reached() or retries > 9:
+            if self.time_limit_reached() or retries > 9:
                 return
 
             # If there are not enough monitors available, record appropriate message
