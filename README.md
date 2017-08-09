@@ -8,12 +8,12 @@ with the purpose of helping to test and validate the fault resilience built into
 Download a PDF of the presentation made on July 21, 2017 [HERE](PresentationRev1.pdf "Fault Injector Presentation Rev 01 PDF")
 
 ### setup.py
-Collects all the necessary information for FaultInjector.py to run fully by filling out the config.yaml file.
+Collects all the necessary information for fault_injector.py to run fully by filling out the config.yaml file.
 
   -c, --ceph  setup will look for ceph fields in the deployment
 
 
-### FaultInjector.py
+### fault_injector.py
 
   -sf, --stateful Injector will run in stateful random mode
 
@@ -114,9 +114,9 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Stateful Mode
 
-- If a time limit is desired, run `./FaultInjector.py -sf -t [Time Limit] -ft [Fault Time] -rt [Recovery Time]`  
+- If a time limit is desired, run `./fault_injector.py -sf -t [Time Limit] -ft [Fault Time] -rt [Recovery Time]`  
   (all parameters in minutes)
-- Otherwise, run `./FaultInjector.py -sf -ft [Fault time] -rt [Recovery time]`
+- Otherwise, run `./fault_injector.py -sf -ft [Fault time] -rt [Recovery time]`
 
 	##### Explanation of Parameters
 	
@@ -132,7 +132,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 ##### Stateless Mode
 
 - Stateless mode requires a parameter for the number faults desired to be active at once
-- Run it with the following syntax `./FaultInjector.py -sl [Number of Faults] -ft [Fault Time] -rt [Recovery Time]`
+- Run it with the following syntax `./fault_injector.py -sl [Number of Faults] -ft [Fault Time] -rt [Recovery Time]`
 
 	##### Explanation of Parameters
 
@@ -161,7 +161,7 @@ Collects all the necessary information for FaultInjector.py to run fully by fill
 
 ##### Deterministic Mode
 - Deterministic mode requires the file path of the desired deterministic run to be passed in as a parameter
-- Run it with the following syntax: `./FaultInjector.py -d [Filepath]`
+- Run it with the following syntax: `./fault_injector.py -d [Filepath]`
 
 ---
 
