@@ -504,7 +504,6 @@ class Ceph(Fault):
         """ Kills a random osd service specified on a random (active) Ceph node
             or osd-compute node
         """
-        print 'osd'
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
@@ -549,8 +548,6 @@ class Ceph(Fault):
         # node unreachable, target osd is being used, or the number of osds down >= the limit
         while response != 0 or (not self.deployment.osds[target_osd]) or (
                     osds_occupied >= self.deployment.min_replication_size - 1):
-
-            print 'osd retries at', retries
 
             # Exit if time limit is reached or loop has executed 5 times
             if self.time_limit_reached() or retries > 4:
@@ -664,7 +661,6 @@ class Ceph(Fault):
     def mon_service_fault(self):
         """ Kills a random monitor service specified on a random (active) controller node
         """
-        print 'mon'
         # Exit if time limit is reached
         if self.time_limit_reached():
             return
@@ -696,7 +692,6 @@ class Ceph(Fault):
         while not (response == 0 and (
                     self.deployment.mons_available > (self.deployment.num_mons - self.deployment.max_mon_faults))):
 
-            print 'mon retries at', retries
             # Exit if time limit is reached or loop has executed 5 times
             if self.time_limit_reached() or retries > 4:
                 return
