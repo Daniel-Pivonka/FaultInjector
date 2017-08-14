@@ -1081,6 +1081,9 @@ def main():
     recovery_time = args.recovery_time
     variability = args.variability
 
+    if recovery_time < 1:
+        sys.exit("Recovery time must be at least 1 minute")
+
     # check mode
     if args.timelimit is None:
         timelimit = sys.maxsize
