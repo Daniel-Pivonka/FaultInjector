@@ -648,6 +648,7 @@ class Ceph(Fault):
         time.sleep(60 * recovery_time)
 
         #check if osd have recovered (all pg have returned to normal state)
+        paramiko.util.log_to_file("filename.log")
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -655,11 +656,12 @@ class Ceph(Fault):
 
         try:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+            response = ssh_stdout.read()
         except:
             response = "exception"
             print "exception"
 
-        response = ssh_stdout.read()
+
 
         if response != "":
             print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
@@ -671,16 +673,19 @@ class Ceph(Fault):
 
             try:
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+                response = ssh_stdout.read()
             except:
                 response= "exception"
                 print "exception"
 
-            response = ssh_stdout.read()
+
 
             # check for exit signal
             self.check_exit_signal()
 
         ssh_stdout.channel.close()
+
+        os.remove("filename.log")
 
 
 
