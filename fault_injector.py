@@ -656,6 +656,8 @@ class Ceph(Fault):
                        stderr=subprocess.PIPE)
         response = ssh.stdout.readlines()
 
+        print response
+
         if response != "":
             print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting for rebalance to finish on osd-{}\n'
@@ -669,6 +671,9 @@ class Ceph(Fault):
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
             response = ssh.stdout.readlines()
+
+            print "\n\n" + response
+
             # check for exit signal
             self.check_exit_signal()
 
