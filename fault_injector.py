@@ -642,7 +642,7 @@ class Ceph(Fault):
                   .format(datetime.datetime.now(), str(target_osd)))
 
         # Give the osd time to recover
-        print '[ceph-osd-fault] giving osd-{} minutes to recover'.format(recovery_time)
+        print '[ceph-osd-fault] giving osd-{} {} minutes to recover'.format(str(target_osd), recovery_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] giving osd {} minutes to recover\n'
                   .format(datetime.datetime.now(), recovery_time))
         time.sleep(60 * recovery_time)
@@ -653,7 +653,12 @@ class Ceph(Fault):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='heat-admin')
 
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        try:
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        except:
+            response = "exception"
+            print "exception"
+
         response = ssh_stdout.read()
 
         if response != "":
@@ -664,8 +669,16 @@ class Ceph(Fault):
         while response != "":
             time.sleep(10)
 
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+            try:
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+            except:
+                response= "exception"
+                print "exception"
+
             response = ssh_stdout.read()
+
+            # check for exit signal
+            self.check_exit_signal()
 
         ssh_stdout.channel.close()
 
