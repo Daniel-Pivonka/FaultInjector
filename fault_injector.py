@@ -642,7 +642,7 @@ class Ceph(Fault):
                   .format(datetime.datetime.now(), str(target_osd)))
 
         # Give the osd time to recover
-        print '[ceph-osd-fault] giving osd {} minutes to recover'.format(recovery_time)
+        print '[ceph-osd-fault] giving osd-{} minutes to recover'.format(recovery_time)
         log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] giving osd {} minutes to recover\n'
                   .format(datetime.datetime.now(), recovery_time))
         time.sleep(60 * recovery_time)
@@ -655,6 +655,7 @@ class Ceph(Fault):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
         if response != "":
+            print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(recovery_time)
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting for rebalance to finish on osd-{}\n'
                       .format(datetime.datetime.now(), str(target_osd)))
         while response != "":
