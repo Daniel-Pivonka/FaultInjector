@@ -654,6 +654,9 @@ class Ceph(Fault):
         ssh.connect(host, username='heat-admin')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
+        if response != "":
+            log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting for rebalance to finish on osd-{}\n'
+                      .format(datetime.datetime.now(), str(target_osd)))
         while response != "":
             time.sleep(10)
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
