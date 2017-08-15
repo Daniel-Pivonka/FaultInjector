@@ -649,28 +649,16 @@ class Ceph(Fault):
 
         #check if osd have recovered (all pg have returned to normal state)
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
-
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='heat-admin')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
-
-        print "initial check"
-        print response
-        print "\n\n"
-
         while response != "":
             time.sleep(10)
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
             response = ssh_stdout.read()
-            print response
-            print "\n\n"
-
-
         ssh_stdout.channel.close()
-
-
 
 
         self.deployment.osds[target_osd] = True
