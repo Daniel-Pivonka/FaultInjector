@@ -648,7 +648,7 @@ class Ceph(Fault):
         time.sleep(60 * recovery_time)
 
         #check if osd have recovered (all pg have returned to normal state)
-        paramiko.util.log_to_file("filename.log")
+
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -685,7 +685,6 @@ class Ceph(Fault):
 
         ssh_stdout.channel.close()
 
-        os.remove("filename.log")
 
 
 
