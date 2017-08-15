@@ -664,19 +664,18 @@ class Ceph(Fault):
 
         while response != "":
             time.sleep(10)
-
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(host, username='heat-admin')
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
             response = ssh_stdout.read()
             ssh_stdout.channel.close()
-
             # check for exit signal
             self.check_exit_signal()
 
-
-        print "osd-{} is good".format(str(target_osd))
+        print '[ceph-osd-fault] osd-{} has been restored and rebalanced'.format(str(target_osd))
+        log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] osd-{} has been restored and rebalanced\n'
+                  .format(datetime.datetime.now(), str(target_osd)))
 
 
         self.deployment.osds[target_osd] = True
