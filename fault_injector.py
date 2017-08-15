@@ -656,6 +656,7 @@ class Ceph(Fault):
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
             response = ssh_stdout.read()
         except:
+            print "exception"
             response = "exception"
         if response != "":
             print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
@@ -667,6 +668,7 @@ class Ceph(Fault):
                 ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
                 response = ssh_stdout.read()
             except:
+                print "exception"
                 response = "exception"
         ssh_stdout.channel.close()
 
