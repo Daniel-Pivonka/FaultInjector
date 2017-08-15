@@ -652,24 +652,21 @@ class Ceph(Fault):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='heat-admin')
-        try:
-            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-            response = ssh_stdout.read()
-        except:
-            print "exception"
-            response = "exception"
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        response = ssh_stdout.read()
+
         if response != "":
             print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting for rebalance to finish on osd-{}\n'
                       .format(datetime.datetime.now(), str(target_osd)))
+
         while response != "":
             time.sleep(10)
-            try:
-                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
-                response = ssh_stdout.read()
-            except:
-                print "exception"
-                response = "exception"
+
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+            response = ssh_stdout.read()
+
         ssh_stdout.channel.close()
 
 
