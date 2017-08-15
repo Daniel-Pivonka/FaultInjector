@@ -676,12 +676,12 @@ class Ceph(Fault):
                 response = ssh_stdout.read()
             except:
                 response= "exception"
-                print "exception"
-
-
+                print "exception osd-{}".format(str(target_osd))
 
             # check for exit signal
             self.check_exit_signal()
+
+        print "osd-{} is good".format(str(target_osd))
 
         ssh_stdout.channel.close()
 
