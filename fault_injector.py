@@ -659,7 +659,7 @@ class Ceph(Fault):
             response = ssh_stdout.read()
         except:
             response = "exception"
-            print "exception"
+            print "exception osd-{}".format(str(target_osd))
 
 
 
