@@ -672,7 +672,7 @@ class Ceph(Fault):
                        stderr=subprocess.PIPE)
             response = ssh.stdout.readlines()
 
-            print "\n\n" + response
+            print response
 
             # check for exit signal
             self.check_exit_signal()
