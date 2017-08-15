@@ -650,19 +650,12 @@ class Ceph(Fault):
 
         #check if osd have recovered (all pg have returned to normal state)
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
-
-
-
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username='heat-admin')
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
         ssh_stdout.channel.close()
-
-
-
-        print response
 
         if response != "":
             print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
@@ -679,14 +672,11 @@ class Ceph(Fault):
             response = ssh_stdout.read()
             ssh_stdout.channel.close()
 
-            print response
-
             # check for exit signal
             self.check_exit_signal()
 
 
         print "osd-{} is good".format(str(target_osd))
-
 
 
         self.deployment.osds[target_osd] = True
