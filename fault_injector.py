@@ -655,7 +655,7 @@ class Ceph(Fault):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
         if response != "":
-            print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(recovery_time)
+            print '[ceph-osd-fault] waiting for osd-{} to finish rebalancing'.format(str(target_osd))
             log.write('{:%Y-%m-%d %H:%M:%S} [ceph-osd-fault] waiting for rebalance to finish on osd-{}\n'
                       .format(datetime.datetime.now(), str(target_osd)))
         while response != "":
