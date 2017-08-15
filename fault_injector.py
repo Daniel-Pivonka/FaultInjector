@@ -656,6 +656,7 @@ class Ceph(Fault):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
         response = ssh_stdout.read()
 
+        print "initial check"
         print response
         print "\n\n"
 
