@@ -650,11 +650,17 @@ class Ceph(Fault):
 
         #check if osd have recovered (all pg have returned to normal state)
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
-        ssh = subprocess.Popen(["ssh", "%s" % host, command],
-                       shell=False,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
-        response = ssh.stdout.readlines()
+
+
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(host, username='heat-admin')
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+        response = ssh_stdout.read()
+        ssh_stdout.channel.close()
+
+
 
         print response
 
@@ -666,11 +672,12 @@ class Ceph(Fault):
         while response != "":
             time.sleep(10)
 
-            ssh = subprocess.Popen(["ssh", "%s" % host, command],
-                       shell=False,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
-            response = ssh.stdout.readlines()
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host, username='heat-admin')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+            response = ssh_stdout.read()
+            ssh_stdout.channel.close()
 
             print response
 
