@@ -652,7 +652,7 @@ class Ceph(Fault):
         command = "sudo ceph pg ls-by-osd " + str(target_osd) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(host, username='heat-admin')
+        ssh.connect(host, timeout=60, username='heat-admin')
 
         try:
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
