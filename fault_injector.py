@@ -932,6 +932,33 @@ class Ceph(Fault):
         # Give the service time to recover
         time.sleep(60 * recovery_time)
 
+        if fault_type == 'osd':
+            command = "sudo ceph pg ls-by-osd " + str(additional_info) + " | awk 'NR>1 {print $10}' | grep -v 'active+clean'"
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(host, username='heat-admin')
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+                response = ssh_stdout.read()
+                ssh_stdout.channel.close()
+            except:
+                response=":("
+
+            while response != "":
+                time.sleep(10)
+                try:
+                    ssh = paramiko.SSHClient()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    ssh.connect(host, username='heat-admin')
+                    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+                    response = ssh_stdout.read()
+                    ssh_stdout.channel.close()
+                except:
+                    response=":("
+                # check for exit signal
+                self.check_exit_signal()
+
+
         target_node[0].occupied = False  # Free up the node
         # clean up tmp files
         os.remove(os.path.join('playbooks/', crash_filename))
@@ -1064,6 +1091,7 @@ def main():
     global recovery_time
     global variability
     deployment = Deployment('config.yaml')
+    paramiko.util.log_to_file(".paramiko.log")
 
     # create list of all plugins and one node_fault instance
     plugins.append(Ceph(deployment))
