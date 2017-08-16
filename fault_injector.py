@@ -4,6 +4,7 @@ import argparse
 import datetime
 import math
 import os
+import paramiko
 import random
 import re
 import signal
@@ -13,7 +14,7 @@ import sys
 import threading
 import time
 import yaml
-import paramiko
+
 
 class Fault:
     """ Template class to make custom fault class
