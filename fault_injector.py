@@ -1146,8 +1146,7 @@ def main():
     recovery_time = args.recovery_time
     variability = args.variability
 
-    if recovery_time < 1:
-        sys.exit("Recovery time must be at least 1 minute")
+
 
     # check mode
     if args.timelimit is None:
@@ -1158,6 +1157,8 @@ def main():
             print 'Time Limit not applicable in deterministic mode'
         deterministic_start(args.filepath)
     elif args.stateful:
+        if recovery_time < 1:
+            sys.exit("Recovery time must be at least 1 minute")
         if args.target is not None:
             sys.exit('Stateful mode does not support the targeting of a specific service, exiting...')
         else:
@@ -1168,6 +1169,8 @@ def main():
                 sys.exit('fault time/recovery time flags are required to run stateful mode!')
             stateful_start()
     elif args.numfaults:  # User chose stateless and provided numfaults
+        if recovery_time < 1:
+            sys.exit("Recovery time must be at least 1 minute")
         if args.exclude is not None:  # User provided a node name to exclude
             log.write(
                 '{:%Y-%m-%d %H:%M:%S} Excluding {} from faults\n'.format(datetime.datetime.now(), args.exclude[0]))
