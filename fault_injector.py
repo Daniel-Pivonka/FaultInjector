@@ -1038,7 +1038,6 @@ class Deployment:
                                         config['deployment']['nodes'][node_id]['node_name'])])
 
                 self.hci = config['deployment']['hci']
-                self.containerized = config['deployment']['containerized']
                 self.num_nodes = config['deployment']['num_nodes']
                 if ceph_deployment:
                     # Each node in the list of nodes is now a list which holds the following:

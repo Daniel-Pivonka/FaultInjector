@@ -32,7 +32,7 @@ if config is None:
 
 print "Discovering general deployment information..."
 
-config['deployment'] = {'nodes': {}, 'containerized': False, 'hci': False, 'num_nodes': 0}
+config['deployment'] = {'nodes': {}, 'hci': False, 'num_nodes': 0}
 
 # Discover node properties
 node_response = subprocess.check_output('. ~/stackrc && nova list | grep ctlplane || true', shell=True,
